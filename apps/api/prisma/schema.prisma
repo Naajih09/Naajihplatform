@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- ENUMS ---
+enum UserRole {
+  ENTREPRENEUR
+  INVESTOR
+  ASPIRING_BUSINESS_OWNER
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ConnectionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum SubscriptionPlan {
+  FREE
+  PREMIUM
+}
+
+// --- 1. MAIN USER TABLE ---
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   
+  role      UserRole 
+  
+  // Profile Relations
+  entrepreneurProfile EntrepreneurProfile?
+  investorProfile     InvestorProfile?
+  verification        VerificationRequest?
+  subscription        Subscription?
+  
+  // App Relations
+  pitches             Pitch[]
+  
+  // Networking Relations (The missing part!)
+  sentConnections     Connection[]  @relation("Sender")
+  receivedConnections Connection[]  @relation("Receiver")
+  sentMessages        Message[]     @relation("MessageSender")
+  receivedMessages    Message[]     @relation("MessageReceiver")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --- 2. PROFILES ---
+model EntrepreneurProfile {
+  id           String  @id @default(uuid())
+  userId       String  @unique
+  user         User    @relation(fields: [userId], references: [id])
+  
+  firstName    String
+  lastName     String
+  businessName String? 
+  industry     String?
+  stage        String?
+  cacNumber    String?
+  location     String?
+}
+
+model InvestorProfile {
+  id             String  @id @default(uuid())
+  userId         String  @unique
+  user           User    @relation(fields: [userId], references: [id])
+  
+  firstName      String
+  lastName       String
+  organization   String?
+  minTicketSize  Decimal?
+  maxTicketSize  Decimal?
+  focusIndustries String[] 
+}
+
+// --- 3. PITCHES ---
+model Pitch {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  
+  title            String
+  tagline          String
+  problemStatement String
+  solution         String
+  traction         String   
+  marketSize       String   
+  fundingAsk       String   
+  equityOffer      String   
+  pitchDeckUrl     String?  
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// --- 4. NETWORKING (Fixes your error!) ---
+model Connection {
+  id          String           @id @default(uuid())
+  senderId    String
+  sender      User             @relation("Sender", fields: [senderId], references: [id])
+  receiverId  String
+  receiver    User             @relation("Receiver", fields: [receiverId], references: [id])
+  
+  status      ConnectionStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  
+  @@unique([senderId, receiverId]) // Prevent duplicate requests
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  content     String
+  senderId    String
+  sender      User     @relation("MessageSender", fields: [senderId], references: [id])
+  receiverId  String
+  receiver    User     @relation("MessageReceiver", fields: [receiverId], references: [id])
+  
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+// --- 5. EXTRAS ---
+model VerificationRequest {
+  id           String             @id @default(uuid())
+  userId       String             @unique
+  user         User               @relation(fields: [userId], references: [id])
+  documentUrl  String             
+  status       VerificationStatus @default(PENDING)
+  createdAt    DateTime           @default(now())
+}
+
+model Subscription {
+  id          String           @id @default(uuid())
+  userId      String           @unique
+  user        User             @relation(fields: [userId], references: [id])
+  plan        SubscriptionPlan @default(FREE)
+  endDate     DateTime?        
+}

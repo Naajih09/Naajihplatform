@@ -80,7 +80,7 @@ const Opportunities = () => {
           onClose={() => setIsModalOpen(false)} 
           onSuccess={() => {
             setIsModalOpen(false);
-            fetchPitches(); // Refresh list after posting
+            fetchPitches(); 
           }}
           userId={user.id}
         />

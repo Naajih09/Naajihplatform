@@ -26,7 +26,6 @@ const Login = () => {
 
       if (!res.ok) throw new Error(data.message || 'Login failed');
 
-      // Success! Save user
       localStorage.setItem('user', JSON.stringify(data));
       navigate('/dashboard');
 

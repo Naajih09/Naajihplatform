@@ -48,7 +48,7 @@ model User {
   // App Relations
   pitches             Pitch[]
   
-  // Networking Relations (The missing part!)
+  // Networking Relations 
   sentConnections     Connection[]  @relation("Sender")
   receivedConnections Connection[]  @relation("Receiver")
   sentMessages        Message[]     @relation("MessageSender")
@@ -106,7 +106,7 @@ model Pitch {
   updatedAt        DateTime @updatedAt
 }
 
-// --- 4. NETWORKING (Fixes your error!) ---
+// --- 4. NETWORKING (Fixes error!)
 model Connection {
   id          String           @id @default(uuid())
   senderId    String

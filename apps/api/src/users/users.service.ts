@@ -72,7 +72,6 @@ export class UsersService {
 
     // Handle Investor Profile
     if (investorProfile) {
-      // Ensure numbers are numbers (not strings)
       if (investorProfile.minTicketSize) investorProfile.minTicketSize = Number(investorProfile.minTicketSize);
       if (investorProfile.maxTicketSize) investorProfile.maxTicketSize = Number(investorProfile.maxTicketSize);
 

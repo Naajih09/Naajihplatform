@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { PitchesService } from './pitches.service';
 import { PitchesController } from './pitches.controller';
-import { PrismaService } from '../prisma.service'; // <--- Import this
+import { PrismaService } from '../prisma.service'; 
 
 @Module({
   controllers: [PitchesController],
-  providers: [PitchesService, PrismaService], // <--- Add it here
+  providers: [PitchesService, PrismaService], 
 })
 export class PitchesModule {}

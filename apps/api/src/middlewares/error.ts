@@ -3,13 +3,10 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientUnknownRequestError,
-} from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
 
 export function handlePrismaError(error: any) {
-  if (error instanceof PrismaClientKnownRequestError) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
       case 'P2002': // Unique constraint failed
         return new BadRequestException(
@@ -41,7 +38,7 @@ export function handlePrismaError(error: any) {
     }
   }
 
-  if (error instanceof PrismaClientUnknownRequestError) {
+  if (error instanceof Prisma.PrismaClientUnknownRequestError) {
     return new InternalServerErrorException('An unknown Prisma error occurred');
   }
 

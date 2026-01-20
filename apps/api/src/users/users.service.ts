@@ -1,13 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
+
+interface CreateUserDto {
+  email: string;
+  password: string;
+  role: UserRole;
+  firstName: string;
+  lastName: string;
+}
 
 @Injectable()
 export class UsersService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   // 1. SIGNUP logic (Create User + Profile)
-  async create(createUserDto: Prisma.UserCreateInput) {
+  async create(createUserDto: CreateUserDto) {
     const { email, password, role, firstName, lastName } = createUserDto;
 
     // Determine profile type based on role
@@ -25,14 +33,14 @@ export class UsersService {
       };
     }
 
-    return this.prisma.user.create({
+    return this.databaseService.user.create({
       data: { email, password, role, ...profileData },
     });
   }
 
   // 2. LOGIN logic (Check Password)
   async login(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.databaseService.user.findUnique({
       where: { email },
       include: { entrepreneurProfile: true, investorProfile: true },
     });

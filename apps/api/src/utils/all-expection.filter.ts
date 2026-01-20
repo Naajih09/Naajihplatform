@@ -5,11 +5,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientUnknownRequestError,
-  PrismaClientValidationError,
-} from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Request, Response } from 'express';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
@@ -79,17 +75,17 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
         error = resObj.error ?? exception.name;
         details = resObj.details;
       }
-    } else if (exception instanceof PrismaClientValidationError) {
+    } else if (exception instanceof Prisma.PrismaClientValidationError) {
       statusCode = HttpStatus.UNPROCESSABLE_ENTITY;
       error = 'ValidationError';
       message = exception.message.replace(/\n/g, ' ');
-    } else if (exception instanceof PrismaClientKnownRequestError) {
+    } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
       const prismaError = this.transformPrismaKnownError(exception);
       statusCode = prismaError.statusCode;
       error = prismaError.error;
       message = prismaError.message;
       details = prismaError.details;
-    } else if (exception instanceof PrismaClientUnknownRequestError) {
+    } else if (exception instanceof Prisma.PrismaClientUnknownRequestError) {
       statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
       error = 'PrismaUnknownError';
       message = 'An unknown database error occurred';
@@ -114,7 +110,7 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
     };
   }
 
-  private transformPrismaKnownError(exception: PrismaClientKnownRequestError) {
+  private transformPrismaKnownError(exception: Prisma.PrismaClientKnownRequestError) {
     const base = {
       statusCode: HttpStatus.BAD_REQUEST,
       error: 'DatabaseError',
@@ -190,7 +186,7 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
   }
 
   private formatForeignKeyMessage(
-    exception: PrismaClientKnownRequestError,
+    exception: Prisma.PrismaClientKnownRequestError,
   ): string {
     const target = (exception.meta?.target as string) ?? '';
     if (!target) return 'One of the referenced records does not exist.';

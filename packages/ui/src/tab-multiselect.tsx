@@ -1,5 +1,5 @@
 'use client';
-import {
+import React, {
   forwardRef,
   useEffect,
   useImperativeHandle,
@@ -85,4 +85,4 @@ const _TabMultiSelect = <T,>(
 
 export const TabMultiSelect = forwardRef(_TabMultiSelect) as <T>(
   props: TabMultiSelectProps<T> & { ref?: React.Ref<{ reset(): void }> }
-) => JSX.Element;
+) => React.ReactElement;

@@ -5,14 +5,17 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  // output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  // This puts the client in a place VS Code always checks
+  output   = "../../../node_modules/.prisma/client"
 }
+
 
 datasource db {
   provider = "postgresql"
+  // This reads the link from your apps/api/.env file
+  url      = env("DATABASE_URL")
 }
-
 
 
 

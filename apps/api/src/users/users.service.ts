@@ -1,70 +1,105 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { UserRole } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
+
 import { DatabaseService } from 'src/database/database.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  // 1. SIGNUP logic (Create User + Profile)
-  async create(createUserDto: Prisma.UserCreateInput) {
+  // 1. SIGNUP (Create User + Profile)
+  async create(createUserDto: CreateUserDto) {
     const { email, password, role, firstName, lastName } = createUserDto;
 
-    // Determine profile type based on role
+    // 🔐 Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Role-based profile creation
     let profileData = {};
+
     if (role === UserRole.ENTREPRENEUR) {
       profileData = {
-        entrepreneurProfile: { create: { firstName, lastName } },
+        entrepreneurProfile: {
+          create: { firstName, lastName },
+        },
       };
     } else if (role === UserRole.INVESTOR) {
-      profileData = { investorProfile: { create: { firstName, lastName } } };
-    } else {
-      // Default for Aspirant
       profileData = {
-        entrepreneurProfile: { create: { firstName, lastName } },
+        investorProfile: {
+          create: { firstName, lastName },
+        },
+      };
+    } else {
+      // ASPIRING_BUSINESS_OWNER (default behavior)
+      profileData = {
+        entrepreneurProfile: {
+          create: { firstName, lastName },
+        },
       };
     }
 
-    return this.prisma.user.create({
-      data: { email, password, role, ...profileData },
+    return this.databaseService.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        role,
+        ...profileData,
+      },
+      include: {
+        entrepreneurProfile: true,
+        investorProfile: true,
+      },
     });
   }
 
-  // 2. LOGIN logic (Check Password)
+  // 2. LOGIN (Password verification)
   async login(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.databaseService.user.findUnique({
       where: { email },
-      include: { entrepreneurProfile: true, investorProfile: true },
+      include: {
+        entrepreneurProfile: true,
+        investorProfile: true,
+      },
     });
 
     if (!user) return null;
-    if (user.password !== password) return null;
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) return null;
 
     return user;
   }
 
-  // 3. FIND ALL
+  // 3. FIND ALL USERS
   async findAll() {
     return this.databaseService.user.findMany({
-      include: { entrepreneurProfile: true, investorProfile: true },
+      include: {
+        entrepreneurProfile: true,
+        investorProfile: true,
+      },
     });
   }
 
-  // 4. FIND ONE
+  // 4. FIND ONE USER
   async findOne(email: string) {
     return this.databaseService.user.findUnique({
       where: { email },
-      include: { entrepreneurProfile: true, investorProfile: true },
+      include: {
+        entrepreneurProfile: true,
+        investorProfile: true,
+      },
     });
   }
 
-  // 5. UPDATE PROFILE (The Safer Upsert Version)
-  async update(id: string, data: any) {
-    const { entrepreneurProfile, investorProfile, ...userData } = data;
+  // 5. UPDATE USER + PROFILE (Safe Upsert)
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const { entrepreneurProfile, investorProfile, ...userData } = updateUserDto;
 
     const updateData: any = { ...userData };
 
-    // Handle Entrepreneur Profile
     if (entrepreneurProfile) {
       updateData.entrepreneurProfile = {
         upsert: {
@@ -74,13 +109,7 @@ export class UsersService {
       };
     }
 
-    // Handle Investor Profile
     if (investorProfile) {
-      if (investorProfile.minTicketSize)
-        investorProfile.minTicketSize = Number(investorProfile.minTicketSize);
-      if (investorProfile.maxTicketSize)
-        investorProfile.maxTicketSize = Number(investorProfile.maxTicketSize);
-
       updateData.investorProfile = {
         upsert: {
           create: investorProfile,
@@ -92,7 +121,10 @@ export class UsersService {
     return this.databaseService.user.update({
       where: { id },
       data: updateData,
-      include: { entrepreneurProfile: true, investorProfile: true },
+      include: {
+        entrepreneurProfile: true,
+        investorProfile: true,
+      },
     });
   }
 }

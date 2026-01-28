@@ -3,6 +3,8 @@ import { UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 import { DatabaseService } from 'src/database/database.service';
+// Ensure these DTO files exist in your project structure, 
+// otherwise change CreateUserDto/UpdateUserDto to 'any'
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -126,5 +128,34 @@ export class UsersService {
         investorProfile: true,
       },
     });
+  }
+
+  // 6. GET REAL DASHBOARD STATS (Fixed to use databaseService)
+  async getDashboardStats(userId: string) {
+    // Count actual pitches in database
+    const pitchCount = await this.databaseService.pitch.count({
+      where: { userId: userId }
+    });
+
+    // Count pending connections (requests sent to me)
+    const connectionCount = await this.databaseService.connection.count({
+      where: { 
+        receiverId: userId,
+        status: 'PENDING'
+      }
+    });
+
+    // Check verification status
+    const user = await this.databaseService.user.findUnique({
+      where: { id: userId },
+      select: { isVerified: true } 
+    });
+
+    return {
+      activePitches: pitchCount,
+      pendingConnections: connectionCount,
+      isVerified: user?.isVerified || false,
+      totalViews: 0 
+    };
   }
 }

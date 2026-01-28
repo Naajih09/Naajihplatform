@@ -1,7 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ['class'],
-  content: [],
+  // In a shared config, 'content' is usually empty here because 
+  // the individual apps (user-web) define where to look for files.
+  content: [], 
   prefix: '',
   theme: {
     container: {
@@ -17,6 +19,7 @@ module.exports = {
       },
 
       colors: {
+        // --- 1. EXISTING DASHBOARD COLORS ---
         brand: {
           blue: '#0D47A1', // Trust / Corporate
           gold: '#FFC107', // Success / Energy
@@ -24,63 +27,62 @@ module.exports = {
           gray: '#64748b', // Text Secondary
           bg: '#f8fafc', // Light Background
         },
+
+        // --- 2. NEW "STITCH" LANDING COLORS (Added) ---
+        primary: {
+          DEFAULT: '#aaff00', // Neon Green (Stitch Primary)
+          light: '#eaf1ff',   // Kept from your mentor's commented code
+          'dark-light': 'rgba(67,97,238,.15)',
+        },
+        "background-light": "#fafafa",
+        "background-dark": "#111113",
+        "deep-slate": "#1c1c1f",
+        "lunar-white": "#e4e4e7",
+
+        secondary: {
+            DEFAULT: '#4EABD3',
+            Aero: '#4EABD3',
+            light: '#ebe4f7',
+            'dark-light': 'rgb(128 93 202 / 15%)',
+        },
+        success: {
+            DEFAULT: '#D1FAE5',
+            50: '#ECFDF5',
+            100: '#D1FAE5',
+            800: '#065F46',
+            'dark-light': 'rgba(0,171,85,.15)',
+        },
+        danger: {
+            DEFAULT: '#e7515a',
+            light: '#fff5f5',
+            'dark-light': 'rgba(231,81,90,.15)',
+        },
+        warning: {
+            DEFAULT: '#e2a03f',
+            light: '#fff9ed',
+            'dark-light': 'rgba(226,160,63,.15)',
+        },
+        info: {
+            DEFAULT: '#2196f3',
+            light: '#e7f7ff',
+            'dark-light': 'rgba(33,150,243,.15)',
+        },
+        dark: {
+            DEFAULT: '#3b3f5c',
+            light: '#eaeaec',
+            'dark-light': 'rgba(59,63,92,.15)',
+        },
+        black: {
+            DEFAULT: '#0e1726',
+            light: '#e3e4eb',
+            'dark-light': 'rgba(14,23,38,.15)',
+        },
+        white: {
+            DEFAULT: '#ffffff',
+            light: '#e0e6ed',
+            dark: '#888ea8',
+        },
       },
-      // colors: {
-      //     primary: {
-      //         DEFAULT: '#4500FF',
-      //         light: '#eaf1ff',
-      //         'dark-light': 'rgba(67,97,238,.15)',
-      //     },
-      //     secondary: {
-      //         DEFAULT: '#4EABD3',
-      //         Aero: '#4EABD3',
-      //         light: '#ebe4f7',
-      //         'dark-light': 'rgb(128 93 202 / 15%)',
-      //     },
-      //     success: {
-      //         DEFAULT: '#D1FAE5',
-      //         50: '#ECFDF5',
-      //         100: '#D1FAE5',
-      //         800: '#065F46',
-      //         'dark-light': 'rgba(0,171,85,.15)',
-      //     },
-      //     danger: {
-      //         DEFAULT: '#e7515a',
-      //         light: '#fff5f5',
-      //         'dark-light': 'rgba(231,81,90,.15)',
-      //     },
-      //     warning: {
-      //         DEFAULT: '#e2a03f',
-      //         light: '#fff9ed',
-      //         'dark-light': 'rgba(226,160,63,.15)',
-      //     },
-      //     info: {
-      //         DEFAULT: '#2196f3',
-      //         light: '#e7f7ff',
-      //         'dark-light': 'rgba(33,150,243,.15)',
-      //     },
-      //     dark: {
-      //         DEFAULT: '#3b3f5c',
-      //         light: '#eaeaec',
-      //         'dark-light': 'rgba(59,63,92,.15)',
-      //     },
-      //     black: {
-      //         DEFAULT: '#0e1726',
-      //         light: '#e3e4eb',
-      //         'dark-light': 'rgba(14,23,38,.15)',
-      //     },
-      //     white: {
-      //         DEFAULT: '#ffffff',
-      //         light: '#e0e6ed',
-      //         dark: '#888ea8',
-      //     },
-      //     text: {
-      //         'disabled-300': '#CDD0D5',
-      //         900: '#0A0D14',
-      //         400: '#868C98',
-      //         300: '#CDD0D5',
-      //     },
-      // },
 
       keyframes: {
         'accordion-down': {
@@ -127,7 +129,9 @@ module.exports = {
         'slide-in-from-right': 'slide-in-from-right 0.3s ease-out',
       },
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+        // Added Manrope for Stitch Design
+        sans: ['"Plus Jakarta Sans"', 'Manrope', 'sans-serif'], 
+        display: ['Manrope', 'sans-serif'], 
 
         mono: [
           'JetBrains Mono',

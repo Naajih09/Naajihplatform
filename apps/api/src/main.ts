@@ -15,10 +15,15 @@ async function bootstrap() {
 
   //  UNLOCK THE DOOR (Allow React to talk to NestJS)
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:6000',
-    credential: true,
+    // We allow BOTH ports (Mentor's 6000 and your working 3001)
+    origin: [
+      'http://localhost:3001', 
+      'http://localhost:6000', 
+      process.env.FRONTEND_URL
+    ].filter(Boolean), // This cleans up empty values
+    credentials: true, // Note: I fixed a small typo here (credential -> credentials)
   });
-
+  
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

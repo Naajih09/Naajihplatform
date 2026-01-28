@@ -30,6 +30,13 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  // 6. GET DASHBOARD STATS (GET /users/stats/:id)
+  // ** IMPORTANT: This must come BEFORE the ':email' or ':id' routes to avoid conflict
+  @Get('stats/:id')
+  getStats(@Param('id') id: string) {
+    return this.usersService.getDashboardStats(id);
+  }
+
   // 4. FIND ONE USER BY EMAIL (GET /users/:email)
   @Get(':email')
   findOne(@Param('email') email: string) {
@@ -37,7 +44,6 @@ export class UsersController {
   }
 
   // 5. UPDATE PROFILE (PATCH /users/:id)
-  // This is the new part for the Profile Page!
   @Patch(':id')
   update(@Param('id') id: string, @Body() body: any) {
     return this.usersService.update(id, body);

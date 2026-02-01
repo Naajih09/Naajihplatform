@@ -2,17 +2,19 @@ import React from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 
-const ThemeToggle = ({ className = "" }: { className?: string }) => {
+const ThemeToggle = () => {
   const { theme, toggleTheme } = useTheme();
 
   return (
     <button
       onClick={toggleTheme}
-      className={`p-2 rounded-lg border transition-all duration-300 
-      ${theme === 'dark' 
-        ? 'bg-white/10 border-white/10 text-primary hover:bg-white/20' 
-        : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
-      } ${className}`}
+      className={`
+        p-2 rounded-lg border transition-all duration-300
+        ${theme === 'dark' 
+          ? 'bg-[#1d1d20] border-gray-700 text-yellow-400 hover:bg-gray-800' 
+          : 'bg-white border-gray-200 text-orange-500 hover:bg-gray-50 shadow-sm'
+        }
+      `}
       aria-label="Toggle Theme"
     >
       {theme === 'dark' ? (

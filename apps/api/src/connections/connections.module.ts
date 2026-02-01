@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConnectionsService } from './connections.service';
 import { ConnectionsController } from './connections.controller';
-import { PrismaService } from 'src/prisma.service';
-
+import { DatabaseModule } from '../database/database.module'; // <--- Import this
 
 @Module({
+  imports: [DatabaseModule], // <--- Add this line!
   controllers: [ConnectionsController],
-  providers: [ConnectionsService, PrismaService],
+  providers: [ConnectionsService],
 })
 export class ConnectionsModule {}

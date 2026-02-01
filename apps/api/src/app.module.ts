@@ -5,7 +5,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { ConnectionsModule } from './connections/connections.module';
 import { DatabaseModule } from './database/database.module';
 import { PitchesModule } from './pitches/pitches.module';
-import { UsersModule } from './users/users.module'; // <--- Import this
+import { UsersModule } from './users/users.module'; 
 
 @Module({
   imports: [

@@ -1,22 +1,31 @@
 import { useEffect, useState } from 'react';
 
 export function useTheme() {
-  // 1. Check Local Storage or System Preference
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('theme')) {
-      return localStorage.getItem('theme');
+  // 1. Initialize state from LocalStorage or System Preference
+  const [theme, setTheme] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const storedTheme = localStorage.getItem('theme');
+      if (storedTheme) {
+        return storedTheme;
+      }
+      // Default to dark for Stitch design
+      return 'dark';
     }
-    return 'dark'; // Default to Dark mode for Stitch design
+    return 'dark';
   });
 
-  // 2. Apply the class to the HTML tag
+  // 2. Apply the class to the <HTML> tag whenever theme changes
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(theme || 'dark'); // Add the current theme class
     
-    // Save preference
-    localStorage.setItem('theme', theme || 'dark');
+    // Remove both classes first to be safe
+    root.classList.remove('light', 'dark');
+    
+    // Add the active class
+    root.classList.add(theme);
+    
+    // Save to storage
+    localStorage.setItem('theme', theme);
   }, [theme]);
 
   // 3. Toggle Function

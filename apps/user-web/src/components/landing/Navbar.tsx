@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Landmark, Menu, X } from 'lucide-react';
-import ThemeToggle from '../ThemeToggle'; // Ensure this path points to where you saved ThemeToggle.tsx
-
+import ThemeToggle from '../ThemeToggle'; 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 

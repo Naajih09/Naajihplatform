@@ -14,7 +14,7 @@ datasource db {
   provider = "postgresql"
   // This reads the link from your apps/api/.env file
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+ // directUrl = env("DIRECT_URL")
 }
 
 

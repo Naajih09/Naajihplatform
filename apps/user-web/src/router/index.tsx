@@ -1,5 +1,5 @@
 import BlankLayout from '@/layouts/blank-layout';
-import DashboardLayout from '@/layouts/dashboard-layout';
+import DashboardLayout from '@/layouts/DashboardLayout';
 import { createBrowserRouter } from 'react-router-dom';
 import { ErrorBoundaryFallback } from '../../../../packages/ui/src';
 import { routes } from './routes';

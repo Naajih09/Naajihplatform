@@ -8,16 +8,15 @@ const Signup = lazy(() => import('../pages/auth/Signup'));
 // --- Dashboard Pages ---
 const DashboardHome = lazy(() => import('../pages/dashboard/DashboardHome'));
 const Opportunities = lazy(() => import('../pages/dashboard/Opportunities'));
+const PitchDetails = lazy(() => import('../pages/dashboard/PitchDetails')); // <--- IMPORT THIS
 const Profile = lazy(() => import('../pages/dashboard/Profile'));
 const CreatePitch = lazy(() => import('../pages/dashboard/CreatePitch'));
-
-// --- NEW PAGES ADDED HERE ---
 const Connections = lazy(() => import('../pages/dashboard/Connections'));
 const Messages = lazy(() => import('../pages/dashboard/Messages'));
 const Settings = lazy(() => import('../pages/dashboard/Settings'));
 
 const routes = [
-  // --- Public Routes (No Sidebar) ---
+  // --- Public Routes ---
   {
     path: '/',
     element: <HomePage />,
@@ -34,7 +33,7 @@ const routes = [
     layout: 'blank',
   },
 
-  // --- Authenticated Routes (With Sidebar) ---
+  // --- Authenticated Dashboard Routes ---
   {
     path: 'dashboard',
     element: <DashboardHome />,
@@ -45,6 +44,13 @@ const routes = [
     element: <Opportunities />,
     layout: 'dashboard',
   },
+  // --- NEW: DYNAMIC PITCH DETAILS ROUTE ---
+  {
+    path: 'dashboard/opportunities/:id', // The :id captures the pitch ID
+    element: <PitchDetails />,
+    layout: 'dashboard',
+  },
+  // ----------------------------------------
   {
     path: 'dashboard/profile',
     element: <Profile />,
@@ -55,8 +61,6 @@ const routes = [
     element: <CreatePitch />,
     layout: 'dashboard',
   },
-  
-  // --- NEW ROUTES WIRED UP ---
   {
     path: 'dashboard/connections',
     element: <Connections />,

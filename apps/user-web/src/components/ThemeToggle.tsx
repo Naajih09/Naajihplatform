@@ -3,25 +3,22 @@ import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 
 const ThemeToggle = () => {
-  const { theme, toggleTheme } = useTheme();
+  const { toggleTheme } = useTheme();
 
   return (
     <button
       onClick={toggleTheme}
-      className={`
+      className="
         p-2 rounded-lg border transition-all duration-300
-        ${theme === 'dark' 
-          ? 'bg-[#1d1d20] border-gray-700 text-yellow-400 hover:bg-gray-800' 
-          : 'bg-white border-gray-200 text-orange-500 hover:bg-gray-50 shadow-sm'
-        }
-      `}
+        bg-white text-orange-500 border-gray-200 shadow-sm
+        hover:bg-gray-50
+        dark:bg-slate-800 dark:text-yellow-400 dark:border-slate-700
+        dark:hover:bg-slate-700
+      "
       aria-label="Toggle Theme"
     >
-      {theme === 'dark' ? (
-        <Sun size={20} className="animate-in spin-in-90 duration-300" />
-      ) : (
-        <Moon size={20} className="animate-in spin-in-90 duration-300" />
-      )}
+      <Sun className="block dark:hidden" size={20} />
+      <Moon className="hidden dark:block" size={20} />
     </button>
   );
 };

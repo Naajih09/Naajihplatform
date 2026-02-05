@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Search, Filter, MapPin, TrendingUp, DollarSign, Clock, 
-  ChevronDown, Verified, Plus, X, UserPlus, CheckCircle 
+  ChevronDown, Verified, Plus, X, UserPlus, CheckCircle, Loader2
 } from 'lucide-react';
 import Button from '../../components/Button';
+import { Link } from 'react-router-dom';
 
 const Opportunities = () => {
   const [pitches, setPitches] = useState<any[]>([]);
@@ -55,7 +56,7 @@ const Opportunities = () => {
   };
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-8 pb-20">
+    <div className="max-w-[1440px] mx-auto space-y-8 pb-20 text-white font-sans">
       
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
@@ -125,9 +126,11 @@ const Opportunities = () => {
               </div>
 
               <div className="flex gap-3 mt-auto pt-4 border-t border-slate-200 dark:border-white/5">
-                <button className="flex-1 py-2.5 rounded-lg border border-primary/40 text-primary text-xs font-bold hover:bg-primary/5 transition-colors">
-                    View Details
-                </button>
+                <Link to={`/dashboard/opportunities/${pitch.id}`} className="flex-1">
+                  <button className="w-full py-2.5 rounded-lg border border-primary/40 text-primary text-xs font-bold hover:bg-primary/5 transition-colors">
+                      View Details
+                  </button>
+                </Link>
                 {user.role === 'INVESTOR' && (
                     <button 
                         onClick={() => handleConnect(pitch)}
@@ -196,7 +199,6 @@ const CreatePitchModal = ({ onClose, onSuccess, userId }: any) => {
         <div className="p-6 border-b border-slate-200 dark:border-gray-800 flex justify-between items-center sticky top-0 bg-white dark:bg-[#1d1d20] z-10">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create New Pitch</h2>
           
-          {/* FIX 1: ADD ARIA-LABEL TO CLOSE BUTTON */}
           <button onClick={onClose} className="text-slate-500 hover:text-red-500" aria-label="Close modal">
             <X size={24} />
           </button>
@@ -210,7 +212,6 @@ const CreatePitchModal = ({ onClose, onSuccess, userId }: any) => {
             </div>
             <div>
                 <label className={labelStyle}>Industry</label>
-                {/* FIX 2: ADD ARIA-LABEL TO SELECT */}
                 <select className={inputStyle} onChange={e => setFormData({...formData, category: e.target.value})} aria-label="Select Industry">
                     <option>FinTech</option><option>AgriTech</option><option>HealthTech</option><option>Retail</option>
                 </select>
@@ -224,13 +225,11 @@ const CreatePitchModal = ({ onClose, onSuccess, userId }: any) => {
           
           <div>
             <label className={labelStyle}>Problem Statement</label>
-            {/* FIX 3: ADD ARIA-LABEL TO TEXTAREA */}
             <textarea required className={`${inputStyle} h-24`} onChange={e => setFormData({...formData, problemStatement: e.target.value})} aria-label="Problem Statement"></textarea>
           </div>
 
           <div>
             <label className={labelStyle}>Solution</label>
-            {/* FIX 4: ADD ARIA-LABEL TO TEXTAREA */}
             <textarea required className={`${inputStyle} h-24`} onChange={e => setFormData({...formData, solution: e.target.value})} aria-label="Solution"></textarea>
           </div>
           

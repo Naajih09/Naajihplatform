@@ -6,12 +6,13 @@ import { ConnectionsModule } from './connections/connections.module';
 import { DatabaseModule } from './database/database.module';
 import { PitchesModule } from './pitches/pitches.module';
 import { UsersModule } from './users/users.module'; 
+import { CloudinaryModule } from './cloudinary/cloudinary.module'; 
+
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      // envFilePath: '.env',
     }),
     DatabaseModule,
     ThrottlerModule.forRoot([
@@ -29,6 +30,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     PitchesModule,
     ConnectionsModule,
+    CloudinaryModule,
   ], // <--- Add this here!
   controllers: [],
   providers: [

@@ -117,7 +117,8 @@ model Pitch {
   traction         String   
   marketSize       String   
   fundingAsk       String   
-  equityOffer      String   
+  equityOffer      String 
+  category         String  
   pitchDeckUrl     String?  
   
   createdAt        DateTime @default(now())

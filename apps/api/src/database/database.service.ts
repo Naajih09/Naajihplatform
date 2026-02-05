@@ -6,13 +6,6 @@ export class DatabaseService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
-  // private readonly sql;
-
-  // constructor(private configService: ConfigService) {
-  //   const databaseUrl = this.configService.get('DATABASE_URL');
-  //   this.sql = neon(databaseUrl);
-  // }
-
   async onModuleInit() {
     console.log('🟢 Connected to DB:', process.env.DATABASE_URL);
     await this.$connect();
@@ -25,8 +18,4 @@ export class DatabaseService
   async onModuleDestroy() {
     await this.$disconnect();
   }
-  // async getData() {
-  //   const data = await this.sql`...`;
-  //   return data;
-  // }
 }

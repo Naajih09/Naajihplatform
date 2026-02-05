@@ -7,6 +7,8 @@ import { DatabaseModule } from './database/database.module';
 import { PitchesModule } from './pitches/pitches.module';
 import { UsersModule } from './users/users.module'; 
 import { CloudinaryModule } from './cloudinary/cloudinary.module'; 
+import { MessagesModule } from './messages/messages.module';
+import { CloudinaryController } from './cloudinary/cloudinary.controller';
 
 
 @Module({
@@ -31,7 +33,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     PitchesModule,
     ConnectionsModule,
     CloudinaryModule,
-  ], // <--- Add this here!
+    MessagesModule,
+  ], 
   controllers: [],
   providers: [
     {

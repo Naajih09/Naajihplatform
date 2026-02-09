@@ -4,7 +4,6 @@ import { Rocket, Network, ShieldCheck, History, UserSearch, Mail, CheckCircle, T
 const DashboardHome = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   
-  // 1. STATE FOR REAL DATA
   const [stats, setStats] = useState({
     activePitches: 0,
     pendingConnections: 0,
@@ -44,38 +43,36 @@ const DashboardHome = () => {
         </div>
       </div>
 
-      {/* Bento Grid - NOW USING REAL VARIABLES */}
+      {/* Bento Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
         
-        {/* Active Pitches (REAL) */}
+        {/* Active Pitches  */}
         <div className="bg-white dark:bg-[#151518] p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between min-h-[160px]">
           <div className="flex justify-between items-start">
             <Rocket className="text-primary" size={32} />
           </div>
           <div>
             <p className="text-neutral-muted text-xs font-bold uppercase tracking-wider">Active Pitches</p>
-            {/* HERE IS THE REAL NUMBER */}
             <h3 className="text-4xl font-black mt-1 dark:text-white">
               {loading ? '...' : stats.activePitches}
             </h3>
           </div>
         </div>
 
-        {/* Pending Connections (REAL) */}
+        {/* Pending Connections  */}
         <div className="bg-white dark:bg-[#151518] p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between min-h-[160px]">
           <div className="flex justify-between items-start">
             <Network className="text-primary" size={32} />
           </div>
           <div>
             <p className="text-neutral-muted text-xs font-bold uppercase tracking-wider">Pending Connections</p>
-            {/* HERE IS THE REAL NUMBER */}
             <h3 className="text-4xl font-black mt-1 dark:text-white">
               {loading ? '...' : stats.pendingConnections}
             </h3>
           </div>
         </div>
 
-        {/* Verification Card (REAL LOGIC) */}
+        {/* Verification Card  */}
         <div className="col-span-1 md:col-span-1 lg:col-span-2 bg-neutral-dark dark:bg-black p-6 rounded-2xl border border-gray-800 shadow-xl flex flex-col justify-between">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
@@ -99,7 +96,7 @@ const DashboardHome = () => {
         </div>
       </div>
 
-      {/* ... (Keep the Chart and Activity Feed as placeholders for now) ... */}
+      {/* ... (Keeping the Chart and Activity Feed as placeholders for now) ... */}
       
     </div>
   );

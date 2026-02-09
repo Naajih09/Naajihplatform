@@ -13,15 +13,13 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
   app.setGlobalPrefix(process.env.API_PREFIX || 'api');
 
-  //  UNLOCK THE DOOR (Allow React to talk to NestJS)
   app.enableCors({
-    // We allow BOTH ports (Mentor's 6000 and your working 3001)
     origin: [
       'http://localhost:3001', 
       'http://localhost:6000', 
       process.env.FRONTEND_URL
-    ].filter(Boolean), // This cleans up empty values
-    credentials: true, // Note: I fixed a small typo here (credential -> credentials)
+    ].filter(Boolean), 
+    credentials: true, 
   });
   
   app.useGlobalPipes(

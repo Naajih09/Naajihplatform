@@ -12,7 +12,7 @@ const PitchDetails = lazy(() => import('../pages/dashboard/PitchDetails')); // <
 const Profile = lazy(() => import('../pages/dashboard/Profile'));
 const CreatePitch = lazy(() => import('../pages/dashboard/CreatePitch'));
 const Connections = lazy(() => import('../pages/dashboard/Connections'));
-const Messages = lazy(() => import('../pages/dashboard/Messages'));
+const Messages = lazy(() => import('../pages/dashboard/Messages').then(module => ({ default: module.default })));
 const Settings = lazy(() => import('../pages/dashboard/Settings'));
 
 const routes = [
@@ -46,11 +46,10 @@ const routes = [
   },
   // --- NEW: DYNAMIC PITCH DETAILS ROUTE ---
   {
-    path: 'dashboard/opportunities/:id', // The :id captures the pitch ID
+    path: 'dashboard/opportunities/:id', 
     element: <PitchDetails />,
     layout: 'dashboard',
   },
-  // ----------------------------------------
   {
     path: 'dashboard/profile',
     element: <Profile />,

@@ -9,7 +9,6 @@ export function useTheme() {
   useEffect(() => {
     const root = document.documentElement;
 
-    // ONLY control dark mode
     if (theme === 'dark') {
       root.classList.add('dark');
     } else {

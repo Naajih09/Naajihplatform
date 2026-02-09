@@ -61,7 +61,6 @@ const PitchDetails = () => {
   return (
     <div className="max-w-4xl mx-auto pb-20 font-sans text-white">
       
-      {/* Back Button */}
       <button onClick={() => navigate('/dashboard/opportunities')} className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors">
         <ArrowLeft size={18} /> Back to Feed
       </button>
@@ -78,7 +77,6 @@ const PitchDetails = () => {
             <p className="text-lg text-gray-400">{pitch.tagline}</p>
           </div>
           
-          {/* Download Deck Button */}
           {pitch.pitchDeckUrl && (
             <a href={pitch.pitchDeckUrl} target="_blank" rel="noreferrer" className="w-full md:w-auto">
               <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-black w-full md:w-auto">

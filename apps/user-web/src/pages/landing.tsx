@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react'; // Import icons for mobile menu
+import { Menu, X } from 'lucide-react'; 
 
 const Landing = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -47,7 +47,6 @@ const Landing = () => {
           </button>
         </div>
 
-        {/* --- MOBILE MENU OVERLAY --- */}
         {isMobileMenuOpen && (
           <div className="fixed inset-0 bg-background-dark z-40 flex flex-col items-center justify-center space-y-8 animate-in slide-in-from-top duration-300">
             {['How it Works', 'Benefits', 'Halal & Trust', 'About'].map((item) => (
@@ -81,7 +80,6 @@ const Landing = () => {
               Now Live in Nigeria
             </div>
             
-            {/* Responsive Heading: Smaller on mobile */}
             <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold leading-[1.1] text-slate-900 dark:text-white mb-6 tracking-tight">
               Enabling <span className="text-primary">Halal</span> Business Growth
             </h1>
@@ -221,7 +219,7 @@ const Landing = () => {
         <div className="max-w-[1200px] mx-auto px-6 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-3xl md:text-4xl font-extrabold mb-8 tracking-tight text-white">Financial Ethics, <span class="text-primary">Redefined.</span></h2>
+              <h2 className="text-3xl md:text-4xl font-extrabold mb-8 tracking-tight text-white">Financial Ethics, <span className="text-primary">Redefined.</span></h2>
               <p className="text-slate-400 text-lg mb-10 leading-relaxed">
                 We operate strictly under the principles of Islamic Finance. No usury (Riba), no uncertainty (Gharar), only real growth.
               </p>
@@ -243,8 +241,8 @@ const Landing = () => {
               <img className="rounded-2xl shadow-2xl grayscale hover:grayscale-0 transition-all duration-700 w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNyhFRT-NvKu_cs3m4ZHZWmV14QSXf7kMs5BmT4hSVZCvnNu57Zg4BAO5P21IpnkAQf0iqGqc-YkBHQYCXH7FFoyjey2gnl1-V0805kkpnGveF4dDGgdqOV3qpPAohi_sIqk4xln-1nGITKewba__xC6depBmTOJcSRNvFD6GSTkMU0kLjMHxuOnmpam_3zOUP3CPLSfu2u2El0fFdecNkDSNIlq6h7qbS-q9JpLPzy7etnDj8VH2WezZZnjDIGIysCBvFUcq-QK4" alt="Trust" />
               <div className="absolute -bottom-6 -left-6 md:-bottom-10 md:-left-10 bg-primary p-6 md:p-8 rounded-2xl text-background-dark max-w-[240px] md:max-w-[280px]">
                 <span className="material-symbols-outlined text-4xl mb-4">verified_user</span>
-                <h4 class="text-xl font-900 mb-2">Certified Compliance</h4>
-                <p class="text-sm font-bold opacity-80">Our Sharia Supervisory Board audits every transaction model monthly.</p>
+                <h4 className="text-xl font-900 mb-2">Certified Compliance</h4>
+                <p className="text-sm font-bold opacity-80">Our Sharia Supervisory Board audits every transaction model monthly.</p>
               </div>
             </div>
           </div>

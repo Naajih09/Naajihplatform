@@ -1,121 +1,97 @@
 import { Injectable } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
-import * as bcrypt from 'bcryptjs';
+import { Prisma, UserRole } from '@prisma/client';
+import { DatabaseService } from '../database/database.service';
 
-import { DatabaseService } from 'src/database/database.service';
-// Ensure these DTO files exist in your project structure, 
-// otherwise change CreateUserDto/UpdateUserDto to 'any'
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+interface CreateUserDto {
+  email: string;
+  password: string;
+  role: UserRole;
+  firstName: string;
+  lastName: string;
+}
 
 @Injectable()
 export class UsersService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  // 1. SIGNUP (Create User + Profile)
+  // 1. SIGNUP
   async create(createUserDto: CreateUserDto) {
     const { email, password, role, firstName, lastName } = createUserDto;
 
-    // 🔐 Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Role-based profile creation
     let profileData = {};
-
     if (role === UserRole.ENTREPRENEUR) {
-      profileData = {
-        entrepreneurProfile: {
-          create: { firstName, lastName },
-        },
-      };
+      profileData = { entrepreneurProfile: { create: { firstName, lastName } } };
     } else if (role === UserRole.INVESTOR) {
-      profileData = {
-        investorProfile: {
-          create: { firstName, lastName },
-        },
-      };
+      profileData = { investorProfile: { create: { firstName, lastName } } };
     } else {
-      // ASPIRING_BUSINESS_OWNER (default behavior)
-      profileData = {
-        entrepreneurProfile: {
-          create: { firstName, lastName },
-        },
-      };
+      profileData = { entrepreneurProfile: { create: { firstName, lastName } } };
     }
 
     return this.databaseService.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        role,
-        ...profileData,
-      },
-      include: {
-        entrepreneurProfile: true,
-        investorProfile: true,
-      },
+      data: { email, password, role, ...profileData },
     });
   }
 
-  // 2. LOGIN (Password verification)
+  // 2. LOGIN
   async login(email: string, password: string) {
     const user = await this.databaseService.user.findUnique({
       where: { email },
-      include: {
-        entrepreneurProfile: true,
-        investorProfile: true,
-      },
+      include: { entrepreneurProfile: true, investorProfile: true },
     });
 
     if (!user) return null;
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) return null;
+    if (user.password !== password) return null;
 
     return user;
   }
 
-  // 3. FIND ALL USERS
+  // 3. FIND ALL
   async findAll() {
     return this.databaseService.user.findMany({
-      include: {
-        entrepreneurProfile: true,
-        investorProfile: true,
-      },
+      include: { entrepreneurProfile: true, investorProfile: true },
     });
   }
 
-  // 4. FIND ONE USER
+  // 4. FIND ONE
   async findOne(email: string) {
     return this.databaseService.user.findUnique({
       where: { email },
-      include: {
-        entrepreneurProfile: true,
-        investorProfile: true,
-      },
+      include: { entrepreneurProfile: true, investorProfile: true },
     });
   }
 
-  // 5. UPDATE USER + PROFILE (Safe Upsert)
-  async update(id: string, updateUserDto: UpdateUserDto) {
-    const { entrepreneurProfile, investorProfile, ...userData } = updateUserDto;
+  // 5. UPDATE PROFILE (Fixed to remove system fields)
+  async update(id: string, data: any) {
+    const { entrepreneurProfile, investorProfile, ...userData } = data;
 
     const updateData: any = { ...userData };
 
+    // --- FIX FOR ENTREPRENEUR ---
     if (entrepreneurProfile) {
+      // Destructure to remove 'id' and 'userId' so Prisma doesn't complain
+      const { id: _id, userId: _uid, ...cleanData } = entrepreneurProfile;
+      
       updateData.entrepreneurProfile = {
         upsert: {
-          create: entrepreneurProfile,
-          update: entrepreneurProfile,
+          create: cleanData,
+          update: cleanData,
         },
       };
     }
 
+    // --- FIX FOR INVESTOR ---
     if (investorProfile) {
+      // Destructure to remove 'id' and 'userId'
+      const { id: _id, userId: _uid, ...cleanData } = investorProfile;
+
+      // Ensure numbers are numbers
+      if (cleanData.minTicketSize) cleanData.minTicketSize = Number(cleanData.minTicketSize);
+      if (cleanData.maxTicketSize) cleanData.maxTicketSize = Number(cleanData.maxTicketSize);
+
       updateData.investorProfile = {
         upsert: {
-          create: investorProfile,
-          update: investorProfile,
+          create: cleanData,
+          update: cleanData,
         },
       };
     }
@@ -123,21 +99,15 @@ export class UsersService {
     return this.databaseService.user.update({
       where: { id },
       data: updateData,
-      include: {
-        entrepreneurProfile: true,
-        investorProfile: true,
-      },
+      include: { entrepreneurProfile: true, investorProfile: true },
     });
   }
-
-  // 6. GET REAL DASHBOARD STATS (Fixed to use databaseService)
+  // 6. GET DASHBOARD STATS (Restored)
   async getDashboardStats(userId: string) {
-    // Count actual pitches in database
     const pitchCount = await this.databaseService.pitch.count({
       where: { userId: userId }
     });
 
-    // Count pending connections (requests sent to me)
     const connectionCount = await this.databaseService.connection.count({
       where: { 
         receiverId: userId,
@@ -145,7 +115,6 @@ export class UsersService {
       }
     });
 
-    // Check verification status
     const user = await this.databaseService.user.findUnique({
       where: { id: userId },
       select: { isVerified: true } 

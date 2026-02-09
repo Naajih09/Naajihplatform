@@ -7,12 +7,12 @@ import {
 import ThemeToggle from '../components/ThemeToggle';
 import Opportunities from '@/pages/dashboard/Opportunities';
 
-// 1. DEFINE THE TYPES (The Fix)
+
 interface DashboardLayoutProps {
-  children?: React.ReactNode; // This tells TS: "I can accept content inside me"
+  children?: React.ReactNode; 
 }
 
-// 2. USE THE PROPS
+// 2. USE of PROPS
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();

@@ -25,14 +25,14 @@ export class MessagesService {
           { senderId: user2, receiverId: user1 },
         ],
       },
-      orderBy: { createdAt: 'asc' }, // Oldest first (like WhatsApp)
+      orderBy: { createdAt: 'asc' }, 
       include: {
         sender: { include: { entrepreneurProfile: true, investorProfile: true } }
       }
     });
   }
 
-  // 3. GET MY CHAT LIST (People I have talked to)
+  // 3. GET MY CHAT LIST 
   async getMyChatPartners(userId: string) {
     // Find all connections where status is ACCEPTED
     return this.databaseService.connection.findMany({

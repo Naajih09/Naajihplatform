@@ -126,7 +126,6 @@ const CreatePitch = () => {
             </div>
             <div>
                 <label className={labelStyles}>Industry</label>
-                {/* FIX 1: ADDED ARIA-LABEL */}
                 <select name="category" className={inputStyles} onChange={handleChange} aria-label="Select Industry">
                     <option value="FinTech">FinTech</option>
                     <option value="AgriTech">AgriTech</option>
@@ -201,7 +200,6 @@ const CreatePitch = () => {
                 <label className={labelStyles}>Funding Ask (₦)</label>
                 <div className="relative">
                     <DollarSign className="absolute left-3 top-3.5 text-primary" size={18} />
-                    {/* FIX 2: ADDED ARIA-LABEL */}
                     <input name="fundingAsk" type="number" required onChange={handleChange} className={`${inputStyles} pl-10 border-primary/30`} aria-label="Funding Ask Amount" />
                 </div>
             </div>
@@ -209,7 +207,6 @@ const CreatePitch = () => {
                 <label className={labelStyles}>Equity Offer (%)</label>
                 <div className="relative">
                     <PieChart className="absolute left-3 top-3.5 text-primary" size={18} />
-                    {/* FIX 3: ADDED ARIA-LABEL */}
                     <input name="equityOffer" type="text" required onChange={handleChange} className={`${inputStyles} pl-10 border-primary/30`} aria-label="Equity Offer Percentage" />
                 </div>
             </div>

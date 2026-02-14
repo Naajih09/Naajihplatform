@@ -9,6 +9,8 @@ import { UsersModule } from './users/users.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module'; 
 import { MessagesModule } from './messages/messages.module';
 import { CloudinaryController } from './cloudinary/cloudinary.controller';
+import { VerificationModule } from './verification/verification.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 
 @Module({
@@ -34,6 +36,8 @@ import { CloudinaryController } from './cloudinary/cloudinary.controller';
     ConnectionsModule,
     CloudinaryModule,
     MessagesModule,
+    VerificationModule,
+    NotificationsModule,
   ], 
   controllers: [],
   providers: [

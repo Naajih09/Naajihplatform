@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Param, HttpException, HttpStatus, Patch } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { Delete } from '@nestjs/common';
 
 @Controller('users')
 export class UsersController {
@@ -47,5 +48,16 @@ export class UsersController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() body: any) {
     return this.usersService.update(id, body);
+  }
+  // PATCH /api/users/password/:id
+  @Patch('password/:id')
+  changePassword(@Param('id') id: string, @Body() body: any) {
+    return this.usersService.changePassword(id, body.password);
+  }
+
+  // DELETE /api/users/:id
+  @Delete(':id') // Add 'Delete' to imports from @nestjs/common
+  deleteUser(@Param('id') id: string) {
+    return this.usersService.deleteUser(id);
   }
 }

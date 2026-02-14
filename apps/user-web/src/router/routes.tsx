@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import Verification from '../pages/dashboard/Verification';
 
 // --- Public Pages ---
 const HomePage = lazy(() => import('../pages/landing'));
@@ -8,12 +9,13 @@ const Signup = lazy(() => import('../pages/auth/Signup'));
 // --- Dashboard Pages ---
 const DashboardHome = lazy(() => import('../pages/dashboard/DashboardHome'));
 const Opportunities = lazy(() => import('../pages/dashboard/Opportunities'));
-const PitchDetails = lazy(() => import('../pages/dashboard/PitchDetails')); // <--- IMPORT THIS
+const PitchDetails = lazy(() => import('../pages/dashboard/PitchDetails')); 
 const Profile = lazy(() => import('../pages/dashboard/Profile'));
 const CreatePitch = lazy(() => import('../pages/dashboard/CreatePitch'));
 const Connections = lazy(() => import('../pages/dashboard/Connections'));
 const Messages = lazy(() => import('../pages/dashboard/Messages').then(module => ({ default: module.default })));
 const Settings = lazy(() => import('../pages/dashboard/Settings'));
+const verification = lazy(() => import('../pages/dashboard/Verification'));
 
 const routes = [
   // --- Public Routes ---
@@ -39,6 +41,11 @@ const routes = [
     element: <DashboardHome />,
     layout: 'dashboard',
   },
+  {
+  path: 'dashboard/verification',
+  element: <Verification />,
+  layout: 'dashboard',
+},
   {
     path: 'dashboard/opportunities',
     element: <Opportunities />,

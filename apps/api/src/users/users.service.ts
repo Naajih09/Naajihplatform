@@ -34,15 +34,20 @@ export class UsersService {
 
   // 2. LOGIN
   async login(email: string, password: string) {
-    const user = await this.databaseService.user.findUnique({
-      where: { email },
-      include: { entrepreneurProfile: true, investorProfile: true },
-    });
+    try {
+      const user = await this.databaseService.user.findUnique({
+        where: { email },
+        include: { entrepreneurProfile: true, investorProfile: true },
+      });
 
-    if (!user) return null;
-    if (user.password !== password) return null;
+      if (!user) return null;
+      if (user.password !== password) return null;
 
-    return user;
+      return user;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
   // 3. FIND ALL
@@ -60,39 +65,25 @@ export class UsersService {
     });
   }
 
-  // 5. UPDATE PROFILE (Fixed to remove system fields)
+  // 5. UPDATE PROFILE
   async update(id: string, data: any) {
     const { entrepreneurProfile, investorProfile, ...userData } = data;
-
     const updateData: any = { ...userData };
 
-    // --- FIX FOR ENTREPRENEUR ---
     if (entrepreneurProfile) {
-      // Destructure to remove 'id' and 'userId' so Prisma doesn't complain
       const { id: _id, userId: _uid, ...cleanData } = entrepreneurProfile;
-      
       updateData.entrepreneurProfile = {
-        upsert: {
-          create: cleanData,
-          update: cleanData,
-        },
+        upsert: { create: cleanData, update: cleanData },
       };
     }
 
-    // --- FIX FOR INVESTOR ---
     if (investorProfile) {
-      // Destructure to remove 'id' and 'userId'
       const { id: _id, userId: _uid, ...cleanData } = investorProfile;
-
-      // Ensure numbers are numbers
       if (cleanData.minTicketSize) cleanData.minTicketSize = Number(cleanData.minTicketSize);
       if (cleanData.maxTicketSize) cleanData.maxTicketSize = Number(cleanData.maxTicketSize);
 
       updateData.investorProfile = {
-        upsert: {
-          create: cleanData,
-          update: cleanData,
-        },
+        upsert: { create: cleanData, update: cleanData },
       };
     }
 
@@ -102,7 +93,8 @@ export class UsersService {
       include: { entrepreneurProfile: true, investorProfile: true },
     });
   }
-  // 6. GET DASHBOARD STATS (Restored)
+
+  // 6. DASHBOARD STATS
   async getDashboardStats(userId: string) {
     const pitchCount = await this.databaseService.pitch.count({
       where: { userId: userId }
@@ -127,4 +119,22 @@ export class UsersService {
       totalViews: 0 
     };
   }
-}
+
+  // 7. CHANGE PASSWORD (New)
+  async changePassword(id: string, newPassword: string) {
+    return this.databaseService.user.update({
+      where: { id },
+      data: { password: newPassword },
+    });
+  }
+
+  // 8. DELETE ACCOUNT (New)
+  async deleteUser(id: string) {
+    try {
+      return await this.databaseService.user.delete({ where: { id } });
+    } catch (error) {
+      throw new Error("Could not delete user. Check active connections.");
+    }
+  }
+
+} // <--- CLASS ENDS HERE

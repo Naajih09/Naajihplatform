@@ -59,36 +59,45 @@ const Profile = () => {
 
   const getProfile = () => user.entrepreneurProfile || user.investorProfile || {};
 
+  const inputStyle = "w-full p-3 bg-slate-50 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded-xl text-slate-900 dark:text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-400";
+  const labelStyle = "block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2";
+
   return (
-    <div className="max-w-[1200px] mx-auto pb-20 font-sans text-white">
+    <div className="max-w-[1200px] mx-auto pb-20 font-sans text-slate-900 dark:text-white">
       
+      <div className="flex items-center justify-between mb-8">
+        <div>
+           <h1 className="text-3xl font-black tracking-tight">My Profile</h1>
+           <p className="text-slate-500 dark:text-gray-400 mt-1">Manage your public identity and business details.</p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* --- LEFT SIDEBAR (Stats) --- */}
         <aside className="lg:col-span-4 flex flex-col gap-6 order-2 lg:order-1">
-          <div className="bg-[#1d1f23]/50 backdrop-blur-md border border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-[#1d1f23]/50 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
             <h3 className="text-primary text-sm font-bold uppercase tracking-widest mb-4">Interests</h3>
             <div className="flex flex-wrap gap-2">
               {['#HalalTech', '#AgriBusiness', '#SaaS', '#IslamicFinance'].map(tag => (
-                <span key={tag} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-white/80">{tag}</span>
+                <span key={tag} className="px-3 py-1 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full text-xs text-slate-600 dark:text-white/80">{tag}</span>
               ))}
             </div>
           </div>
 
-          <div className="bg-[#1d1f23]/50 backdrop-blur-md border border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-[#1d1f23]/50 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
              <h3 className="text-primary text-sm font-bold uppercase tracking-widest mb-4">Activity</h3>
-             <div className="text-sm text-gray-400">No recent activity</div>
+             <div className="text-sm text-slate-500 dark:text-gray-400">No recent activity</div>
           </div>
         </aside>
 
         {/* --- MAIN PROFILE --- */}
         <div className="lg:col-span-8 flex flex-col gap-6 order-1 lg:order-2">
           
-          {/* Header Card */}
-          <div className="bg-gradient-to-br from-[#1a2214] to-[#131315] border-l-4 border-l-primary rounded-xl p-8 shadow-lg relative">
+          <div className="bg-gradient-to-br from-slate-900 to-[#131315] border-l-4 border-l-primary rounded-xl p-8 shadow-lg relative text-white">
             <button 
               onClick={() => setIsEditing(!isEditing)} 
-              className="absolute top-6 right-6 p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-all"
+              className="absolute top-6 right-6 p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-all text-white"
               aria-label="Edit Profile"
             >
               {isEditing ? <X size={20} /> : <Edit3 size={20} />}
@@ -112,7 +121,7 @@ const Profile = () => {
                   {user.role}
                 </div>
                 
-                <div className="flex flex-wrap justify-center md:justify-start gap-4 text-[#abb89d] text-sm">
+                <div className="flex flex-wrap justify-center md:justify-start gap-4 text-gray-400 text-sm">
                   <span className="flex items-center gap-1"><MapPin size={16}/> {getProfile().location || 'Nigeria'}</span>
                   <span className="flex items-center gap-1 text-primary"><ShieldCheck size={16}/> Sharia Compliant</span>
                 </div>
@@ -122,17 +131,17 @@ const Profile = () => {
 
           {/* --- EDIT MODE FORM --- */}
           {isEditing ? (
-            <div className="bg-[#1d1f23] border border-white/10 rounded-xl p-8 animate-in fade-in slide-in-from-top-4">
-               <h3 className="text-xl font-bold mb-6">Edit Profile</h3>
+            <div className="bg-white dark:bg-[#1d1f23] border border-slate-200 dark:border-white/10 rounded-xl p-8 animate-in fade-in slide-in-from-top-4 shadow-sm">
+               <h3 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">Edit Profile</h3>
                <form onSubmit={handleUpdate} className="space-y-6">
                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="text-xs text-gray-500 uppercase font-bold">First Name</label>
-                        <input aria-label="First Name" className="w-full p-3 bg-black/30 border border-gray-700 rounded-lg text-white mt-1" value={formData.firstName || ''} onChange={e => setFormData({...formData, firstName: e.target.value})} />
+                        <label className={labelStyle}>First Name</label>
+                        <input aria-label="First Name" className={inputStyle} value={formData.firstName || ''} onChange={e => setFormData({...formData, firstName: e.target.value})} />
                     </div>
                     <div>
-                        <label className="text-xs text-gray-500 uppercase font-bold">Last Name</label>
-                        <input aria-label="Last Name" className="w-full p-3 bg-black/30 border border-gray-700 rounded-lg text-white mt-1" value={formData.lastName || ''} onChange={e => setFormData({...formData, lastName: e.target.value})} />
+                        <label className={labelStyle}>Last Name</label>
+                        <input aria-label="Last Name" className={inputStyle} value={formData.lastName || ''} onChange={e => setFormData({...formData, lastName: e.target.value})} />
                     </div>
                  </div>
 
@@ -140,24 +149,24 @@ const Profile = () => {
                     <>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="text-xs text-gray-500 uppercase font-bold">Business Name</label>
-                                <input aria-label="Business Name" className="w-full p-3 bg-black/30 border border-gray-700 rounded-lg text-white mt-1" value={formData.businessName || ''} onChange={e => setFormData({...formData, businessName: e.target.value})} />
+                                <label className={labelStyle}>Business Name</label>
+                                <input aria-label="Business Name" className={inputStyle} value={formData.businessName || ''} onChange={e => setFormData({...formData, businessName: e.target.value})} />
                             </div>
                             <div>
-                                <label className="text-xs text-gray-500 uppercase font-bold">Industry</label>
-                                <select aria-label="Industry" className="w-full p-3 bg-black/30 border border-gray-700 rounded-lg text-white mt-1" value={formData.industry || ''} onChange={e => setFormData({...formData, industry: e.target.value})}>
+                                <label className={labelStyle}>Industry</label>
+                                <select aria-label="Industry" className={inputStyle} value={formData.industry || ''} onChange={e => setFormData({...formData, industry: e.target.value})}>
                                     <option value="">Select...</option><option>FinTech</option><option>AgriTech</option><option>HealthTech</option>
                                 </select>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                              <label className="text-xs text-gray-500 uppercase font-bold">Location</label>
-                              <input aria-label="Location" className="w-full p-3 bg-black/30 border border-gray-700 rounded-lg text-white mt-1" value={formData.location || ''} onChange={e => setFormData({...formData, location: e.target.value})} />
+                              <label className={labelStyle}>Location</label>
+                              <input aria-label="Location" className={inputStyle} value={formData.location || ''} onChange={e => setFormData({...formData, location: e.target.value})} />
                           </div>
                           <div>
-                              <label className="text-xs text-gray-500 uppercase font-bold">Stage</label>
-                              <select aria-label="Stage" className="w-full p-3 bg-black/30 border border-gray-700 rounded-lg text-white mt-1" value={formData.stage || ''} onChange={e => setFormData({...formData, stage: e.target.value})}>
+                              <label className={labelStyle}>Stage</label>
+                              <select aria-label="Stage" className={inputStyle} value={formData.stage || ''} onChange={e => setFormData({...formData, stage: e.target.value})}>
                                     <option value="">Select Stage</option>
                                     <option>Idea Phase</option><option>MVP / Prototype</option><option>Generating Revenue</option><option>Scaling</option>
                               </select>
@@ -169,12 +178,12 @@ const Profile = () => {
                  {user.role === 'INVESTOR' && (
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="text-xs text-gray-500 uppercase font-bold">Organization</label>
-                            <input aria-label="Organization Name" className="w-full p-3 bg-black/30 border border-gray-700 rounded-lg text-white mt-1" value={formData.organization || ''} onChange={e => setFormData({...formData, organization: e.target.value})} />
+                            <label className={labelStyle}>Organization</label>
+                            <input aria-label="Organization Name" className={inputStyle} value={formData.organization || ''} onChange={e => setFormData({...formData, organization: e.target.value})} />
                         </div>
                         <div>
-                            <label className="text-xs text-gray-500 uppercase font-bold">Max Ticket Size</label>
-                            <input aria-label="Ticket Size" type="number" className="w-full p-3 bg-black/30 border border-gray-700 rounded-lg text-white mt-1" value={formData.maxTicketSize || ''} onChange={e => setFormData({...formData, maxTicketSize: e.target.value})} />
+                            <label className={labelStyle}>Max Ticket Size</label>
+                            <input aria-label="Ticket Size" type="number" className={inputStyle} value={formData.maxTicketSize || ''} onChange={e => setFormData({...formData, maxTicketSize: e.target.value})} />
                         </div>
                     </div>
                  )}
@@ -185,20 +194,8 @@ const Profile = () => {
                </form>
             </div>
           ) : (
-            // --- VIEW MODE STATS ---
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                    { l: 'Growth', v: '+120%', sub: 'Year over Year' },
-                    { l: 'Capital', v: '₦45M', sub: 'Target Raised' },
-                    { l: 'Reputation', v: '4.9', sub: '5 Stars' },
-                    { l: 'Status', v: 'Active', sub: 'Verified Account' }
-                ].map(stat => (
-                    <div key={stat.l} className="bg-[#1d1f23]/50 border border-white/10 rounded-xl p-4 text-center">
-                        <span className="text-[#abb89d] text-[10px] font-bold uppercase">{stat.l}</span>
-                        <p className="text-2xl font-black text-white my-1">{stat.v}</p>
-                        <span className="text-[10px] text-white/40">{stat.sub}</span>
-                    </div>
-                ))}
+            <div className="text-center py-12">
+              <p className="text-slate-500 dark:text-gray-400">You are not authorized to view this page.</p>
             </div>
           )}
 

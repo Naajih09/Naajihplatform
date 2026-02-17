@@ -34,14 +34,29 @@ const CreatePitch = () => {
     } catch (err) { alert("Failed to upload file."); } finally { setUploading(false); }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // 1. Get the token stored securely
+    const token = localStorage.getItem('access_token');
+
+    if (!token) {
+        alert("You are not logged in!");
+        navigate('/login');
+        return;
+    }
+
     try {
       const res = await fetch('http://localhost:3000/api/pitches', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, userId: user.id }),
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+          ...formData,
+        }),
       });
       if (!res.ok) throw new Error('Failed to post pitch');
       alert('Pitch Posted Successfully!');

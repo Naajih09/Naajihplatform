@@ -13,18 +13,33 @@ export class PitchesService {
     });
   }
 
-  // 2. GET ALL PITCHES (For the Feed)
-  async findAll() {
+  // 2. GET ALL PITCHES (With Search & Filter)
+  async findAll(query: { search?: string; category?: string }) {
+    const { search, category } = query;
+
     return this.prisma.pitch.findMany({
+      where: {
+        AND: [
+          // Filter by Category if provided
+          category && category !== 'All' ? { category: category } : {},
+          
+          // Search by Title or Tagline if provided
+          search ? {
+            OR: [
+              { title: { contains: search, mode: 'insensitive' } },
+              { tagline: { contains: search, mode: 'insensitive' } },
+            ]
+          } : {}
+        ]
+      },
       include: { 
-        user: { // Include the owner's name
+        user: { 
           include: { entrepreneurProfile: true } 
         } 
       },
-      orderBy: { createdAt: 'desc' } // Newest first
+      orderBy: { createdAt: 'desc' }
     });
   }
-
   // 3. GET ONE PITCH (For Details View)
   async findOne(id: string) {
     return this.prisma.pitch.findUnique({

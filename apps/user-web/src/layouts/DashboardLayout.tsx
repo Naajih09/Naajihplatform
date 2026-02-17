@@ -3,7 +3,8 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutGrid, Compass, MessageSquare, Link as LinkIcon, User, 
   PlusCircle, Search, Bell, Settings, Menu, X, Landmark, 
-  CheckCircle, Loader2
+  CheckCircle, Loader2,
+  Zap
 } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -54,7 +55,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { label: 'Messages', path: '/dashboard/messages', icon: MessageSquare, badge: 3 },
     { label: 'Connections', path: '/dashboard/connections', icon: LinkIcon },
     { label: 'Profile', path: '/dashboard/profile', icon: User },
-    { label: 'Verification', path: '/dashboard/verification', icon: CheckCircle }, 
+    { label: 'Verification', path: '/dashboard/verification', icon: CheckCircle },
+    { label: 'Upgrade Plan', path: '/dashboard/subscription', icon: Zap, badge: 'PRO' }, 
   ];
 
   return (

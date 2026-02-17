@@ -11,6 +11,7 @@ import { MessagesModule } from './messages/messages.module';
 import { CloudinaryController } from './cloudinary/cloudinary.controller';
 import { VerificationModule } from './verification/verification.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AuthModule } from './auth/auth.module';
 
 
 @Module({
@@ -38,6 +39,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     MessagesModule,
     VerificationModule,
     NotificationsModule,
+    AuthModule,
   ], 
   controllers: [],
   providers: [

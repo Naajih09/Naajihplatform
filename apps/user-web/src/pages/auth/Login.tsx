@@ -27,6 +27,8 @@ const Login = () => {
 
       // Success! Save user info
       localStorage.setItem('user', JSON.stringify(data));
+      localStorage.setItem('access_token', data.access_token);
+
       
       // Redirect to Dashboard
       navigate('/dashboard');

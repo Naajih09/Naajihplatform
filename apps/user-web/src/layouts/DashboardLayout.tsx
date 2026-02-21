@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutGrid, Compass, MessageSquare, Link as LinkIcon, User, 
-  PlusCircle, Search, Bell, Settings, Menu, X, Landmark, 
-  CheckCircle, Loader2,
-  Zap
+  PlusCircle, Bell, Settings, Menu, X, Landmark, 
+  CheckCircle, Loader2, Zap
 } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -17,12 +16,19 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const userString = localStorage.getItem('user');
+  const user = userString ? JSON.parse(userString) : {};
 
   const location = useLocation();
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  
+  // 1. GET USER & EXTRACT NAME SAFELY
+  const profile = user.entrepreneurProfile || user.investorProfile || {};
+  const firstName = profile.firstName || user.firstName || 'User';
+  const lastName = profile.lastName || user.lastName || '';
+  const role = user.role || 'Guest';
 
-  // --- 1. FETCH REAL NOTIFICATIONS ---
+  // 2. FETCH REAL NOTIFICATIONS
   useEffect(() => {
     if (!user.id) return;
 
@@ -40,7 +46,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     };
 
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 10000); // Poll every 10s
+    const interval = setInterval(fetchNotifications, 10000);
     return () => clearInterval(interval);
   }, [user.id]);
 
@@ -52,15 +58,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutGrid },
     { label: 'Opportunities', path: '/dashboard/opportunities', icon: Compass },
-    { label: 'Messages', path: '/dashboard/messages', icon: MessageSquare, badge: 3 },
+    { label: 'Messages', path: '/dashboard/messages', icon: MessageSquare },
     { label: 'Connections', path: '/dashboard/connections', icon: LinkIcon },
     { label: 'Profile', path: '/dashboard/profile', icon: User },
-    { label: 'Verification', path: '/dashboard/verification', icon: CheckCircle },
-    { label: 'Upgrade Plan', path: '/dashboard/subscription', icon: Zap, badge: 'PRO' }, 
+    { label: 'Verification', path: '/dashboard/verification', icon: CheckCircle }, 
+    { label: 'Upgrade Plan', path: '/dashboard/subscription', icon: Zap, badge: 'PRO' },
   ];
 
   return (
-    // FIX: Main Background adapts to Light/Dark
     <div className="flex h-screen bg-[#f8fafc] dark:bg-[#111113] text-slate-900 dark:text-white font-sans overflow-hidden transition-colors duration-300">
       
       {/* MOBILE OVERLAY */}
@@ -68,7 +73,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div className="fixed inset-0 bg-black/80 z-20 md:hidden backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
       )}
 
-      {/* SIDEBAR FIX: White in Light Mode, Dark in Dark Mode */}
+      {/* SIDEBAR */}
       <aside className={`fixed md:static inset-y-0 left-0 z-30 w-64 bg-white dark:bg-[#1d1d20] border-r border-slate-200 dark:border-gray-800 flex flex-col transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="p-6 flex items-center gap-3">
           <div className="size-10 bg-primary rounded-xl flex items-center justify-center text-neutral-dark">
@@ -95,6 +100,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             >
               <item.icon size={20} />
               <span>{item.label}</span>
+              {item.badge && (
+                <span className="ml-auto bg-white/20 text-xs px-2 py-0.5 rounded-full font-bold">{item.badge}</span>
+              )}
             </Link>
           ))}
         </nav>
@@ -112,7 +120,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-        {/* HEADER FIX: Adapts to Light/Dark */}
         <header className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-[#111113]/80 backdrop-blur-md border-b border-slate-200 dark:border-gray-800 transition-colors duration-300">
           <div className="flex items-center gap-4 md:hidden">
              <button onClick={() => setIsMobileMenuOpen(true)} aria-label="Open menu"><Menu size={24} className="text-gray-500"/></button>
@@ -120,8 +127,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
           <div className="hidden md:flex items-center flex-1 max-w-md">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <input className="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none text-sm transition-colors text-slate-900 dark:text-white" placeholder="Search investors, pitches..." type="text"/>
             </div>
           </div>
 
@@ -129,7 +134,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             
             <ThemeToggle />
             
-            {/* REAL NOTIFICATION BELL */}
+            {/* NOTIFICATION BELL */}
             <div className="relative">
               <button 
                 onClick={() => setShowNotifications(!showNotifications)}
@@ -142,7 +147,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 )}
               </button>
 
-              {/* DROPDOWN MENU FIX */}
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl shadow-2xl z-50 overflow-hidden">
                   <div className="p-4 border-b border-slate-200 dark:border-gray-800">
@@ -174,11 +178,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-bold leading-none text-slate-900 dark:text-white">{user.firstName || 'User'} {user.lastName || ''}</p>
-                <p className="text-[10px] text-slate-500 dark:text-gray-400 font-medium uppercase">{user.role || 'Guest'}</p>
+                <p className="text-xs font-bold leading-none text-slate-900 dark:text-white">{firstName} {lastName}</p>
+                <p className="text-[10px] text-slate-500 dark:text-gray-400 font-medium uppercase">{role}</p>
               </div>
               <div className="size-10 rounded-full bg-primary flex items-center justify-center font-bold text-black border-2 border-white dark:border-gray-700">
-                {user.firstName?.[0] || 'U'}
+                {firstName?.[0] || 'U'}
               </div>
             </div>
           </div>

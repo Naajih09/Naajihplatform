@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+  scroll-behavior: smooth;
+}
   body {
     /* Default (Light Mode) */
     @apply bg-[#f8fafc] text-slate-900 transition-colors duration-300;

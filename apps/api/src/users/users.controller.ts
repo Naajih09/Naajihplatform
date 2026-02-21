@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthService } from '../auth/auth.service'; // Ensure this import exists
 
@@ -6,7 +6,7 @@ import { AuthService } from '../auth/auth.service'; // Ensure this import exists
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly authService: AuthService // Inject Auth Service
+    private readonly authService: AuthService 
   ) {}
 
   // 1. SIGN UP
@@ -15,7 +15,6 @@ export class UsersController {
     return this.usersService.create(body);
   }
 
-  // 2. LOG IN (Fixed: Direct return, no missing variables)
  // 2. LOG IN
   @Post('login')
   async login(@Body() body: any) {
@@ -53,12 +52,10 @@ export class UsersController {
     return this.usersService.changePassword(id, body.password);
   }
 
-  // 8. DELETE ACCOUNT
-  // (Note: Removed @Delete decorator import to simplify, add it back if needed)
-  /* 
-  @Delete(':id')
+  // 8. DELETE ACCOUNT Public for Admin Dashboard
+  // @UseGuards(JwtAuthGuard) 
+  @Delete(':id') 
   deleteUser(@Param('id') id: string) {
     return this.usersService.deleteUser(id);
-  } 
-  */
+  }
 }

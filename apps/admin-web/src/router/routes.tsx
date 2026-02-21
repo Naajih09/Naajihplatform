@@ -3,6 +3,8 @@ import AdminLayout from '../layouts/AdminLayout';
 import Dashboard from '../pages/Dashboard';
 import Verification from '../pages/Verification';
 import { ErrorBoundaryFallback } from '../../../../packages/ui/src';
+import PitchesList from '../pages/PitchesLists';
+import  UsersList  from '../pages/UsersLists';
 
 export const routes = [
   {
@@ -16,19 +18,11 @@ export const routes = [
       },
       {
         path: 'users',
-        element: (
-          <div className="p-10">
-            User Management (Coming Soon)
-          </div>
-        ),
+        element: <UsersList />,
       },
       {
         path: 'pitches',
-        element: (
-          <div className="p-10">
-            Pitch Moderation (Coming Soon)
-          </div>
-        ),
+        element: <PitchesList />,
       },
       {
         path: 'verification',

@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, UserRole } from '@prisma/client';
 import { DatabaseService } from '../database/database.service';
-import * as bcrypt from 'bcryptjs'; // Fixed import
+import * as bcrypt from 'bcryptjs';
 
-// Interface for type safety
 interface CreateUserDto {
   email: string;
   password: string;
@@ -46,6 +45,7 @@ export class UsersService {
     });
 
     // Remove password before returning
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...result } = newUser;
     return result;
   }
@@ -88,6 +88,8 @@ export class UsersService {
     const updateData: any = { ...userData };
 
     if (entrepreneurProfile) {
+      // Remove IDs to avoid Prisma errors
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id: _id, userId: _uid, ...cleanData } = entrepreneurProfile;
       updateData.entrepreneurProfile = {
         upsert: { create: cleanData, update: cleanData },
@@ -95,7 +97,9 @@ export class UsersService {
     }
 
     if (investorProfile) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id: _id, userId: _uid, ...cleanData } = investorProfile;
+      
       if (cleanData.minTicketSize) cleanData.minTicketSize = Number(cleanData.minTicketSize);
       if (cleanData.maxTicketSize) cleanData.maxTicketSize = Number(cleanData.maxTicketSize);
 
@@ -146,18 +150,38 @@ export class UsersService {
     });
   }
 
-  // 8. DELETE ACCOUNT
+  // 8. DELETE ACCOUNT (The Nuclear Option - Fixed)
   async deleteUser(id: string) {
+    // 1. Delete related connections
+    await this.databaseService.connection.deleteMany({
+        where: { OR: [{ senderId: id }, { receiverId: id }] }
+    });
+
+    // 2. Delete related messages (New addition for safety)
+    await this.databaseService.message.deleteMany({
+        where: { OR: [{ senderId: id }, { receiverId: id }] }
+    });
+
+    // 3. Delete their pitches
+    await this.databaseService.pitch.deleteMany({
+        where: { userId: id }
+    });
+
+    // 4. Delete their profile (Entrepreneur/Investor)
     try {
-      return await this.databaseService.user.delete({ where: { id } });
-    } catch (error) {
-      throw new Error("Could not delete user. Check active connections.");
-    }
+        await this.databaseService.entrepreneurProfile.delete({ where: { userId: id } });
+    } catch(e) {} 
+
+    try {
+        await this.databaseService.investorProfile.delete({ where: { userId: id } });
+    } catch(e) {} 
+
+    // 5. Finally, Delete the User
+    return this.databaseService.user.delete({ where: { id } });
   }
 
-  // 9. UPGRADE TO PREMIUM (Used by Paystack)
+  // 9. UPGRADE TO PREMIUM
   async upgradeToPremium(userId: string) {
-    // Check if subscription exists
     const sub = await this.databaseService.subscription.findUnique({ where: { userId } });
 
     if (sub) {

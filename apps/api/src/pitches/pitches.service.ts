@@ -47,4 +47,19 @@ export class PitchesService {
       include: { user: true }
     });
   }
+
+  // 4. UPDATE PITCH
+  async update(id: string, data: any) {
+    return this.prisma.pitch.update({
+      where: { id },
+      data,
+    });
+  }
+
+  // 5. DELETE PITCH
+  async remove(id: string) {
+    return this.prisma.pitch.delete({
+      where: { id },
+    });
+  }
 }

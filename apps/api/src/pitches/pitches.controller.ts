@@ -3,6 +3,7 @@ import { PitchesService } from './pitches.service';
 import { Prisma } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'; 
 import { Query } from '@nestjs/common';
+import { Patch, Delete } from '@nestjs/common';
 
 @Controller('pitches')
 export class PitchesController {
@@ -29,5 +30,18 @@ export class PitchesController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.pitchesService.findOne(id);
+  }
+  // PATCH /api/pitches/:id
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() body: any) {
+    return this.pitchesService.update(id, body);
+  }
+
+  // DELETE /api/pitches/:id
+  //@UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.pitchesService.remove(id);
   }
 }

@@ -26,8 +26,10 @@ const Login = () => {
       if (!res.ok) throw new Error(data.message || 'Login failed. Check your email/password.');
 
       // Success! Save user info
-      localStorage.setItem('user', JSON.stringify(data));
       localStorage.setItem('access_token', data.access_token);
+
+       const userToSave = data.user ? data.user : data; 
+      localStorage.setItem('user', JSON.stringify(userToSave));
 
       
       // Redirect to Dashboard

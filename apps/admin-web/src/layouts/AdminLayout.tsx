@@ -17,12 +17,12 @@ const AdminLayout = () => {
       {/* SIDEBAR */}
       <aside className="w-64 bg-[#1d1d20] border-r border-gray-800 flex flex-col">
         <div className="p-6 flex items-center gap-3">
-          <div className="size-10 bg-red-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-900/20">
+          <div className="size-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-900/20">
             <ShieldCheck className="font-bold" size={24} />
           </div>
           <div>
-            <h1 className="text-lg font-extrabold tracking-tight">Naajih<span className="text-red-500">Admin</span></h1>
-            <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">God Mode</p>
+            <h1 className="text-lg font-extrabold tracking-tight">Naajih<span className="text-blue-500">Admin</span></h1>
+            <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">CEO Mode</p>
           </div>
         </div>
 
@@ -33,7 +33,7 @@ const AdminLayout = () => {
               to={item.path}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                 location.pathname === item.path 
-                ? 'bg-red-600 text-white font-bold shadow-md' 
+                ? 'bg-blue-600 text-white font-bold shadow-md' 
                 : 'text-gray-400 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -44,7 +44,7 @@ const AdminLayout = () => {
         </nav>
 
         <div className="p-4 border-t border-gray-800">
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+          <button className="w-full flex items-center gap-3 px-4 py-3 text-blue-400 hover:bg-red-500/10 rounded-lg transition-colors">
              <LogOut size={20} /> Exit Admin
            </button>
         </div>

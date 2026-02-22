@@ -11,12 +11,18 @@ const Verification = () => {
     const fetchStatus = async () => {
       try {
         const res = await fetch(`http://localhost:3000/api/verification/${user.id}`);
-        if (res.ok) {
-          const data = await res.json();
-          setStatus(data);
+        
+        const text = await res.text();
+        if (text) {
+            const data = JSON.parse(text);
+            setStatus(data);
+        } else {
+            setStatus(null); 
         }
       } catch (err) {
         console.error(err);
+      } finally {
+        setUploading(false);
       }
     };
     fetchStatus();

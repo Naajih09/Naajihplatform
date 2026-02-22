@@ -5,13 +5,15 @@ import { DatabaseService } from '../database/database.service';
 export class MessagesService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  // 1. SEND MESSAGE
+ // 1. SEND MESSAGE 
   async create(data: any) {
     return this.databaseService.message.create({
       data: {
-        content: data.content,
+        content: data.content || '',
         senderId: data.senderId,
         receiverId: data.receiverId,
+        attachmentUrl: data.attachmentUrl,
+        type: data.type || 'TEXT',
       },
     });
   }

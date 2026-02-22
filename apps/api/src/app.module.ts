@@ -12,6 +12,7 @@ import { CloudinaryController } from './cloudinary/cloudinary.controller';
 import { VerificationModule } from './verification/verification.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AuthModule } from './auth/auth.module';
+import { AcedemyModule } from './acedemy/acedemy.module';
 
 
 @Module({
@@ -40,6 +41,7 @@ import { AuthModule } from './auth/auth.module';
     VerificationModule,
     NotificationsModule,
     AuthModule,
+    AcedemyModule,
   ], 
   controllers: [],
   providers: [

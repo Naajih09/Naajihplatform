@@ -16,6 +16,8 @@ const Connections = lazy(() => import('../pages/dashboard/Connections'));
 const Messages = lazy(() => import('../pages/dashboard/Messages').then(module => ({ default: module.default })));
 const Settings = lazy(() => import('../pages/dashboard/Settings'));
 const verification = lazy(() => import('../pages/dashboard/Verification'));
+const LearningCenter = lazy(() => import('../pages/dashboard/LearningCenter'));
+const CourseViewer = lazy(() => import('../pages/dashboard/CourseViewer'));
 
 const routes = [
   // --- Public Routes ---
@@ -39,6 +41,16 @@ const routes = [
   {
     path: 'dashboard',
     element: <DashboardHome />,
+    layout: 'dashboard',
+  },
+  {
+    path: 'dashboard/learning-center',
+    element: <LearningCenter />,
+    layout: 'dashboard',
+  },
+  {
+    path: 'dashboard/learning-center/:id',
+    element: <CourseViewer />,
     layout: 'dashboard',
   },
   {

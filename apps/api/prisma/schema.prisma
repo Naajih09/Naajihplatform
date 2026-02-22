@@ -20,10 +20,6 @@ datasource db {
 
 
 
-
-
-
-
 // --- ENUMS ---
 enum UserRole {
   ENTREPRENEUR
@@ -77,7 +73,15 @@ model User {
 
   // Notification Relations
   notifications       Notification[]
+  lessonProgress   UserLessonProgress[]
+  taskSubmissions  UserTaskSubmission[]
+  milestones UserMilestone[]
+  
+
+
+
 }
+
 
 // --- 2. PROFILES ---
 model EntrepreneurProfile {
@@ -143,15 +147,18 @@ model Connection {
 }
 
 model Message {
-  id          String   @id @default(uuid())
-  content     String
-  senderId    String
-  sender      User     @relation("MessageSender", fields: [senderId], references: [id])
-  receiverId  String
-  receiver    User     @relation("MessageReceiver", fields: [receiverId], references: [id])
+  id            String   @id @default(uuid())
+  content       String?  // Can be empty if sending just an image
+  attachmentUrl String?  // URL from Cloudinary (Image/PDF/Audio)
+  type          String   @default("TEXT") // TEXT, IMAGE, AUDIO, PDF
   
-  isRead      Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  senderId      String
+  sender        User     @relation("MessageSender", fields: [senderId], references: [id])
+  receiverId    String
+  receiver      User     @relation("MessageReceiver", fields: [receiverId], references: [id])
+  
+  isRead        Boolean  @default(false)
+  createdAt     DateTime @default(now())
 }
 
 // --- 5. EXTRAS ---
@@ -180,4 +187,107 @@ model Notification {
   message   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+// --- NAJIH ACADEMY (ALX STYLE) ---
+
+enum TaskStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+model Program {
+  id          String   @id @default(uuid())
+  title       String   // e.g. "Business Builder Program"
+  cohort      String   // e.g. "Cohort 1 (Feb 2026)"
+  description String
+  
+  modules     Module[]
+  createdAt   DateTime @default(now())
+}
+
+model Module {
+  id          String   @id @default(uuid())
+  programId   String
+  program     Program  @relation(fields: [programId], references: [id])
+  
+  title       String   // e.g. "Week 1: Validation"
+  order       Int      // 1
+  unlockDate  DateTime? // Drip content
+  
+  lessons     Lesson[]
+  tasks       Task[]
+}
+
+model Lesson {
+  id          String   @id @default(uuid())
+  moduleId    String
+  module      Module   @relation(fields: [moduleId], references: [id])
+  
+  title       String
+  contentType String   // "VIDEO", "TEXT", "QUIZ"
+  content     String?  // Markdown text
+  videoUrl    String?
+  duration    Int      // Minutes
+  order       Int
+  
+  progress    UserLessonProgress[]
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  moduleId    String
+  module      Module   @relation(fields: [moduleId], references: [id])
+  
+  title       String   // e.g. "Submit Value Proposition"
+  description String
+  dueDate     DateTime?
+  
+  submissions UserTaskSubmission[]
+}
+
+// --- TRACKING ---
+
+model UserLessonProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id])
+  isCompleted Boolean  @default(false)
+  @@unique([userId, lessonId])
+}
+
+model UserTaskSubmission {
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  taskId      String
+  task        Task       @relation(fields: [taskId], references: [id])
+  
+  submissionUrl String?  // Link to Google Doc or Cloudinary
+  status      TaskStatus @default(PENDING)
+  feedback    String?    // Admin feedback
+  submittedAt DateTime   @default(now())
+}
+
+model Milestone {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+
+  users       UserMilestone[]   
+}
+
+model UserMilestone {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  milestoneId String
+  milestone   Milestone @relation(fields: [milestoneId], references: [id])
+  achievedAt  DateTime @default(now())
+
+  @@unique([userId, milestoneId])
 }

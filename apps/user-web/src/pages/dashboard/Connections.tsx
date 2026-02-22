@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { UserCheck, UserPlus, X, Loader2 } from 'lucide-react';
 import Button from '../../components/Button';
+import { useNavigate } from 'react-router-dom'; // <--- Import this
 
 const Connections = () => {
   const [pending, setPending] = useState<any[]>([]);
   const [friends, setFriends] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const navigate = useNavigate(); // <--- Init navigation
 
   useEffect(() => { if (user.id) fetchData(); }, [user.id]);
 
@@ -65,7 +68,16 @@ const Connections = () => {
               <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-2xl p-8 text-center">
                   <UserPlus size={32} className="text-slate-400 mx-auto mb-4" />
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Grow your Network</h3>
-                  <Button className="bg-primary text-black font-bold">Browse Opportunities</Button>
+                  <p className="text-slate-500 dark:text-gray-400 max-w-sm mx-auto mb-6">You haven't connected with anyone yet. Browse opportunities to find partners.</p>
+                  
+                  {/* FIX: NOW WORKS */}
+                  <Button 
+                    className="bg-primary text-black font-bold"
+                    onClick={() => navigate('/dashboard/opportunities')}
+                  >
+                    Browse Opportunities
+                  </Button>
+                  
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

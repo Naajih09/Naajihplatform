@@ -13,7 +13,7 @@ const Landing = () => {
             <RoleSelection />
             <HowItWorks />
             <TrustSection />
-      <footer className="bg-white dark:bg-background-dark border-t border-slate-200 dark:border-white/5 py-12 md:py-16 transition-colors duration-300">
+      <footer className="bg-white dark:bg-background-dark border-t border-slate-200 dark:border-white/5 py-12 md:py-16 transition-colors duration-300" id="about">
         <div className="max-w-[1200px] mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-left">
           
           <div className="col-span-1">

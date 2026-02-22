@@ -1,0 +1,7 @@
+src/acedemy/acedemy.controller.spec.ts(2,10): error TS2724: '"./acedemy.controller"' has no exported member named 'AcedemyController'. Did you mean 'AcademyController'?
+src/acedemy/acedemy.controller.spec.ts(3,10): error TS2724: '"./acedemy.service"' has no exported member named 'AcedemyService'. Did you mean 'AcademyService'?
+src/acedemy/acedemy.service.spec.ts(2,10): error TS2724: '"./acedemy.service"' has no exported member named 'AcedemyService'. Did you mean 'AcademyService'?
+src/acedemy/acedemy.service.ts(10,33): error TS2339: Property 'course' does not exist on type 'DatabaseService'.
+src/acedemy/acedemy.service.ts(19,47): error TS2339: Property 'course' does not exist on type 'DatabaseService'.
+src/acedemy/acedemy.service.ts(35,33): error TS2339: Property 'userProgress' does not exist on type 'DatabaseService'.
+src/acedemy/acedemy.service.ts(45,47): error TS2339: Property 'course' does not exist on type 'DatabaseService'.

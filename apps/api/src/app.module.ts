@@ -5,13 +5,20 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { ConnectionsModule } from './connections/connections.module';
 import { DatabaseModule } from './database/database.module';
 import { PitchesModule } from './pitches/pitches.module';
-import { UsersModule } from './users/users.module'; // <--- Import this
+import { UsersModule } from './users/users.module'; 
+import { CloudinaryModule } from './cloudinary/cloudinary.module'; 
+import { MessagesModule } from './messages/messages.module';
+import { CloudinaryController } from './cloudinary/cloudinary.controller';
+import { VerificationModule } from './verification/verification.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { AuthModule } from './auth/auth.module';
+import { AcedemyModule } from './acedemy/acedemy.module';
+
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      // envFilePath: '.env',
     }),
     DatabaseModule,
     ThrottlerModule.forRoot([
@@ -29,7 +36,13 @@ import { UsersModule } from './users/users.module'; // <--- Import this
     UsersModule,
     PitchesModule,
     ConnectionsModule,
-  ], // <--- Add this here!
+    CloudinaryModule,
+    MessagesModule,
+    VerificationModule,
+    NotificationsModule,
+    AuthModule,
+    AcedemyModule,
+  ], 
   controllers: [],
   providers: [
     {

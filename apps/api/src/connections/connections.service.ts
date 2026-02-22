@@ -1,40 +1,68 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { DatabaseService } from '../database/database.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ConnectionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   // 1. SEND CONNECTION REQUEST
-  async create(senderId: string, receiverId: string) {
+  async create(data: any) {
+    const { senderId, receiverId } = data;
+
     // Check if connection already exists
-    const existing = await this.prisma.connection.findUnique({
+    const existing = await this.databaseService.connection.findFirst({
       where: {
-        senderId_receiverId: { senderId, receiverId }
-      }
+        OR: [
+          { senderId, receiverId },
+          { senderId: receiverId, receiverId: senderId },
+        ],
+      },
     });
 
-    if (existing) return { message: 'Connection already exists' };
+    if (existing) throw new Error('Connection already exists or is pending');
 
-    return this.prisma.connection.create({
+    return this.databaseService.connection.create({
       data: {
         senderId,
         receiverId,
-        status: 'PENDING'
-      }
+        status: 'PENDING',
+      },
     });
   }
 
-  // 2. GET MY CONNECTIONS (For Messages/Network page)
-  async findAll(userId: string) {
-    return this.prisma.connection.findMany({
+  // 2. GET MY CONNECTIONS (Accepted)
+  async getMyConnections(userId: string) {
+    return this.databaseService.connection.findMany({
       where: {
-        OR: [{ senderId: userId }, { receiverId: userId }]
+        OR: [{ senderId: userId }, { receiverId: userId }],
+        status: 'ACCEPTED',
       },
       include: {
         sender: { include: { entrepreneurProfile: true, investorProfile: true } },
-        receiver: { include: { entrepreneurProfile: true, investorProfile: true } }
-      }
+        receiver: { include: { entrepreneurProfile: true, investorProfile: true } },
+      },
+    });
+  }
+
+  // 3. GET PENDING REQUESTS (Waiting for me to accept)
+  async getPendingRequests(userId: string) {
+    return this.databaseService.connection.findMany({
+      where: {
+        receiverId: userId,
+        status: 'PENDING',
+      },
+      include: {
+        sender: { include: { entrepreneurProfile: true, investorProfile: true } },
+      },
+    });
+  }
+
+  // 4. ACCEPT / REJECT REQUEST
+  async respond(id: string, status: 'ACCEPTED' | 'REJECTED') {
+    return this.databaseService.connection.update({
+      where: { id },
+      data: { status },
     });
   }
 }

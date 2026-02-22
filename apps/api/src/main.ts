@@ -13,12 +13,17 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
   app.setGlobalPrefix(process.env.API_PREFIX || 'api');
 
-  //  UNLOCK THE DOOR (Allow React to talk to NestJS)
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:6000',
-    credential: true,
-  });
+    origin: [
+      'http://localhost:3001', 
+      'http://localhost:5173', 
+      'http://localhost:6000', 
 
+      process.env.FRONTEND_URL
+    ].filter(Boolean), 
+    credentials: true, 
+  });
+  
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

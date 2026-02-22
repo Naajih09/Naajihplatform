@@ -14,7 +14,7 @@ export default defineConfig({
   },
 
   server: {
-    port: 6000,
+    port: 3001,
   },
 
   resolve: {

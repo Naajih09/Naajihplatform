@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Briefcase, TrendingUp, Lightbulb, AlertCircle, CheckCircle } from 'lucide-react';
+import { 
+  Rocket, Wallet, GraduationCap, ArrowRight, CheckCircle, 
+  AlertCircle, Landmark, Eye, EyeOff, ChevronRight, Lock, ShieldCheck, BadgeDollarSign
+} from 'lucide-react';
 import Button from '../../components/Button';
 
 const Signup = () => {
@@ -9,166 +12,272 @@ const Signup = () => {
   const [role, setRole] = useState('ENTREPRENEUR');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    fullName: '',
     email: '',
-    password: ''
+    location: '',
+    password: '',
+    confirmPassword: ''
   });
 
-  const handleSignup = async (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleRoleSelect = (selectedRole: string) => {
+    setRole(selectedRole);
+    setStep(2); // Move to form
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
+    if (formData.password !== formData.confirmPassword) {
+        setError("Passwords do not match");
+        setLoading(false);
+        return;
+    }
+
+    // Split Full Name safely
+    const nameParts = formData.fullName.split(' ');
+    const firstName = nameParts[0] || 'User';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    const roleMapping: Record<string, string> = {
+      ENTREPRENEUR: 'ENTREPRENEUR',
+      INVESTOR: 'INVESTOR',
+      ASPIRING_BUSINESS_OWNER: 'ASPIRING_BUSINESS_OWNER'
+    };
+
     try {
-      // Connect to NestJS API
-      const res = await fetch('http://localhost:3000/users', {
+      const response = await fetch('http://localhost:3000/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          role: role // Sends 'ENTREPRENEUR', 'INVESTOR', or 'ASPIRING_BUSINESS_OWNER'
-        })
+          email: formData.email,
+          password: formData.password,
+          role: roleMapping[role],
+          firstName: firstName,
+          lastName: lastName,
+        }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.message || 'Signup failed');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to create account.");
+      }
 
       alert("Account created successfully!");
       navigate('/login');
 
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen flex bg-white">
-      {/* LEFT: Branding */}
-      <div className="hidden lg:flex w-1/3 bg-brand-blue p-12 flex-col justify-between text-white relative overflow-hidden">
-        <div className="z-10 font-bold text-2xl">NaajihBiz<span className="text-brand-gold">.</span></div>
-        <div className="z-10">
-          <h1 className="text-4xl font-bold mb-4">Join the Ecosystem.</h1>
-          <p className="text-blue-100">Connect with trusted investors and build the future of halal business.</p>
-        </div>
-        {/* Abstract Circles */}
-        <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-gold/20 rounded-full blur-2xl"></div>
-      </div>
-
-      {/* RIGHT: Form */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-lg">
-          
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-brand-dark">Create Account</h2>
-            <p className="text-brand-gray">Step {step} of 2</p>
+  // --- STEP 1: ROLE SELECTION ---
+  if (step === 1) {
+    return (
+      <div className="bg-background-light dark:bg-background-dark text-gray-900 dark:text-white min-h-screen flex flex-col font-sans">
+        <header className="w-full border-b border-gray-200 dark:border-white/5 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-50">
+          <div className="max-w-[1200px] mx-auto px-6 h-20 flex items-center justify-between">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+              <div className="size-10 bg-primary flex items-center justify-center rounded">
+                <Landmark className="text-background-dark font-bold" />
+              </div>
+              <h2 className="text-2xl font-bold tracking-tighter uppercase">NaajihBiz</h2>
+            </div>
+            <Link to="/login" className="bg-primary/10 text-primary border border-primary/20 px-5 py-2 rounded font-bold text-sm hover:bg-primary/20 transition-all uppercase tracking-wider">
+              Log in
+            </Link>
           </div>
+        </header>
 
-          {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-lg flex items-center gap-2 mb-6 text-sm">
-              <AlertCircle size={18} /> {error}
+        <main className="flex-grow flex flex-col items-center justify-center px-6 py-12">
+          <div className="w-full max-w-6xl">
+            <div className="mb-12 flex flex-col items-center">
+              <div className="w-full max-w-md bg-gray-200 dark:bg-white/10 h-1 rounded-full overflow-hidden mb-4">
+                <div className="bg-primary h-full w-1/3 transition-all duration-500"></div>
+              </div>
+              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-500 dark:text-gray-400">Step 01: Identity Selection</span>
             </div>
-          )}
 
-          {step === 1 ? (
-            <div className="space-y-4">
-              <p className="font-medium text-brand-dark">I am joining as:</p>
-              
-              <RoleCard 
-                selected={role === 'ENTREPRENEUR'} 
-                onClick={() => setRole('ENTREPRENEUR')}
-                icon={Briefcase}
-                title="Entrepreneur"
-                desc="I have a business or idea and need funding."
-              />
-              
-              <RoleCard 
-                selected={role === 'INVESTOR'} 
-                onClick={() => setRole('INVESTOR')}
-                icon={TrendingUp}
-                title="Investor"
-                desc="I want to fund verified halal businesses."
-              />
-
-              <RoleCard 
-                selected={role === 'ASPIRING_BUSINESS_OWNER'} 
-                onClick={() => setRole('ASPIRING_BUSINESS_OWNER')}
-                icon={Lightbulb}
-                title="Aspiring Owner"
-                desc="I am learning and looking for opportunities."
-              />
-
-              <Button className="w-full mt-6" onClick={() => setStep(2)}>Continue</Button>
+            <div className="text-center mb-16 space-y-4">
+              <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase">
+                Choose your <span className="text-primary">path.</span>
+              </h1>
+              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto font-light">
+                Build your legacy on ethical foundations. Select the role that best defines your journey.
+              </p>
             </div>
-          ) : (
-            <form onSubmit={handleSignup} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-brand-dark">First Name</label>
-                  <input required type="text" className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-blue outline-none" 
-                    onChange={e => setFormData({...formData, firstName: e.target.value})} />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-brand-dark">Last Name</label>
-                  <input required type="text" className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-blue outline-none" 
-                    onChange={e => setFormData({...formData, lastName: e.target.value})} />
-                </div>
-              </div>
 
-              <div>
-                <label className="text-sm font-medium text-brand-dark">Email Address</label>
-                <input required type="email" className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-blue outline-none" 
-                  onChange={e => setFormData({...formData, email: e.target.value})} />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <RoleCard title="Entrepreneur" icon={Rocket} desc="Scale your Halal-certified business and access Sharia-compliant funding." features={['Equity-based funding', 'Halal compliance tools']} onClick={() => handleRoleSelect('ENTREPRENEUR')} />
+              <RoleCard title="Investor" icon={Wallet} desc="Invest in Sharia-compliant opportunities. Diversify your portfolio." features={['Ethical vetting reports', 'Dividend tracking']} onClick={() => handleRoleSelect('INVESTOR')} />
+              <RoleCard title="Aspiring Owner" icon={GraduationCap} desc="Start from scratch. Access the Naajih Academy to learn and build." features={['Mentorship access', 'Certification paths']} onClick={() => handleRoleSelect('ASPIRING_BUSINESS_OWNER')} />
+            </div>
 
-              <div>
-                <label className="text-sm font-medium text-brand-dark">Password</label>
-                <input required type="password" className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-blue outline-none" 
-                  onChange={e => setFormData({...formData, password: e.target.value})} />
-                <p className="text-xs text-brand-gray mt-1">Must be at least 6 characters.</p>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button variant="ghost" type="button" onClick={() => setStep(1)}>Back</Button>
-                <Button variant="primary" type="submit" className="flex-1" isLoading={loading}>Create Account</Button>
-              </div>
-            </form>
-          )}
-
-          <p className="text-center text-sm text-brand-gray mt-8">
-            Already have an account? <Link to="/login" className="text-brand-blue font-semibold hover:underline">Log In</Link>
-          </p>
-
-        </div>
+            <div className="mt-20 text-center">
+              <Link to="/login" className="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors text-sm font-medium underline underline-offset-8 decoration-primary/30 hover:decoration-primary">
+                Already have an account? Log in to your dashboard
+              </Link>
+            </div>
+          </div>
+        </main>
       </div>
+    );
+  }
+
+  // --- STEP 2: FORM ---
+  return (
+    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col font-sans">
+      <header className="w-full px-6 md:px-20 py-5 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-white/5">
+        <div className="max-w-[1200px] mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setStep(1)}>
+                <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-background-dark">
+                    <Landmark size={20} className="font-bold" />
+                </div>
+                <h2 className="text-xl font-bold tracking-tight">NaajihBiz</h2>
+            </div>
+            <div className="hidden md:flex items-center gap-8">
+                <Link to="/login" className="bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-5 py-2 rounded-lg text-sm font-bold transition-all">Log in</Link>
+            </div>
+        </div>
+      </header>
+
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-12">
+        <div className="w-full max-w-[520px] bg-white dark:bg-[#1a1a1a] p-8 md:p-10 rounded-xl shadow-sm border border-slate-100 dark:border-white/5">
+            
+            <div className="flex flex-col items-center mb-8">
+                <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary/20 px-4 mb-4 border border-primary/30">
+                    <Rocket size={16} className="text-slate-900 dark:text-primary" />
+                    <p className="text-slate-900 dark:text-primary text-xs font-bold uppercase tracking-wider">Signing up as {role.replace(/_/g, ' ')}</p>
+                </div>
+                <h1 className="text-3xl font-bold text-center tracking-tight text-slate-900 dark:text-white">Fuel Your Vision</h1>
+                <p className="text-slate-500 dark:text-slate-400 text-base mt-2 text-center">Join Nigeria's premier Sharia-compliant investment bridge.</p>
+            </div>
+
+            {error && (
+                <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg flex items-center gap-2 text-sm">
+                    <AlertCircle size={16} /> {error}
+                </div>
+            )}
+
+            <form className="space-y-5" onSubmit={handleSignup}>
+                <div className="flex flex-col gap-2">
+                    <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Full Name</label>
+                    <input aria-label="Full Name" name="fullName" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="e.g. Amina Yusuf" type="text"/>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Work Email</label>
+                    <input aria-label="Email Address" name="email" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="amina@yourbrand.ng" type="email"/>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Business Location</label>
+                    
+                    {/* FIX 1: ADD ARIA-LABEL TO SELECT */}
+                    <select aria-label="Business Location" name="location" onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors">
+                        <option disabled selected value="">Select State</option>
+                        <option value="abuja">FCT - Abuja</option>
+                        <option value="lagos">Lagos</option>
+                        <option value="kano">Kano</option>
+                        <option value="kaduna">Kaduna</option>
+                        <option value="rivers">Rivers</option>
+                        <option value="other">Other State...</option>
+                    </select>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                        <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Password</label>
+                        <div className="relative">
+                            <input aria-label="Password" name="password" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="••••••••" type={showPassword ? "text" : "password"}/>
+                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-slate-400 hover:text-white" aria-label="Toggle password visibility">
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Confirm</label>
+                        <input aria-label="Confirm Password" name="confirmPassword" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="••••••••" type="password"/>
+                    </div>
+                </div>
+
+                <div className="flex items-start gap-3 py-2">
+                    {/* FIX 2: ADD ARIA-LABEL TO CHECKBOX */}
+                    <input aria-label="Agree to Terms" className="mt-1 h-5 w-5 rounded border-slate-300 dark:border-white/10 text-primary focus:ring-0 accent-primary" type="checkbox" required />
+                    <label className="text-sm text-slate-600 dark:text-slate-400 leading-tight">
+                        I agree to the <a className="text-slate-900 dark:text-white font-bold underline decoration-primary underline-offset-4" href="#">Halal Investment Terms</a> which prohibit interest (Riba).
+                    </label>
+                </div>
+
+                <button 
+                    disabled={loading}
+                    className="w-full bg-primary hover:brightness-110 text-background-dark h-14 rounded-lg font-bold text-lg shadow-lg shadow-primary/10 transition-transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" 
+                    type="submit"
+                >
+                    {loading ? 'Creating Account...' : 'Create Account'}
+                    {!loading && <ChevronRight size={20} />}
+                </button>
+            </form>
+
+            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 text-center">
+                <p className="text-slate-500 dark:text-slate-400 text-sm">
+                    Already have a business account? 
+                    <Link to="/login" className="text-slate-900 dark:text-white font-bold ml-1 hover:underline">Log in here</Link>
+                </p>
+            </div>
+        </div>
+
+        <div className="mt-8 flex items-center gap-6 opacity-50 grayscale hover:grayscale-0 transition-all cursor-default">
+            <div className="flex items-center gap-1 text-slate-900 dark:text-white">
+                <ShieldCheck size={16} />
+                <span className="text-[10px] font-bold uppercase tracking-widest">Sharia Certified</span>
+            </div>
+            <div className="flex items-center gap-1 text-slate-900 dark:text-white">
+                <Lock size={16} />
+                <span className="text-[10px] font-bold uppercase tracking-widest">256-bit Encrypted</span>
+            </div>
+            <div className="flex items-center gap-1 text-slate-900 dark:text-white">
+                <BadgeDollarSign size={16} />
+                <span className="text-[10px] font-bold uppercase tracking-widest">Interest-Free Equity</span>
+            </div>
+        </div>
+      </main>
+      
+      <div className="h-1 bg-gradient-to-r from-primary/0 via-primary to-primary/0 w-full opacity-20"></div>
     </div>
   );
 };
 
-// Helper Component for Role Selection
-const RoleCard = ({ selected, onClick, icon: Icon, title, desc }) => (
-  <div 
-    onClick={onClick}
-    className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-4 ${
-      selected 
-      ? 'border-brand-blue bg-blue-50/50' 
-      : 'border-gray-100 hover:border-blue-100 hover:bg-gray-50'
-    }`}
-  >
-    <div className={`p-2 rounded-lg ${selected ? 'bg-brand-blue text-white' : 'bg-gray-100 text-gray-500'}`}>
-      <Icon size={24} />
+// Helper Component for Role Card
+const RoleCard = ({ title, icon: Icon, desc, features, onClick }: any) => (
+  <div className="group relative bg-white dark:bg-[#141414] border-2 border-slate-200 dark:border-[#262626] p-8 flex flex-col h-full transition-all duration-200 hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_#aaff00]">
+    <div className="mb-8">
+      <Icon className="size-12 text-primary mb-6" strokeWidth={1.5} />
+      <h3 className="text-2xl font-bold uppercase tracking-tight mb-4 text-slate-900 dark:text-white">{title}</h3>
+      <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6">{desc}</p>
     </div>
-    <div>
-      <h3 className={`font-bold ${selected ? 'text-brand-blue' : 'text-brand-dark'}`}>{title}</h3>
-      <p className="text-sm text-brand-gray leading-snug">{desc}</p>
+    <div className="mt-auto">
+      <ul className="space-y-3 mb-8 text-sm text-slate-500 dark:text-gray-400">
+        {features.map((feat: string) => (
+          <li key={feat} className="flex items-center gap-2">
+            <CheckCircle className="text-primary size-5" /> {feat}
+          </li>
+        ))}
+      </ul>
+      <button onClick={onClick} className="w-full bg-primary text-background-dark py-4 font-black uppercase tracking-widest text-sm hover:brightness-110 transition-all flex items-center justify-center gap-2">
+        Select Role <ArrowRight size={18} />
+      </button>
     </div>
-    {selected && <CheckCircle className="ml-auto text-brand-blue" size={20} />}
   </div>
 );
 

@@ -28,6 +28,9 @@ const baseConfig = require('@repo/tailwind-config');
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   ...baseConfig,
+
+   darkMode: 'class',
+   
   content: [
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
@@ -35,4 +38,6 @@ module.exports = {
     './src/**/*.{ts,tsx}',
     '../../packages/ui/src/**/*.{ts,tsx}',
   ],
+
+
 };

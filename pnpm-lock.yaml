@@ -418,17 +418,10 @@ importers:
         version: 8.50.0(eslint@9.39.2(jiti@1.21.7))(typescript@5.8.3)
       '@vitejs/plugin-react':
         specifier: ^4.4.1
-<<<<<<< HEAD
-        version: 4.7.0(vite@7.3.0(@types/node@22.19.3)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0))
-      '@vitejs/plugin-react-swc':
-        specifier: ^4.2.2
-        version: 4.2.2(vite@7.3.0(@types/node@22.19.3)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0))
-=======
         version: 4.7.0(vite@7.3.0(@types/node@24.10.12)(jiti@2.6.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       '@vitejs/plugin-react-swc':
         specifier: ^4.2.2
         version: 4.2.2(vite@7.3.0(@types/node@24.10.12)(jiti@2.6.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
->>>>>>> origin/main
       autoprefixer:
         specifier: ^10.4.22
         version: 10.4.23(postcss@8.5.6)
@@ -458,11 +451,7 @@ importers:
         version: 8.50.0(eslint@9.39.2(jiti@1.21.7))(typescript@5.8.3)
       vite:
         specifier: ^7.2.4
-<<<<<<< HEAD
-        version: 7.3.0(@types/node@22.19.3)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)
-=======
         version: 7.3.0(@types/node@24.10.12)(jiti@2.6.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
->>>>>>> origin/main
 
   packages/eslint-config:
     devDependencies:
@@ -8132,15 +8121,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-<<<<<<< HEAD
-  '@hono/node-server@1.19.6(hono@4.10.6)':
-    dependencies:
-      hono: 4.10.6
-=======
   '@hookform/resolvers@3.10.0(react-hook-form@7.68.0(react@18.3.1))':
     dependencies:
       react-hook-form: 7.68.0(react@18.3.1)
->>>>>>> origin/main
 
   '@hookform/resolvers@3.10.0(react-hook-form@7.68.0(react@19.2.3))':
     dependencies:
@@ -10278,9 +10261,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-<<<<<<< HEAD
-  '@typescript-eslint/parser@8.50.0(eslint@9.39.2(jiti@1.21.7))(typescript@5.8.3)':
-=======
   '@typescript-eslint/eslint-plugin@8.50.0(@typescript-eslint/parser@8.50.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
@@ -10298,7 +10278,6 @@ snapshots:
       - supports-color
 
   '@typescript-eslint/parser@8.50.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.8.3)':
->>>>>>> origin/main
     dependencies:
       '@typescript-eslint/scope-manager': 8.50.0
       '@typescript-eslint/types': 8.50.0
@@ -10374,15 +10353,11 @@ snapshots:
     dependencies:
       typescript: 5.9.2
 
-<<<<<<< HEAD
-  '@typescript-eslint/type-utils@8.50.0(eslint@9.39.2(jiti@1.21.7))(typescript@5.8.3)':
-=======
   '@typescript-eslint/tsconfig-utils@8.50.0(typescript@5.9.3)':
     dependencies:
       typescript: 5.9.3
 
   '@typescript-eslint/type-utils@8.50.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.8.3)':
->>>>>>> origin/main
     dependencies:
       '@typescript-eslint/types': 8.50.0
       '@typescript-eslint/typescript-estree': 8.50.0(typescript@5.8.3)
@@ -10450,9 +10425,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-<<<<<<< HEAD
-  '@typescript-eslint/utils@8.50.0(eslint@9.39.2(jiti@1.21.7))(typescript@5.8.3)':
-=======
   '@typescript-eslint/typescript-estree@8.50.0(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/project-service': 8.50.0(typescript@5.9.3)
@@ -10469,7 +10441,6 @@ snapshots:
       - supports-color
 
   '@typescript-eslint/utils@8.50.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.8.3)':
->>>>>>> origin/main
     dependencies:
       '@eslint-community/eslint-utils': 4.9.0(eslint@9.39.2(jiti@1.21.7))
       '@typescript-eslint/scope-manager': 8.50.0
@@ -10568,17 +10539,6 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
 
-<<<<<<< HEAD
-  '@vitejs/plugin-react-swc@4.2.2(vite@7.3.0(@types/node@22.19.3)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0))':
-    dependencies:
-      '@rolldown/pluginutils': 1.0.0-beta.47
-      '@swc/core': 1.15.5
-      vite: 7.3.0(@types/node@22.19.3)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)
-    transitivePeerDependencies:
-      - '@swc/helpers'
-
-  '@vitejs/plugin-react@4.7.0(vite@7.3.0(@types/node@22.19.3)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0))':
-=======
   '@vitejs/plugin-react-swc@4.2.2(vite@7.3.0(@types/node@24.10.12)(jiti@2.6.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-beta.47
@@ -10588,7 +10548,6 @@ snapshots:
       - '@swc/helpers'
 
   '@vitejs/plugin-react@4.7.0(vite@7.3.0(@types/node@24.10.12)(jiti@2.6.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))':
->>>>>>> origin/main
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.5)
@@ -10596,9 +10555,6 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-<<<<<<< HEAD
-      vite: 7.3.0(@types/node@22.19.3)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)
-=======
       vite: 7.3.0(@types/node@24.10.12)(jiti@2.6.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
@@ -10612,7 +10568,6 @@ snapshots:
       '@types/babel__core': 7.20.5
       react-refresh: 0.18.0
       vite: 7.3.1(@types/node@24.10.12)(jiti@2.6.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
->>>>>>> origin/main
     transitivePeerDependencies:
       - supports-color
 
@@ -12917,13 +12872,7 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-<<<<<<< HEAD
-  lru.min@1.1.3: {}
-
-  lucide-react@0.454.0(react@19.2.3):
-=======
   lucide-react@0.454.0(react@18.3.1):
->>>>>>> origin/main
     dependencies:
       react: 19.2.3
 
@@ -13482,13 +13431,9 @@ snapshots:
 
   react-refresh@0.17.0: {}
 
-<<<<<<< HEAD
-  react-remove-scroll-bar@2.3.8(@types/react@19.2.7)(react@19.2.3):
-=======
   react-refresh@0.18.0: {}
 
   react-remove-scroll-bar@2.3.8(@types/react@18.3.27)(react@18.3.1):
->>>>>>> origin/main
     dependencies:
       react: 19.2.3
       react-style-singleton: 2.2.3(@types/react@19.2.7)(react@19.2.3)
@@ -13520,9 +13465,6 @@ snapshots:
       react-dom: 19.2.3(react@19.2.3)
       react-router: 7.10.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
 
-<<<<<<< HEAD
-  react-router@6.30.2(react@19.2.3):
-=======
   react-router-dom@7.13.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
     dependencies:
       react: 19.2.3
@@ -13530,7 +13472,6 @@ snapshots:
       react-router: 7.13.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
 
   react-router@6.30.2(react@18.3.1):
->>>>>>> origin/main
     dependencies:
       '@remix-run/router': 1.23.1
       react: 19.2.3
@@ -14614,11 +14555,7 @@ snapshots:
       d3-time: 3.1.0
       d3-timer: 3.0.1
 
-<<<<<<< HEAD
-  vite@7.3.0(@types/node@22.19.3)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0):
-=======
   vite@7.3.0(@types/node@24.10.12)(jiti@2.6.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2):
->>>>>>> origin/main
     dependencies:
       esbuild: 0.27.2
       fdir: 6.5.0(picomatch@4.0.3)

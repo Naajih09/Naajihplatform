@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, UserRole } from '@prisma/client';
-<<<<<<< HEAD
-import { DatabaseService } from 'src/database/database.service';
-=======
-import { DatabaseService } from '../database/database.service';
+import { UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { DatabaseService } from '../database/database.service';
 
 interface CreateUserDto {
   email: string;
@@ -13,7 +10,6 @@ interface CreateUserDto {
   firstName: string;
   lastName: string;
 }
->>>>>>> origin/main
 
 interface CreateUserDto {
   email: string;
@@ -27,11 +23,7 @@ interface CreateUserDto {
 export class UsersService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-<<<<<<< HEAD
-  // 1. SIGNUP logic (Create User + Profile)
-=======
   // 1. SIGNUP (Create User + Profile + Hash Password)
->>>>>>> origin/main
   async create(createUserDto: CreateUserDto) {
     const { email, password, role, firstName, lastName } = createUserDto;
     
@@ -49,10 +41,6 @@ export class UsersService {
       profileData = { entrepreneurProfile: { create: { firstName, lastName } } };
     }
 
-<<<<<<< HEAD
-    return this.databaseService.user.create({
-      data: { email, password, role, ...profileData },
-=======
     // Save to Database
     const newUser = await this.databaseService.user.create({
       data: { 
@@ -62,7 +50,6 @@ export class UsersService {
         ...profileData 
       },
       include: { entrepreneurProfile: true, investorProfile: true }
->>>>>>> origin/main
     });
 
     // Remove password before returning
@@ -71,13 +58,8 @@ export class UsersService {
     return result;
   }
 
-<<<<<<< HEAD
-  // 2. LOGIN logic (Check Password)
-  async login(email: string, password: string) {
-=======
   // 2. LOGIN (Check Hashed Password)
   async login(email: string, pass: string) {
->>>>>>> origin/main
     const user = await this.databaseService.user.findUnique({
       where: { email },
       include: { entrepreneurProfile: true, investorProfile: true },

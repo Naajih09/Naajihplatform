@@ -11,15 +11,10 @@ generator client {
 
 
 datasource db {
-<<<<<<< HEAD
-  provider = "postgresql",
-  // url    = env("DATABASE_URL")
-=======
   provider = "postgresql"
   // This reads the link from your apps/api/.env file
   url      = env("DATABASE_URL")
  // directUrl = env("DIRECT_URL")
->>>>>>> origin/main
 }
 
 

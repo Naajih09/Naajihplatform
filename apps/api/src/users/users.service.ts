@@ -11,14 +11,6 @@ interface CreateUserDto {
   lastName: string;
 }
 
-interface CreateUserDto {
-  email: string;
-  password: string;
-  role: UserRole;
-  firstName: string;
-  lastName: string;
-}
-
 @Injectable()
 export class UsersService {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -125,11 +117,11 @@ export class UsersService {
 
   // 6. DASHBOARD STATS
   async getDashboardStats(userId: string) {
-    const pitchCount = await this.databaseService.pitch.count({
-      where: { userId: userId }
+    const activePitches = await this.databaseService.pitch.count({
+      where: { userId }
     });
 
-    const connectionCount = await this.databaseService.connection.count({
+    const pendingConnections = await this.databaseService.connection.count({
       where: { 
         receiverId: userId,
         status: 'PENDING'
@@ -138,12 +130,12 @@ export class UsersService {
 
     const user = await this.databaseService.user.findUnique({
       where: { id: userId },
-      select: { isVerified: true } 
+      select: { isVerified: true }
     });
 
     return {
-      activePitches: pitchCount,
-      pendingConnections: connectionCount,
+      activePitches,
+      pendingConnections,
       isVerified: user?.isVerified || false,
       totalViews: 0 
     };

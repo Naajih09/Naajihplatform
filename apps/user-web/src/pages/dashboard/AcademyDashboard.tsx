@@ -1,48 +1,52 @@
-import React, { useState } from 'react';
-import { 
-  BookOpen, CheckCircle, Lock, PlayCircle, FileText, 
-  Calendar, Award, ChevronRight, Clock, AlertCircle 
+import {
+    AlertCircle,
+    Award,
+    BookOpen, CheckCircle,
+    ChevronRight, Clock,
+    FileText,
+    PlayCircle
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import Button from '../../components/Button';
-import { useNavigate } from 'react-router-dom';
-
-// MOCK DATA (To visualize the structure before connecting API)
-const PROGRAM_DATA = {
-  title: "Business Builder Program",
-  cohort: "Cohort 3 (Feb 2026)",
-  progress: 35,
-  currentWeek: "Week 2: Market Validation",
-  nextDeadline: "Friday, 12 Feb - 11:59 PM",
-  modules: [
-    {
-      id: 1, title: "Week 1: Mindset & Ideation", status: "COMPLETED",
-      lessons: [
-        { id: 101, title: "Welcome to the Program", type: "VIDEO", completed: true },
-        { id: 102, title: "The Entrepreneurial Mindset", type: "READ", completed: true },
-      ]
-    },
-    {
-      id: 2, title: "Week 2: Market Validation", status: "ACTIVE",
-      lessons: [
-        { id: 201, title: "Identifying Your Customer", type: "VIDEO", completed: true },
-        { id: 202, title: "Conducting Interviews", type: "READ", completed: false }, // Current
-        { id: 203, title: "The Mom Test Framework", type: "READ", completed: false },
-      ]
-    },
-    {
-      id: 3, title: "Week 3: Financial Modeling", status: "LOCKED", lessons: []
-    }
-  ],
-  tasks: [
-    { id: 1, title: "Submit 50 Customer Interviews", status: "PENDING", due: "12 Feb" },
-    { id: 2, title: "Define Value Proposition", status: "SUBMITTED", due: "10 Feb" },
-    { id: 3, title: "Week 1 Quiz", status: "APPROVED", due: "05 Feb" },
-  ]
-};
 
 const AcademyDashboard = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [activeModule, setActiveModule] = useState(2); // Week 2 is active
+  const [program, setProgram] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeModule, setActiveModule] = useState<string | null>(null);
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+  useEffect(() => {
+    const fetchProgram = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`http://localhost:3000/api/academy/${id}?userId=${user.id}`);
+        const data = await res.json();
+        setProgram(data);
+        // Set first active module if any
+        if (data.modules?.length > 0) {
+           setActiveModule(data.modules[0].id);
+        }
+      } catch (err) {
+        console.error("Failed to load program", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id && user.id) fetchProgram();
+  }, [id, user.id]);
+
+  if (loading) return <div className="text-center py-20 text-gray-500">Loading your curriculum...</div>;
+  if (!program) return <div className="text-center py-20 text-red-500">Program not found</div>;
+
+  // Calculate progress
+  const allLessons = program.modules.flatMap((m: any) => m.lessons);
+  const completedLessons = allLessons.filter((l: any) => l.progress && l.progress.length > 0);
+  const progressPercent = allLessons.length > 0 ? Math.round((completedLessons.length / allLessons.length) * 100) : 0;
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-20 font-sans text-white">
@@ -55,35 +59,35 @@ const AcademyDashboard = () => {
           <div>
             <div className="flex items-center gap-3 mb-2">
                <span className="bg-primary/20 text-primary text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                 {PROGRAM_DATA.cohort}
+                 {program.cohort || 'Cohort 1'}
                </span>
                <span className="text-gray-400 text-sm flex items-center gap-1">
-                 <Clock size={14}/> Next Deadline: <span className="text-white font-bold">{PROGRAM_DATA.nextDeadline}</span>
+                 <Clock size={14}/> Ongoing Learning
                </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-black">{PROGRAM_DATA.title}</h1>
-            <p className="text-gray-400 mt-2">You are currently on <span className="text-white font-bold">{PROGRAM_DATA.currentWeek}</span>.</p>
+            <h1 className="text-3xl md:text-4xl font-black">{program.title}</h1>
+            <p className="text-gray-400 mt-2">{program.description}</p>
           </div>
 
           <div className="w-full md:w-64">
             <div className="flex justify-between text-xs font-bold mb-2 uppercase text-gray-500">
               <span>Program Progress</span>
-              <span className="text-primary">{PROGRAM_DATA.progress}%</span>
+              <span className="text-primary">{progressPercent}%</span>
             </div>
             <div className="h-3 w-full bg-gray-800 rounded-full overflow-hidden">
-              <div className="h-full bg-primary" style={{ width: `${PROGRAM_DATA.progress}%` }}></div>
+              <div className="h-full bg-primary" style={{ width: `${progressPercent}%` }}></div>
             </div>
             <div className="flex justify-between mt-4">
                <div className="text-center">
-                  <p className="text-2xl font-bold">12</p>
+                  <p className="text-2xl font-bold">{allLessons.length}</p>
                   <p className="text-[10px] text-gray-500 uppercase">Lessons</p>
                </div>
                <div className="text-center">
-                  <p className="text-2xl font-bold">4</p>
-                  <p className="text-[10px] text-gray-500 uppercase">Projects</p>
+                  <p className="text-2xl font-bold">{completedLessons.length}</p>
+                  <p className="text-[10px] text-gray-500 uppercase">Completed</p>
                </div>
                <div className="text-center">
-                  <p className="text-2xl font-bold">0</p>
+                  <p className="text-2xl font-bold">{progressPercent === 100 ? 1 : 0}</p>
                   <p className="text-[10px] text-gray-500 uppercase">Certs</p>
                </div>
             </div>
@@ -99,43 +103,42 @@ const AcademyDashboard = () => {
               <h2 className="text-xl font-bold flex items-center gap-2">
                  <BookOpen className="text-primary" size={24}/> Curriculum
               </h2>
-              <Button className="bg-primary text-black font-bold text-sm px-6">Continue Learning</Button>
            </div>
 
            <div className="space-y-4">
-             {PROGRAM_DATA.modules.map((mod) => (
-               <div key={mod.id} className={`border rounded-xl overflow-hidden transition-all ${mod.id === activeModule ? 'bg-[#151518] border-primary/50' : 'bg-[#1d1d20] border-gray-800 opacity-80 hover:opacity-100'}`}>
+             {program.modules.map((mod: any) => (
+               <div key={mod.id} className={`border rounded-xl overflow-hidden transition-all ${mod.id === activeModule ? 'bg-[#151518] border-primary/50' : 'bg-[#1d1d20] border-gray-800'}`}>
                   
                   {/* Module Header */}
-                  <div className="p-4 flex items-center justify-between cursor-pointer" onClick={() => mod.status !== 'LOCKED' && setActiveModule(mod.id)}>
+                  <div className="p-4 flex items-center justify-between cursor-pointer" onClick={() => setActiveModule(mod.id)}>
                     <div className="flex items-center gap-4">
-                       <div className={`size-10 rounded-full flex items-center justify-center font-bold text-sm ${mod.status === 'COMPLETED' ? 'bg-green-900/50 text-green-500' : mod.status === 'ACTIVE' ? 'bg-primary text-black' : 'bg-gray-800 text-gray-500'}`}>
-                          {mod.status === 'COMPLETED' ? <CheckCircle size={20}/> : mod.status === 'LOCKED' ? <Lock size={20}/> : mod.id}
+                       <div className={`size-10 rounded-full flex items-center justify-center font-bold text-sm ${mod.id === activeModule ? 'bg-primary text-black' : 'bg-gray-800 text-gray-500'}`}>
+                          {mod.order}
                        </div>
                        <div>
-                          <h3 className={`font-bold ${mod.status === 'ACTIVE' ? 'text-white' : 'text-gray-400'}`}>{mod.title}</h3>
-                          <p className="text-xs text-gray-500">{mod.status === 'LOCKED' ? 'Available next week' : `${mod.lessons.length} Lessons`}</p>
+                          <h3 className={`font-bold ${mod.id === activeModule ? 'text-white' : 'text-gray-400'}`}>{mod.title}</h3>
+                          <p className="text-xs text-gray-500">{mod.lessons?.length || 0} Lessons</p>
                        </div>
                     </div>
-                    {mod.status !== 'LOCKED' && <ChevronRight size={20} className={`transform transition-transform ${mod.id === activeModule ? 'rotate-90' : ''} text-gray-500`}/>}
+                    <ChevronRight size={20} className={`transform transition-transform ${mod.id === activeModule ? 'rotate-90' : ''} text-gray-500`}/>
                   </div>
 
                   {/* Lessons List (Only if Active) */}
                   {mod.id === activeModule && (
                     <div className="border-t border-gray-800 bg-black/20">
-                       {mod.lessons.map((lesson) => (
-                         <div key={lesson.id} className="p-4 flex items-center justify-between hover:bg-white/5 cursor-pointer transition-colors group" onClick={() => navigate(`/dashboard/academy/${lesson.id}`)}>
+                       {mod.lessons.map((lesson: any) => (
+                         <div key={lesson.id} className="p-4 flex items-center justify-between hover:bg-white/5 cursor-pointer transition-colors group" onClick={() => navigate(`/dashboard/academy/course/${lesson.id}`)}>
                             <div className="flex items-center gap-3">
-                               {lesson.completed ? (
+                               {lesson.progress && lesson.progress.length > 0 ? (
                                  <CheckCircle size={18} className="text-green-500" />
                                ) : (
                                  <div className="size-4.5 rounded-full border-2 border-gray-600 group-hover:border-primary"></div>
                                )}
-                               <span className={`text-sm ${lesson.completed ? 'text-gray-500 line-through' : 'text-white font-medium'}`}>{lesson.title}</span>
+                               <span className={`text-sm ${lesson.progress?.length > 0 ? 'text-gray-500 line-through' : 'text-white font-medium'}`}>{lesson.title}</span>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">
-                               {lesson.type === 'VIDEO' ? <PlayCircle size={12}/> : <FileText size={12}/>}
-                               {lesson.type}
+                               {lesson.contentType === 'VIDEO' ? <PlayCircle size={12}/> : <FileText size={12}/>}
+                               {lesson.contentType}
                             </div>
                          </div>
                        ))}
@@ -152,23 +155,12 @@ const AcademyDashboard = () => {
            {/* Weekly Tasks */}
            <div className="bg-[#1d1d20] border border-gray-800 rounded-xl p-6">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <AlertCircle className="text-yellow-500" size={20}/> This Week's Tasks
+                <AlertCircle className="text-yellow-500" size={20}/> Program Tasks
               </h3>
               <div className="space-y-3">
-                {PROGRAM_DATA.tasks.map((task) => (
-                   <div key={task.id} className="p-3 bg-[#151518] rounded-lg border border-gray-800 flex items-start gap-3">
-                      <div className={`mt-1 size-2 rounded-full ${task.status === 'PENDING' ? 'bg-yellow-500' : task.status === 'APPROVED' ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-                      <div className="flex-1">
-                         <p className="text-sm font-bold text-white">{task.title}</p>
-                         <div className="flex justify-between items-center mt-2">
-                            <span className="text-[10px] text-gray-500 bg-gray-800 px-2 py-0.5 rounded">Due: {task.due}</span>
-                            <span className={`text-[10px] font-bold uppercase ${task.status === 'PENDING' ? 'text-yellow-500' : task.status === 'APPROVED' ? 'text-green-500' : 'text-blue-500'}`}>
-                               {task.status}
-                            </span>
-                         </div>
-                      </div>
-                   </div>
-                ))}
+                 <div className="p-8 text-center text-xs text-gray-500">
+                    Submit your business assignments here.
+                 </div>
               </div>
               <Button variant="outline" className="w-full mt-4 text-xs h-10 border-gray-700 hover:border-primary hover:text-primary">
                  View All Assignments
@@ -180,10 +172,8 @@ const AcademyDashboard = () => {
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <Award className="text-primary" size={20}/> Milestones
               </h3>
-              <div className="flex flex-wrap gap-2">
-                 <div className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/50 rounded-full text-xs font-bold flex items-center gap-1"><CheckCircle size={12}/> Idea Validated</div>
-                 <div className="px-3 py-1 bg-gray-800 text-gray-500 border border-gray-700 rounded-full text-xs font-bold flex items-center gap-1 opacity-50"><Lock size={12}/> First Sale</div>
-                 <div className="px-3 py-1 bg-gray-800 text-gray-500 border border-gray-700 rounded-full text-xs font-bold flex items-center gap-1 opacity-50"><Lock size={12}/> Pitch Ready</div>
+              <div className="flex flex-wrap gap-2 text-[10px] text-gray-500 uppercase font-bold">
+                 No milestones achieved yet.
               </div>
            </div>
 

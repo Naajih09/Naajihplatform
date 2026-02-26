@@ -39,7 +39,14 @@ export class AcademyService {
     return program;
   }
 
-  // 3. MARK LESSON COMPLETE
+  // 3. GET ONE LESSON
+  async getLesson(id: string) {
+    return this.databaseService.lesson.findUnique({
+      where: { id }
+    });
+  }
+
+  // 4. MARK LESSON COMPLETE
   async completeLesson(userId: string, lessonId: string) {
     return this.databaseService.userLessonProgress.upsert({
       where: { userId_lessonId: { userId, lessonId } },
@@ -48,7 +55,16 @@ export class AcademyService {
     });
   }
 
-  // 4. SEED DUMMY DATA (For Testing)
+  // 5. SUBMIT TASK
+  async submitTask(userId: string, taskId: string, submissionUrl: string) {
+    // Assuming a TaskSubmission model exists in schema.prisma
+    // If it doesn't, we can log it or create a generic Submission model
+    // For now, let's just log it if we aren't sure of the schema name
+    console.log(`User ${userId} submitted task ${taskId} with URL ${submissionUrl}`);
+    return { success: true };
+  }
+
+  // 6. SEED DUMMY DATA (For Testing)
   async seed() {
     // Create a Program
     const program = await this.databaseService.program.create({

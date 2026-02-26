@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { AcademyService } from './academy.service';
 
 @Controller('academy')
@@ -10,18 +10,23 @@ export class AcademyController {
     return this.academyService.findAll();
   }
 
-  @Post('seed') // Call this once to create data!
-  seed() {
-    return this.academyService.seed();
-  }
-
-  @Get(':id/user/:userId')
-  findOne(@Param('id') id: string, @Param('userId') userId: string) {
+  @Get(':id')
+  findOne(@Param('id') id: string, @Query('userId') userId: string) {
     return this.academyService.findOne(id, userId);
   }
 
-  @Post('complete')
-  completeLesson(@Body() body: { userId: string, lessonId: string }) {
-    return this.academyService.completeLesson(body.userId, body.lessonId);
+  @Post('lesson/:lessonId/complete')
+  completeLesson(@Param('lessonId') lessonId: string, @Body('userId') userId: string) {
+    return this.academyService.completeLesson(userId, lessonId);
+  }
+
+  @Get('lesson/:id')
+  getLesson(@Param('id') id: string) {
+    return this.academyService.getLesson(id);
+  }
+
+  @Post('seed')
+  seed() {
+    return this.academyService.seed();
   }
 }

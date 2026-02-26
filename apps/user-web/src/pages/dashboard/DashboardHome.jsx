@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Rocket, Network, ShieldCheck, BookOpen, PlayCircle, Award, Calendar, ChevronRight } from 'lucide-react';
+import { Award, BookOpen, Calendar, ChevronRight, Network, PlayCircle, Rocket, ShieldCheck } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
-import AcademyDashboard from './AcademyDashboard';
 
 function DashboardHome() {
   const navigate = useNavigate();
@@ -30,10 +29,10 @@ function DashboardHome() {
       setLoading(true);
       try {
 if (isAspirant) {
-  // If Aspirant, fetch Courses
+  // If Aspirant, fetch Programs
   const res = await fetch('http://localhost:3000/api/academy');
   const data = await res.json();
-  setCourses(data);
+  setCourses(data); // "courses" actually refers to Programs here
 } else {
   // If Entrepreneur/Investor, fetch Stats
   const res = await fetch(`http://localhost:3000/api/users/stats/${user.id}`);

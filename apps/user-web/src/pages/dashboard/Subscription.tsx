@@ -4,23 +4,24 @@ import { useSearchParams } from 'react-router-dom';
 
 export default function Subscription() {
   const [loading, setLoading] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<'paystack' | 'opay'>('paystack');
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const reference = searchParams.get('reference') || searchParams.get('trxref');
+    const reference = searchParams.get('reference') || searchParams.get('trxref') || searchParams.get('orderNo');
+    const provider = (searchParams.get('provider') as 'paystack' | 'opay') || 'paystack';
     if (reference) {
-      verifyPayment(reference);
+      verifyPayment(provider, reference);
     }
   }, [searchParams]);
 
-  const verifyPayment = async (reference: string) => {
+  const verifyPayment = async (provider: 'paystack' | 'opay', reference: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/payments/verify?reference=${reference}`);
+      const res = await fetch(`http://localhost:3000/api/payments/verify?provider=${provider}&reference=${reference}`);
       const data = await res.json();
       if (data.status === 'success') {
         alert("Subscription successful! You are now a Premium member.");
-        // Optionally update local user state or redirect
       } else {
         alert("Payment verification failed.");
       }
@@ -38,7 +39,11 @@ export default function Subscription() {
       const res = await fetch('http://localhost:3000/api/payments/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, amount: 15000 }),
+        body: JSON.stringify({ 
+          provider: selectedProvider,
+          email: user.email, 
+          amount: 15000 
+        }),
       });
       const data = await res.json();
       if (data.authorization_url) {
@@ -47,6 +52,7 @@ export default function Subscription() {
         alert("Failed to initialize payment");
       }
     } catch (error) {
+      console.error("Payment error", error);
       alert("Payment error occurred");
     } finally {
       setLoading(false);
@@ -116,9 +122,24 @@ export default function Subscription() {
                     <span className="text-5xl font-black">₦15,000</span>
                     <span className="text-white/50">/ month</span>
                 </div>
-                <p className="text-sm text-white/70 mb-8 flex-grow">
-                    For serious founders and investors ready to close deals.
-                </p>
+                
+                <div className="mb-6 space-y-3">
+                  <p className="text-xs font-bold text-white/50 uppercase tracking-widest">Select Payment Method</p>
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={() => setSelectedProvider('paystack')}
+                      className={`flex-1 py-2 rounded-lg border text-xs font-bold transition-all ${selectedProvider === 'paystack' ? 'bg-primary text-black border-primary' : 'bg-white/5 text-white/60 border-white/10 hover:border-white/20'}`}
+                    >
+                      Paystack
+                    </button>
+                    <button 
+                      onClick={() => setSelectedProvider('opay')}
+                      className={`flex-1 py-2 rounded-lg border text-xs font-bold transition-all ${selectedProvider === 'opay' ? 'bg-primary text-black border-primary' : 'bg-white/5 text-white/60 border-white/10 hover:border-white/20'}`}
+                    >
+                      OPay
+                    </button>
+                  </div>
+                </div>
 
                 <ul className="space-y-4 mb-8">
                     {['Unlimited pitch creations', 'Advanced filtering & deal discovery', 'Unlimited messaging & connections', 'Priority placement in feeds', 'Export network data'].map((feature, i) => (

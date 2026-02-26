@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, FileText, ExternalLink, Loader2 } from 'lucide-react';
+import { CheckCircle, ExternalLink, FileText, Loader2, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const Verification = () => {
   const [requests, setRequests] = useState<any[]>([]);
@@ -8,7 +8,12 @@ const Verification = () => {
   // 1. FETCH PENDING REQUESTS
   const fetchRequests = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/verification/admin/pending');
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3000/api/verification/admin/pending', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const data = await res.json();
       setRequests(data);
     } catch (err) {
@@ -27,9 +32,13 @@ const Verification = () => {
     if (!confirm(`Are you sure you want to ${status} this user?`)) return;
 
     try {
+      const token = localStorage.getItem('token');
       await fetch(`http://localhost:3000/api/verification/admin/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ status })
       });
       

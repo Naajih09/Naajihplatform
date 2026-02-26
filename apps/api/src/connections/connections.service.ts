@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import { Prisma } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ConnectionsService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   // 1. SEND CONNECTION REQUEST
   async create(data: any) {
@@ -22,13 +25,23 @@ export class ConnectionsService {
 
     if (existing) throw new Error('Connection already exists or is pending');
 
-    return this.databaseService.connection.create({
+    const connection = await this.databaseService.connection.create({
       data: {
         senderId,
         receiverId,
         status: 'PENDING',
       },
     });
+
+    // Notify receiver
+    const sender = await this.databaseService.user.findUnique({
+      where: { id: senderId },
+      include: { entrepreneurProfile: true, investorProfile: true }
+    });
+    const senderName = sender?.entrepreneurProfile?.firstName || sender?.investorProfile?.firstName || 'Someone';
+    await this.notificationsService.create(receiverId, `${senderName} sent you a connection request.`);
+
+    return connection;
   }
 
   // 2. GET MY CONNECTIONS (Accepted)
@@ -60,9 +73,17 @@ export class ConnectionsService {
 
   // 4. ACCEPT / REJECT REQUEST
   async respond(id: string, status: 'ACCEPTED' | 'REJECTED') {
-    return this.databaseService.connection.update({
+    const connection = await this.databaseService.connection.update({
       where: { id },
       data: { status },
+      include: { receiver: { include: { entrepreneurProfile: true, investorProfile: true } } }
     });
+
+    if (status === 'ACCEPTED') {
+      const receiverName = connection.receiver?.entrepreneurProfile?.firstName || connection.receiver?.investorProfile?.firstName || 'Someone';
+      await this.notificationsService.create(connection.senderId, `${receiverName} accepted your connection request.`);
+    }
+
+    return connection;
   }
 }

@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ConnectionsService } from './connections.service';
+import { DatabaseModule } from '../database/database.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { ConnectionsController } from './connections.controller';
-import { DatabaseModule } from '../database/database.module'; // <--- Import this
+import { ConnectionsService } from './connections.service';
 
 @Module({
-  imports: [DatabaseModule], // <--- Add this line!
+  imports: [DatabaseModule, NotificationsModule],
   controllers: [ConnectionsController],
   providers: [ConnectionsService],
 })

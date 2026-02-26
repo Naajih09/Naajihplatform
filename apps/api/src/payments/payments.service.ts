@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { DatabaseService } from '../database/database.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PaymentsService {
@@ -9,7 +10,10 @@ export class PaymentsService {
   private readonly OPAY_MERCHANT_ID = process.env.OPAY_MERCHANT_ID;
   private readonly OPAY_PUB_KEY = process.env.OPAY_PUB_KEY;
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async initializeTransaction(provider: 'paystack' | 'opay', email: string, amount: number) {
     if (provider === 'paystack') {
@@ -130,6 +134,9 @@ export class PaymentsService {
             endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           },
         });
+
+        // Notify user
+        await this.notificationsService.create(user.id, `Subscription upgraded to PREMIUM! Enjoy your new perks.`);
       }
     }
     return { status };

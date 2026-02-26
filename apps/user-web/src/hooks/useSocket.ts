@@ -16,6 +16,7 @@ export const useSocket = (userId: string) => {
     socket.on('connect', () => {
       console.log('Connected to socket server');
       socket.emit('join_room', { userId });
+      socket.emit('join_notifications', { userId }); // Support real-time notifications
     });
 
     socket.on('disconnect', () => {

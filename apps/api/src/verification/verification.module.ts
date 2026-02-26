@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { VerificationService } from './verification.service';
+import { DatabaseModule } from '../database/database.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { VerificationController } from './verification.controller';
-import { DatabaseModule } from '../database/database.module'; 
+import { VerificationService } from './verification.service';
 
 @Module({
-  imports: [DatabaseModule], 
+  imports: [DatabaseModule, NotificationsModule], 
   controllers: [VerificationController],
   providers: [VerificationService],
 })

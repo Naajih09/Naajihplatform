@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class VerificationService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   // 1. SUBMIT REQUEST (User)
   async create(data: any) {
@@ -37,7 +41,7 @@ export class VerificationService {
     });
   }
 
-  // 3. ADMIN: GET ALL PENDING (This was missing!)
+  // 3. ADMIN: GET ALL PENDING
   async findAllPending() {
     return this.databaseService.verificationRequest.findMany({
       where: { status: 'PENDING' },
@@ -49,7 +53,7 @@ export class VerificationService {
     });
   }
 
-  // 4. ADMIN: APPROVE/REJECT (This was missing!)
+  // 4. ADMIN: APPROVE/REJECT
   async updateStatus(id: string, status: 'APPROVED' | 'REJECTED') {
     // 1. Update the Request
     const request = await this.databaseService.verificationRequest.update({
@@ -64,6 +68,12 @@ export class VerificationService {
         data: { isVerified: true }
       });
     }
+
+    // 3. Notify User
+    await this.notificationsService.create(
+      request.userId, 
+      `Your verification request has been ${status.toLowerCase()}.`
+    );
 
     return request;
   }

@@ -2,17 +2,16 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { AcademyModule } from './academy/academy.module';
+import { AuthModule } from './auth/auth.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ConnectionsModule } from './connections/connections.module';
 import { DatabaseModule } from './database/database.module';
-import { PitchesModule } from './pitches/pitches.module';
-import { UsersModule } from './users/users.module'; 
-import { CloudinaryModule } from './cloudinary/cloudinary.module'; 
 import { MessagesModule } from './messages/messages.module';
-import { CloudinaryController } from './cloudinary/cloudinary.controller';
-import { VerificationModule } from './verification/verification.module';
 import { NotificationsModule } from './notifications/notifications.module';
-import { AuthModule } from './auth/auth.module';
-import { AcedemyModule } from './acedemy/acedemy.module';
+import { PitchesModule } from './pitches/pitches.module';
+import { UsersModule } from './users/users.module';
+import { VerificationModule } from './verification/verification.module';
 
 
 @Module({
@@ -41,7 +40,7 @@ import { AcedemyModule } from './acedemy/acedemy.module';
     VerificationModule,
     NotificationsModule,
     AuthModule,
-    AcedemyModule,
+    AcademyModule,
   ], 
   controllers: [],
   providers: [

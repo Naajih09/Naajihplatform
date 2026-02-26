@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Param, Body } from '@nestjs/common';
-import { AcademyService } from './acedemy.service';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { AcademyService } from './academy.service';
 
 @Controller('academy')
 export class AcademyController {

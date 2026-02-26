@@ -11,6 +11,8 @@ const DashboardHome = lazy(() => import('../pages/dashboard/DashboardHome'));
 const Opportunities = lazy(() => import('../pages/dashboard/Opportunities'));
 const PitchDetails = lazy(() => import('../pages/dashboard/PitchDetails')); 
 const Profile = lazy(() => import('../pages/dashboard/Profile'));
+const InvestorDashboard = lazy(() => import('../pages/dashboard/InvestorDashboard'));
+const Subscription = lazy(() => import('../pages/dashboard/Subscription'));
 const CreatePitch = lazy(() => import('../pages/dashboard/CreatePitch'));
 const Connections = lazy(() => import('../pages/dashboard/Connections'));
 const Messages = lazy(() => import('../pages/dashboard/Messages').then(module => ({ default: module.default })));
@@ -63,6 +65,11 @@ const routes = [
     element: <Opportunities />,
     layout: 'dashboard',
   },
+  {
+    path: 'dashboard/investor',
+    element: <InvestorDashboard />,
+    layout: 'dashboard',
+  },
   // --- NEW: DYNAMIC PITCH DETAILS ROUTE ---
   {
     path: 'dashboard/opportunities/:id', 
@@ -72,6 +79,11 @@ const routes = [
   {
     path: 'dashboard/profile',
     element: <Profile />,
+    layout: 'dashboard',
+  },
+  {
+    path: 'dashboard/subscription',
+    element: <Subscription />,
     layout: 'dashboard',
   },
   {

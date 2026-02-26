@@ -9,6 +9,7 @@ import { ConnectionsModule } from './connections/connections.module';
 import { DatabaseModule } from './database/database.module';
 import { MessagesModule } from './messages/messages.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PaymentsModule } from './payments/payments.module';
 import { PitchesModule } from './pitches/pitches.module';
 import { UsersModule } from './users/users.module';
 import { VerificationModule } from './verification/verification.module';
@@ -41,6 +42,7 @@ import { VerificationModule } from './verification/verification.module';
     NotificationsModule,
     AuthModule,
     AcademyModule,
+    PaymentsModule,
   ], 
   controllers: [],
   providers: [

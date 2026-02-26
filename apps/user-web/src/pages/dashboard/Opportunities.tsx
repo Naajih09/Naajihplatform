@@ -1,10 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Search, Filter, MapPin, TrendingUp, DollarSign, Clock, 
-  ChevronDown, Verified, Plus, X, UserPlus, CheckCircle, Loader2, UploadCloud
+import {
+    CheckCircle,
+    DollarSign,
+    Loader2,
+    Plus,
+    Search,
+    TrendingUp,
+    UploadCloud,
+    UserPlus,
+    Verified,
+    X
 } from 'lucide-react';
-import Button from '../../components/Button';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Button from '../../components/Button';
 
 const Opportunities = () => {
   const [pitches, setPitches] = useState<any[]>([]);
@@ -19,6 +27,12 @@ const Opportunities = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   // --- 1. FETCH PITCHES (With Search & Filter) ---
+  const [filters, setFilters] = useState({
+    stage: 'All',
+    minTicket: '',
+    maxTicket: ''
+  });
+
   const fetchPitches = async () => {
     setLoading(true);
     try {
@@ -26,6 +40,9 @@ const Opportunities = () => {
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
       if (activeCategory && activeCategory !== 'All') params.append('category', activeCategory);
+      if (filters.stage !== 'All') params.append('stage', filters.stage);
+      if (filters.minTicket) params.append('minTicket', filters.minTicket);
+      if (filters.maxTicket) params.append('maxTicket', filters.maxTicket);
 
       const res = await fetch(`http://localhost:3000/api/pitches?${params.toString()}`);
       const data = await res.json();
@@ -45,7 +62,7 @@ const Opportunities = () => {
       fetchPitches();
     }, 500);
     return () => clearTimeout(delay);
-  }, [searchTerm, activeCategory]);
+  }, [searchTerm, activeCategory, filters]);
 
   // --- 2. HANDLE CONNECT ---
   const handleConnect = async (pitch: any) => {
@@ -103,24 +120,63 @@ const Opportunities = () => {
       </div>
 
       {/* FILTER CHIPS */}
-      <div className="flex flex-wrap items-center gap-3 mb-8 pb-4 border-b border-slate-200 dark:border-white/10">
-        {['All', 'FinTech', 'AgriTech', 'HealthTech', 'Retail'].map((cat) => (
-          <button 
-            key={cat} 
-            onClick={() => setActiveCategory(cat)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
-              activeCategory === cat 
-              ? 'bg-primary text-neutral-dark font-bold border-primary' 
-              : 'bg-slate-200 dark:bg-[#1d1f23] text-slate-700 dark:text-slate-300 border-transparent hover:border-primary/50'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-        <div className="flex-grow"></div>
-        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest hidden sm:block">
-           Showing {pitches.length} Pitch Decks
-        </span>
+      <div className="flex flex-col gap-6 mb-8 pb-4 border-b border-slate-200 dark:border-white/10">
+        <div className="flex flex-wrap items-center gap-3">
+            {['All', 'FinTech', 'AgriTech', 'HealthTech', 'Retail'].map((cat) => (
+            <button 
+                key={cat} 
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                activeCategory === cat 
+                ? 'bg-primary text-neutral-dark font-bold border-primary' 
+                : 'bg-slate-200 dark:bg-[#1d1f23] text-slate-700 dark:text-slate-300 border-transparent hover:border-primary/50'
+                }`}
+            >
+                {cat}
+            </button>
+            ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-500 uppercase">Stage:</span>
+                <select 
+                    value={filters.stage} 
+                    onChange={(e) => setFilters({...filters, stage: e.target.value})}
+                    className="bg-slate-200 dark:bg-[#1d1f23] border-none rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none"
+                >
+                    <option value="All">All Stages</option>
+                    <option value="Idea">Idea</option>
+                    <option value="Seed">Seed</option>
+                    <option value="Growth">Growth</option>
+                    <option value="Scale">Scale</option>
+                </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-500 uppercase">Ticket (₦):</span>
+                <input 
+                    type="number" 
+                    placeholder="Min" 
+                    className="w-24 bg-slate-200 dark:bg-[#1d1f23] border-none rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
+                    value={filters.minTicket}
+                    onChange={(e) => setFilters({...filters, minTicket: e.target.value})}
+                />
+                <span className="text-slate-400">-</span>
+                <input 
+                    type="number" 
+                    placeholder="Max" 
+                    className="w-24 bg-slate-200 dark:bg-[#1d1f23] border-none rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
+                    value={filters.maxTicket}
+                    onChange={(e) => setFilters({...filters, maxTicket: e.target.value})}
+                />
+            </div>
+
+            <div className="flex-grow"></div>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest hidden sm:block">
+            Showing {pitches.length} Pitch Decks
+            </span>
+        </div>
       </div>
 
       {/* FEED */}

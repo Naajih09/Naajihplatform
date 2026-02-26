@@ -14,8 +14,15 @@ export class PitchesService {
   }
 
   // 2. GET ALL PITCHES (With Search & Filter)
-  async findAll(query: { search?: string; category?: string }) {
-    const { search, category } = query;
+  async findAll(query: { 
+    search?: string; 
+    category?: string;
+    stage?: string;
+    industry?: string;
+    minTicket?: string;
+    maxTicket?: string;
+  }) {
+    const { search, category, stage, industry, minTicket, maxTicket } = query;
 
     return this.prisma.pitch.findMany({
       where: {
@@ -23,6 +30,36 @@ export class PitchesService {
           // Filter by Category if provided
           category && category !== 'All' ? { category: category } : {},
           
+          // Filter by Stage (via EntrepreneurProfile)
+          stage && stage !== 'All' ? {
+            user: {
+              entrepreneurProfile: {
+                stage: stage
+              }
+            }
+          } : {},
+
+          // Filter by Industry (via EntrepreneurProfile)
+          industry && industry !== 'All' ? {
+            user: {
+              entrepreneurProfile: {
+                industry: industry
+              }
+            }
+          } : {},
+
+          // Filter by Ticket Size (fundingAsk)
+          minTicket ? {
+            fundingAsk: {
+              gte: minTicket
+            }
+          } : {},
+          maxTicket ? {
+            fundingAsk: {
+              lte: maxTicket
+            }
+          } : {},
+
           // Search by Title or Tagline if provided
           search ? {
             OR: [

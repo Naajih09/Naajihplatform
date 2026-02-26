@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, MoreVertical, Send, Loader2, User, Paperclip, Mic, StopCircle, FileText, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FileText, Loader2, Mic, MoreVertical, Paperclip, Search, Send, StopCircle, User } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useSocket } from '../../hooks/useSocket';
 
 const Messages = () => {
   const [partners, setPartners] = useState<any[]>([]);
@@ -22,6 +23,9 @@ const Messages = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // --- SOCKET HOOK ---
+  const socket = useSocket(user.id);
+
   // --- FETCH PARTNERS ---
   useEffect(() => {
     const fetchPartners = async () => {
@@ -38,26 +42,45 @@ const Messages = () => {
     fetchPartners();
   }, [user.id]);
 
-  // --- FETCH CONVERSATION ---
+  // --- FETCH CONVERSATION & SOCKET LISTENERS ---
   useEffect(() => {
     if (!activeChat) return;
 
-    const fetchMessages = async (isPolling = false) => {
+    const fetchMessages = async () => {
       try {
         const res = await fetch(`http://localhost:3000/api/messages/conversation/${user.id}/${activeChat.id}`);
         const data = await res.json();
         setMessages(data);
-        
-        if (!isPolling) {
-          scrollToBottom();
-        }
+        scrollToBottom();
       } catch (error) { console.error(error); }
     };
     
-    fetchMessages(false);
-    const interval = setInterval(() => fetchMessages(true), 3000); 
-    return () => clearInterval(interval);
+    fetchMessages();
   }, [activeChat, user.id]);
+
+  // Listen for incoming messages
+  useEffect(() => {
+    if (!socket || !activeChat) return;
+
+    socket.on('receive_message', (message: any) => {
+      // Only append if it's from the person we're currently chatting with
+      if (message.senderId === activeChat.id) {
+        setMessages(prev => [...prev, message]);
+        scrollToBottom();
+      }
+    });
+
+    socket.on('message_sent', (message: any) => {
+        // Confirmation for sender's own message (if not using optimistic UI fully)
+        // Since we currently use optimistic UI, we might not need to append again,
+        // but it's good for ensuring consistency.
+    });
+
+    return () => {
+      socket.off('receive_message');
+      socket.off('message_sent');
+    };
+  }, [socket, activeChat]);
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -82,32 +105,24 @@ const Messages = () => {
   };
 
   const sendMessage = async (content: string, type: 'TEXT' | 'IMAGE' | 'PDF' | 'AUDIO', url?: string) => {
-    if (!activeChat) return;
+    if (!activeChat || !socket) return;
     
-    const tempMsg = { 
-        content, 
-        senderId: user.id, 
-        type, 
-        attachmentUrl: url, 
-        createdAt: new Date() 
+    const messageData = {
+      content,
+      senderId: user.id,
+      receiverId: activeChat.id,
+      type,
+      attachmentUrl: url,
+      createdAt: new Date()
     };
-    setMessages(prev => [...prev, tempMsg]);
+
+    // Optimistic Update
+    setMessages(prev => [...prev, messageData]);
     scrollToBottom();
     setInputText('');
 
-    try {
-      await fetch('http://localhost:3000/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content,
-          senderId: user.id,
-          receiverId: activeChat.id,
-          type,
-          attachmentUrl: url
-        })
-      });
-    } catch (error) { alert("Failed to send"); }
+    // Send via Socket
+    socket.emit('send_message', messageData);
   };
 
   const handleTextSubmit = (e: React.FormEvent) => {

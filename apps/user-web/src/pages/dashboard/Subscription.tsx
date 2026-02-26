@@ -1,16 +1,56 @@
 import { Check, Info, Shield, Wallet, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Subscription() {
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const reference = searchParams.get('reference') || searchParams.get('trxref');
+    if (reference) {
+      verifyPayment(reference);
+    }
+  }, [searchParams]);
+
+  const verifyPayment = async (reference: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`http://localhost:3000/api/payments/verify?reference=${reference}`);
+      const data = await res.json();
+      if (data.status === 'success') {
+        alert("Subscription successful! You are now a Premium member.");
+        // Optionally update local user state or redirect
+      } else {
+        alert("Payment verification failed.");
+      }
+    } catch (error) {
+      console.error("Verification error", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleUpgrade = async () => {
     setLoading(true);
-    // Mocking an API call for payment checkout session
-    setTimeout(() => {
-      alert("Redirecting to Paystack/Stripe checkout...");
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const res = await fetch('http://localhost:3000/api/payments/initialize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, amount: 15000 }),
+      });
+      const data = await res.json();
+      if (data.authorization_url) {
+        window.location.href = data.authorization_url;
+      } else {
+        alert("Failed to initialize payment");
+      }
+    } catch (error) {
+      alert("Payment error occurred");
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (

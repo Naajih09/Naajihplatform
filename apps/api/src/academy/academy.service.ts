@@ -5,23 +5,27 @@ import { DatabaseService } from '../database/database.service';
 export class AcademyService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  // 1. GET ALL PROGRAMS (With progress count)
-  async findAll() {
+  // 1️⃣ GET ALL PROGRAMS (With optional progress count)
+  async findAll(userId?: string) {
     return this.databaseService.program.findMany({
-      include: { 
+      include: {
         modules: {
           include: {
-            lessons: { select: { id: true } } // Just count lessons
-          }
-        }
-      }
+            lessons: {
+              include: {
+                progress: userId ? { where: { userId } } : false,
+              },
+            },
+          },
+        },
+      },
     });
   }
 
-  // 2. GET ONE PROGRAM (With Lessons)
-  async findOne(id: string, userId: string) {
-    const program = await this.databaseService.program.findUnique({
-      where: { id },
+  // 2️⃣ GET ONE PROGRAM (With lessons + progress)
+  async findOne(programId: string, userId: string) {
+    return this.databaseService.program.findUnique({
+      where: { id: programId },
       include: {
         modules: {
           orderBy: { order: 'asc' },
@@ -29,66 +33,127 @@ export class AcademyService {
             lessons: {
               orderBy: { order: 'asc' },
               include: {
-                progress: { where: { userId } } // Check if User completed this lesson
-              }
-            }
-          }
-        }
-      }
+                progress: { where: { userId } },
+              },
+            },
+          },
+        },
+      },
     });
-    return program;
   }
 
-  // 3. GET ONE LESSON
+  // 3️⃣ GET ONE LESSON
   async getLesson(id: string) {
     return this.databaseService.lesson.findUnique({
-      where: { id }
+      where: { id },
     });
   }
 
-  // 4. MARK LESSON COMPLETE
+  // 4️⃣ MARK LESSON COMPLETE
   async completeLesson(userId: string, lessonId: string) {
     return this.databaseService.userLessonProgress.upsert({
       where: { userId_lessonId: { userId, lessonId } },
       update: { isCompleted: true },
-      create: { userId, lessonId, isCompleted: true }
+      create: { userId, lessonId, isCompleted: true },
     });
   }
 
-  // 5. SUBMIT TASK
-  async submitTask(userId: string, taskId: string, submissionUrl: string) {
-    // Assuming a TaskSubmission model exists in schema.prisma
-    // If it doesn't, we can log it or create a generic Submission model
-    // For now, let's just log it if we aren't sure of the schema name
-    console.log(`User ${userId} submitted task ${taskId} with URL ${submissionUrl}`);
-    return { success: true };
+  // 5️⃣ JOIN PROGRAM (ProgramEnrollment)
+  async joinProgram(userId: string, programId: string) {
+    return this.databaseService.programEnrollment.upsert({
+      where: { userId_programId: { userId, programId } },
+      update: {},
+      create: { userId, programId },
+    });
   }
 
-  // 6. SEED DUMMY DATA (For Testing)
+  // 6️⃣ SEED PROGRAMS + MODULES + LESSONS
   async seed() {
-    // Create a Program
-    const program = await this.databaseService.program.create({
-      data: {
-        title: "Halal Business 101",
-        cohort: "Cohort 1",
-        description: "The fundamentals of starting a Sharia-compliant business in Nigeria.",
-        modules: {
-          create: [
-            {
-              title: "Week 1",
-              order: 1,
-              lessons: {
-                create: [
-                  { title: "Welcome & Introduction", order: 1, contentType: "VIDEO", duration: 10, content: "Welcome to the course...", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
-                  { title: "Understanding Riba (Interest)", order: 2, contentType: "VIDEO", duration: 10, content: "Riba is forbidden...", videoUrl: "" },
-                  { title: "Structuring a Mudarabah Deal", order: 3, contentType: "VIDEO", duration: 10, content: "How to share profits...", videoUrl: "" }
-                ]
-              }
-            }
-          ]
-        }
+    const programsData = [
+      {
+        title: "1. Build a Profitable Business in 30 Days",
+        description: "The Flagship Program. Go from zero to your first customer in one month. No theory, just execution.",
+        cohort: "Cohort 1 (Feb 2026)",
+        modules: [
+          {
+            title: "Week 1: Finding a Pain-Killer Idea",
+            order: 1,
+            unlockDate: new Date(),
+            lessons: [
+              {
+                title: "The Pain-Killer Framework",
+                order: 1,
+                videoUrl: "https://www.youtube.com/embed/z1iF1c8w5Lg",
+                content: "<h3>The Pain-Killer Framework</h3><p>Don't build vitamins. Build Pain-Killers. Go to the market and find 10 people screaming for a solution.</p><strong>Task:</strong> Interview 5 potential customers today.",
+                contentType: "video",
+                duration: 600,
+              },
+              {
+                title: "Interview Customers",
+                order: 2,
+                videoUrl: "https://www.youtube.com/embed/example",
+                content: "Task: Interview 5 potential customers today.",
+                contentType: "video",
+                duration: 300,
+              },
+            ],
+          },
+          {
+            title: "Week 2: The MVP (Minimum Viable Product)",
+            order: 2,
+            unlockDate: new Date(),
+            lessons: [
+              {
+                title: "Build it Ugly",
+                order: 1,
+                videoUrl: "https://www.youtube.com/embed/QRZ_l7cVzzU",
+                content: "<h3>Build it Ugly</h3><p>If you aren't embarrassed by your first version, you launched too late. Do not code yet. Use WhatsApp, Excel, or paper.</p>",
+                contentType: "video",
+                duration: 600,
+              },
+            ],
+          },
+        ],
+      },
+      // Add other 4 programs here following same structure
+    ];
+
+    let createdCount = 0;
+
+    for (const programData of programsData) {
+      const existingProgram = await this.databaseService.program.findFirst({
+        where: { title: programData.title },
+      });
+
+      if (!existingProgram) {
+        await this.databaseService.program.create({
+          data: {
+            title: programData.title,
+            description: programData.description,
+            cohort: programData.cohort,
+            modules: {
+              create: programData.modules.map((mod) => ({
+                title: mod.title,
+                order: mod.order,
+                unlockDate: mod.unlockDate,
+                lessons: {
+                  create: mod.lessons.map((lesson) => ({
+                    title: lesson.title,
+                    order: lesson.order,
+                    videoUrl: lesson.videoUrl,
+                    content: lesson.content,
+                    contentType: lesson.contentType,
+                    duration: lesson.duration,
+                  })),
+                },
+              })),
+            },
+          },
+        });
+        createdCount++;
       }
-    });
-    return program;
+    }
+
+    return { message: `${createdCount} programs created successfully!` };
   }
 }

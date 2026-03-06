@@ -5,10 +5,10 @@ import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PaymentsService {
-  private readonly PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
-  private readonly OPAY_SECRET_KEY = process.env.OPAY_SECRET_KEY;
-  private readonly OPAY_MERCHANT_ID = process.env.OPAY_MERCHANT_ID;
-  private readonly OPAY_PUB_KEY = process.env.OPAY_PUB_KEY;
+  private readonly PAYSTACK_SECRET_KEY = "sk_test_e3dd5e59df60bbba4ea58351f3f3b6e2c2e9941d";
+  private readonly OPAY_SECRET_KEY = "OPAYPRV17728253752030.1304038873532969";
+  private readonly OPAY_MERCHANT_ID = "281826030662239";
+  private readonly OPAY_PUB_KEY = "OPAYPUB17728253752030.23745205607820175";
 
   constructor(
     private readonly databaseService: DatabaseService,

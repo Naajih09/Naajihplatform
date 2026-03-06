@@ -9,16 +9,12 @@ generator client {
   // This puts the client in a place VS Code always checks
 }
 
-
 datasource db {
   provider = "postgresql"
   // This reads the link from your apps/api/.env file
   url      = env("DATABASE_URL")
- // directUrl = env("DIRECT_URL")
+  // directUrl = env("DIRECT_URL")
 }
-
-
-
 
 // --- ENUMS ---
 enum UserRole {
@@ -47,51 +43,47 @@ enum SubscriptionPlan {
 
 // --- 1. MAIN USER TABLE ---
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String   
-  role      UserRole 
-  isVerified Boolean @default(false)
-  
+  id          String              @id @default(uuid())
+  email       String              @unique
+  password    String
+  role        UserRole
+  isVerified  Boolean             @default(false)
+  enrollments ProgramEnrollment[]
+
   // Profile Relations
   entrepreneurProfile EntrepreneurProfile?
   investorProfile     InvestorProfile?
   verification        VerificationRequest?
   subscription        Subscription?
-  
+
   // App Relations
-  pitches             Pitch[]
-  
+  pitches Pitch[]
+
   // Networking Relations 
-  sentConnections     Connection[]  @relation("Sender")
-  receivedConnections Connection[]  @relation("Receiver")
-  sentMessages        Message[]     @relation("MessageSender")
-  receivedMessages    Message[]     @relation("MessageReceiver")
+  sentConnections     Connection[] @relation("Sender")
+  receivedConnections Connection[] @relation("Receiver")
+  sentMessages        Message[]    @relation("MessageSender")
+  receivedMessages    Message[]    @relation("MessageReceiver")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Notification Relations
-  notifications       Notification[]
-  lessonProgress   UserLessonProgress[]
-  taskSubmissions  UserTaskSubmission[]
-  milestones UserMilestone[]
-  
-
-
-
+  notifications   Notification[]
+  lessonProgress  UserLessonProgress[]
+  taskSubmissions UserTaskSubmission[]
+  milestones      UserMilestone[]
 }
-
 
 // --- 2. PROFILES ---
 model EntrepreneurProfile {
-  id           String  @id @default(uuid())
-  userId       String  @unique
-  user         User    @relation(fields: [userId], references: [id])
-  
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
   firstName    String
   lastName     String
-  businessName String? 
+  businessName String?
   industry     String?
   stage        String?
   cacNumber    String?
@@ -99,86 +91,85 @@ model EntrepreneurProfile {
 }
 
 model InvestorProfile {
-  id             String  @id @default(uuid())
-  userId         String  @unique
-  user           User    @relation(fields: [userId], references: [id])
-  
-  firstName      String
-  lastName       String
-  organization   String?
-  minTicketSize  Decimal?
-  maxTicketSize  Decimal?
-  focusIndustries String[] 
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  firstName       String
+  lastName        String
+  organization    String?
+  minTicketSize   Decimal?
+  maxTicketSize   Decimal?
+  focusIndustries String[]
 }
 
 // --- 3. PITCHES ---
 model Pitch {
-  id               String   @id @default(uuid())
-  userId           String
-  user             User     @relation(fields: [userId], references: [id])
-  
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
   title            String
   tagline          String
   problemStatement String
   solution         String
-  traction         String   
-  marketSize       String   
-  fundingAsk       String   
-  equityOffer      String 
-  category         String  
-  pitchDeckUrl     String?  
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  traction         String
+  marketSize       String
+  fundingAsk       String
+  equityOffer      String
+  category         String
+  pitchDeckUrl     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // --- 4. NETWORKING (Fixes error!)
 model Connection {
-  id          String           @id @default(uuid())
-  senderId    String
-  sender      User             @relation("Sender", fields: [senderId], references: [id])
-  receiverId  String
-  receiver    User             @relation("Receiver", fields: [receiverId], references: [id])
-  
-  status      ConnectionStatus @default(PENDING)
-  createdAt   DateTime         @default(now())
-  
+  id         String @id @default(uuid())
+  senderId   String
+  sender     User   @relation("Sender", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User   @relation("Receiver", fields: [receiverId], references: [id])
+
+  status    ConnectionStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+
   @@unique([senderId, receiverId]) // Prevent duplicate requests
 }
 
 model Message {
-  id            String   @id @default(uuid())
-  content       String?  // Can be empty if sending just an image
-  attachmentUrl String?  // URL from Cloudinary (Image/PDF/Audio)
-  type          String   @default("TEXT") // TEXT, IMAGE, AUDIO, PDF
-  
-  senderId      String
-  sender        User     @relation("MessageSender", fields: [senderId], references: [id])
-  receiverId    String
-  receiver      User     @relation("MessageReceiver", fields: [receiverId], references: [id])
-  
-  isRead        Boolean  @default(false)
-  createdAt     DateTime @default(now())
+  id            String  @id @default(uuid())
+  content       String? // Can be empty if sending just an image
+  attachmentUrl String? // URL from Cloudinary (Image/PDF/Audio)
+  type          String  @default("TEXT") // TEXT, IMAGE, AUDIO, PDF
+
+  senderId   String
+  sender     User   @relation("MessageSender", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User   @relation("MessageReceiver", fields: [receiverId], references: [id])
+
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
 
 // --- 5. EXTRAS ---
 model VerificationRequest {
-  id           String             @id @default(uuid())
-  userId       String             @unique
-  user         User               @relation(fields: [userId], references: [id])
-  documentUrl  String             
-  status       VerificationStatus @default(PENDING)
-  createdAt    DateTime           @default(now())
+  id          String             @id @default(uuid())
+  userId      String             @unique
+  user        User               @relation(fields: [userId], references: [id])
+  documentUrl String
+  status      VerificationStatus @default(PENDING)
+  createdAt   DateTime           @default(now())
 }
 
 model Subscription {
-  id          String           @id @default(uuid())
-  userId      String           @unique
-  user        User             @relation(fields: [userId], references: [id])
-  plan        SubscriptionPlan @default(FREE)
-  endDate     DateTime?        
+  id      String           @id @default(uuid())
+  userId  String           @unique
+  user    User             @relation(fields: [userId], references: [id])
+  plan    SubscriptionPlan @default(FREE)
+  endDate DateTime?
 }
-
 
 model Notification {
   id        String   @id @default(uuid())
@@ -199,95 +190,121 @@ enum TaskStatus {
 }
 
 model Program {
-  id          String   @id @default(uuid())
-  title       String   // e.g. "Business Builder Program"
-  cohort      String   // e.g. "Cohort 1 (Feb 2026)"
+  id          String @id @default(uuid())
+  title       String
+  cohort      String
   description String
-  
-  modules     Module[]
-  createdAt   DateTime @default(now())
+
+  modules Module[]
+
+  createdAt   DateTime            @default(now())
+  enrollments ProgramEnrollment[]
 }
 
 model Module {
-  id          String   @id @default(uuid())
-  programId   String
-  program     Program  @relation(fields: [programId], references: [id])
-  
-  title       String   // e.g. "Week 1: Validation"
-  order       Int      // 1
-  unlockDate  DateTime? // Drip content
-  
-  lessons     Lesson[]
-  tasks       Task[]
+  id        String  @id @default(uuid())
+  programId String
+  program   Program @relation(fields: [programId], references: [id])
+
+  title      String
+  order      Int
+  unlockDate DateTime?
+
+  lessons Lesson[]
+  tasks   Task[]
 }
 
 model Lesson {
-  id          String   @id @default(uuid())
-  moduleId    String
-  module      Module   @relation(fields: [moduleId], references: [id])
-  
-  title       String
-  contentType String   // "VIDEO", "TEXT", "QUIZ"
-  content     String?  // Markdown text
-  videoUrl    String?
-  duration    Int      // Minutes
-  order       Int
-  
-  progress    UserLessonProgress[]
+  id       String @id @default(uuid())
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id])
+
+  title String
+  order Int
+
+  videoUrl String?
+  content  String?
+
+  contentType String // video | article | quiz
+  duration    Int // seconds
+
+  createdAt DateTime @default(now())
+
+  progress UserLessonProgress[]
 }
 
 model Task {
-  id          String   @id @default(uuid())
-  moduleId    String
-  module      Module   @relation(fields: [moduleId], references: [id])
-  
-  title       String   // e.g. "Submit Value Proposition"
+  id       String @id @default(uuid())
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id])
+
+  title       String
   description String
   dueDate     DateTime?
-  
+
   submissions UserTaskSubmission[]
 }
 
 // --- TRACKING ---
 
 model UserLessonProgress {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  lessonId    String
-  lesson      Lesson   @relation(fields: [lessonId], references: [id])
-  isCompleted Boolean  @default(false)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+
+  isCompleted Boolean @default(false)
+
   @@unique([userId, lessonId])
 }
 
 model UserTaskSubmission {
-  id          String     @id @default(uuid())
-  userId      String
-  user        User       @relation(fields: [userId], references: [id])
-  taskId      String
-  task        Task       @relation(fields: [taskId], references: [id])
-  
-  submissionUrl String?  // Link to Google Doc or Cloudinary
-  status      TaskStatus @default(PENDING)
-  feedback    String?    // Admin feedback
-  submittedAt DateTime   @default(now())
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id])
+
+  submissionUrl String?
+  status        TaskStatus @default(PENDING)
+  feedback      String?
+
+  submittedAt DateTime @default(now())
 }
 
 model Milestone {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
   description String?
 
-  users       UserMilestone[]   
+  users UserMilestone[]
 }
 
 model UserMilestone {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
   milestoneId String
   milestone   Milestone @relation(fields: [milestoneId], references: [id])
-  achievedAt  DateTime @default(now())
+
+  achievedAt DateTime @default(now())
 
   @@unique([userId, milestoneId])
+}
+
+// --- PROGRAM ENROLLMENT ---
+model ProgramEnrollment {
+  id         String   @id @default(uuid())
+  userId     String
+  programId  String
+  enrolledAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  program Program @relation(fields: [programId], references: [id])
+
+  @@unique([userId, programId]) // Prevent duplicate enrollments
 }

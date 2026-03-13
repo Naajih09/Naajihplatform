@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { DatabaseService } from '../database/database.service';
+import { PrismaService } from 'src/prisma.service';
 
 interface CreateUserDto {
   email: string;
@@ -10,6 +11,7 @@ interface CreateUserDto {
   firstName: string;
   lastName: string;
 }
+
 
 @Injectable()
 export class UsersService {
@@ -44,10 +46,14 @@ export class UsersService {
       include: { entrepreneurProfile: true, investorProfile: true }
     });
 
-    // Remove password before returning
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...result } = newUser;
     return result;
+  }
+
+  async findById(id: string): Promise<User | null> {
+    return this.databaseService.user.findUnique({
+      where: { id },
+    });
   }
 
   // 2. LOGIN (Check Hashed Password)
@@ -180,6 +186,7 @@ export class UsersService {
     return this.databaseService.user.delete({ where: { id } });
   }
 
+  
   // 9. UPGRADE TO PREMIUM
   async upgradeToPremium(userId: string) {
     const sub = await this.databaseService.subscription.findUnique({ where: { userId } });

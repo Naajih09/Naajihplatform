@@ -1,10 +1,13 @@
-import { createBrowserRouter } from 'react-router-dom';
+// apps/admin-web/src/router/index.tsx
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import AdminLayout from '../layouts/AdminLayout';
 import Dashboard from '../pages/Dashboard';
 import Verification from '../pages/Verification';
 import { ErrorBoundaryFallback } from '../../../../packages/ui/src';
 import PitchesList from '../pages/PitchesLists';
-import  UsersList  from '../pages/UsersLists';
+import UsersList from '../pages/UsersLists';
+import ProtectedRoute from '../components/ProtectedRoute';
+import { UserRole } from '../types/enums'; 
 
 export const routes = [
   {
@@ -14,25 +17,42 @@ export const routes = [
     children: [
       {
         index: true,
-        element: <Dashboard />,
+        element: <Navigate to="/admin/dashboard" replace />,
       },
       {
-        path: 'users',
-        element: <UsersList />,
-      },
-      {
-        path: 'pitches',
-        element: <PitchesList />,
-      },
-      {
-        path: 'verification',
-        element: (
-          <div className="p-10">
-            element: <Verification />
-          </div>
-        ),
+        element: <ProtectedRoute allowedRoles={[UserRole.ADMIN]} />,
+        children: [
+          {
+            path: 'admin/dashboard',
+            element: <Dashboard />,
+          },
+          {
+            path: 'admin/users',
+            element: <UsersList />,
+          },
+          {
+            path: 'admin/pitches',
+            element: <PitchesList />,
+          },
+          {
+            path: 'admin/verification',
+            element: (
+              <div className="p-10">
+                <Verification />
+              </div>
+            ),
+          },
+        ],
       },
     ],
+  },
+  {
+    path: '/login',
+    element: <div>Login Page (to be implemented)</div>,
+  },
+  {
+    path: '/unauthorized',
+    element: <div>Unauthorized Access</div>,
   },
 ];
 

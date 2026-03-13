@@ -5,6 +5,7 @@ import 'dotenv/config';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './utils/all-expection.filter';
 
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -12,6 +13,7 @@ async function bootstrap() {
 
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
   app.setGlobalPrefix(process.env.API_PREFIX || 'api');
+  app.useGlobalPipes(new ValidationPipe());
 
   app.enableCors({
     origin: [

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+// apps/admin-web/src/pages/Dashboard.tsx
+import { useEffect, useState } from 'react'; // Removed 'React' import as it's no longer needed
 import { Users, Rocket, Wallet, CheckCircle, Clock, FileText, Activity, ExternalLink, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+import api from '../utils/api'; // 
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -14,21 +14,22 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const headers = { 'Authorization': `Bearer ${token}` };
+        // const token = localStorage.getItem('token'); // Token is now handled by the API interceptor
+        // const headers = { 'Authorization': `Bearer ${token}` }; // Handled by API interceptor
 
         const [resUsers, resPitches, resVerifications] = await Promise.all([
-          fetch(`${API_BASE}/api/users`, { headers }),
-          fetch(`${API_BASE}/api/pitches`, { headers }),
-          fetch(`${API_BASE}/api/verification/admin/pending`, { headers })
+          api.get('/users'), // NEW: Use centralized API client
+          api.get('/pitches'), // NEW: Use centralized API client
+          api.get('/verification/admin/pending') // NEW: Use centralized API client
         ]);
         
-        const users = resUsers.ok ? await resUsers.json() : [];
-        const pitches = resPitches.ok ? await resPitches.json() :[];
-        const verificationsResponse = resVerifications.ok ? await resVerifications.json() :[];
+        // Axios responses directly contain data
+        const users = resUsers.data;
+        const pitches = resPitches.data;
+        const verificationsResponse = resVerifications.data;
 
         // Support standard array OR the new global interceptor { data: [...] } format
-        const verifications = verificationsResponse.data || verificationsResponse ||[];
+        const verifications = verificationsResponse.data || verificationsResponse || [];
 
         setStats({
             users: Array.isArray(users.data || users) ? (users.data || users).length : 0,
@@ -48,17 +49,10 @@ const Dashboard = () => {
     if (!window.confirm(`Are you sure you want to ${status} this verification?`)) return;
     setActionLoading(id);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/api/verification/admin/${id}`, {
-        method: 'PATCH',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ status })
-      });
+      // const token = localStorage.getItem('token'); // Token handled by interceptor
+      const res = await api.patch(`/verification/admin/${id}`, { status }); // NEW: Use centralized API client
       
-      if (res.ok) {
+      if (res.status === 200 || res.status === 204) { // Check for successful status codes
         setPendingVerifications(prev => prev.filter(req => req.id !== id));
       } else {
         alert("Failed to update status");
@@ -81,6 +75,7 @@ const Dashboard = () => {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* MetricCard and other components remain */}
         <MetricCard 
           label="Total Active Users" 
           value={loading ? '...' : stats.users} 
@@ -93,6 +88,12 @@ const Dashboard = () => {
           trend="+5.2%" 
           icon={Rocket} 
         />
+        {/*
+          ACTION REQUIRED: Refactor this div to use Tailwind classes.
+          It currently has inline styles that the new ESLint rule will flag.
+          E.g., style={{ backgroundColor: '#f0f0f0', padding: '16px' }}
+          Becomes: className="bg-gray-100 p-4"
+        */}
         <div className="p-6 rounded-xl bg-gradient-to-br from-[#262626] to-[#1a1a1a] border border-primary/30 flex flex-col justify-between min-h-[140px]">
           <div className="flex items-center justify-between">
             <span className="text-gray-400 text-sm font-medium">Total Funding Volume</span>
@@ -115,7 +116,7 @@ const Dashboard = () => {
             <p className="text-sm text-gray-500">Entrepreneurs awaiting Sharia-compliance approval</p>
           </div>
           <button 
-            onClick={() => navigate('/verification')} 
+            onClick={() => navigate('/admin/verification')} // Changed to /admin/verification
             className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-medium transition-colors"
           >
              View All

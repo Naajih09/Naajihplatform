@@ -61,8 +61,7 @@ export class VerificationService {
     const request = await this.databaseService.verificationRequest.update({
       where: { id },
       data: { 
-        status,
-        rejectionReason: status === 'REJECTED' ? rejectionReason : null
+        status
       }
     });
 

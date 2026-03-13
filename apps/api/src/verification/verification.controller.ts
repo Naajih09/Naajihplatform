@@ -1,57 +1,106 @@
-import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  Patch,
+  Body,
+  UseGuards,
+  Request, 
+  ForbiddenException, 
+} from '@nestjs/common';
 import { VerificationService } from './verification.service';
-import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'; 
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole, VerificationStatus } from '@prisma/client'; 
 
-// --- Embedded DTOs ---
-export class CreateVerificationDto {
+// DTO for submitting verification requests
+// Consider moving this to `apps/api/src/verification/dto/submit-verification.dto.ts`
+import { IsString, IsUrl, IsNotEmpty } from 'class-validator';
+
+export class SubmitVerificationDto {
   @IsString()
   @IsNotEmpty()
+  // userId should ideally come from the authenticated user, not the body
+  // If you must pass it, validate it against the authenticated user's ID
   userId: string;
 
-  @IsString()
+  @IsUrl()
   @IsNotEmpty()
-  documentUrl: string; // The frontend will upload to Cloudinary and pass the URL here
+  documentUrl: string;
 }
 
-export class UpdateVerificationStatusDto {
-  @IsEnum(['APPROVED', 'REJECTED'])
-  status: 'APPROVED' | 'REJECTED';
+// DTO for updating verification status
+// Consider moving this to `apps/api/src/verification/dto/update-verification-status.dto.ts`
+import { IsEnum, IsOptional } from 'class-validator';
 
-  @IsOptional()
+export class UpdateVerificationStatusDto {
+  @IsEnum(VerificationStatus) // Use the Prisma enum
+  status: VerificationStatus;
+
   @IsString()
+  @IsOptional()
   rejectionReason?: string;
 }
 
+// Protect the whole controller with authentication and role checking
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('verification')
 export class VerificationController {
   constructor(private readonly verificationService: VerificationService) {}
 
-  // User: Submit
-  @Post()
-  create(@Body() body: CreateVerificationDto) {
-    return this.verificationService.create(body);
+  // 1️⃣ USER: Submit verification request
+  // Entrepreneur/Investor can submit their own verification
+  @Post('submit')
+  @Roles(UserRole.ENTREPRENEUR, UserRole.INVESTOR)
+  async submitVerification(
+    @Body() submitVerificationDto: SubmitVerificationDto, // Use DTO
+    @Request() req, // Get user info from JWT
+  ) {
+    // Ensure the userId in the body matches the authenticated user's ID
+    if (req.user.id !== submitVerificationDto.userId) {
+      throw new ForbiddenException('You can only submit verification for your own account.');
+    }
+    return this.verificationService.create(submitVerificationDto);
   }
 
-  // Admin: Get Pending
-  // TODO: Add @UseGuards(JwtAuthGuard, RolesGuard) and @Roles('ADMIN') once auth module is finished
+  // 2️⃣ USER: Check verification status
+  // Entrepreneur/Investor can check their own status
+  @Get(':userId')
+  @Roles(UserRole.ENTREPRENEUR, UserRole.INVESTOR, UserRole.ADMIN) // Admin can also check
+  async getVerificationStatus(@Param('userId') userId: string, @Request() req) {
+    // Ensure the userId in the param matches the authenticated user's ID, unless it's an ADMIN
+    if (req.user.role !== UserRole.ADMIN && req.user.id !== userId) {
+      throw new ForbiddenException('You can only view your own verification status.');
+    }
+    return this.verificationService.getStatus(userId);
+  }
+
+  // 3️⃣ ADMIN: Get all pending verification requests
   @Get('admin/pending')
-  findAllPending() {
+  @Roles(UserRole.ADMIN) // Only ADMIN
+  getPendingVerifications() {
     return this.verificationService.findAllPending();
   }
 
-  // Admin: Approve/Reject
-  // TODO: Add @UseGuards(JwtAuthGuard, RolesGuard) and @Roles('ADMIN')
+  // 4️⃣ ADMIN: Approve or reject verification
   @Patch('admin/:id')
-  updateStatus(
-    @Param('id') id: string, 
-    @Body() body: UpdateVerificationStatusDto
+  @Roles(UserRole.ADMIN) // Only ADMIN
+  updateVerificationStatus(
+    @Param('id') id: string, // Verification Request ID
+    @Body() updateVerificationStatusDto: UpdateVerificationStatusDto, // Use DTO
   ) {
-    return this.verificationService.updateStatus(id, body.status, body.rejectionReason);
-  }
-
-  // User: Check Status
-  @Get(':userId')
-  findOne(@Param('userId') userId: string) {
-    return this.verificationService.getStatus(userId);
+    if (
+      updateVerificationStatusDto.status !== 'APPROVED' &&
+      updateVerificationStatusDto.status !== 'REJECTED'
+    ) {
+      throw new ForbiddenException('Status must be APPROVED or REJECTED.');
+    }
+    return this.verificationService.updateStatus(
+      id,
+      updateVerificationStatusDto.status as 'APPROVED' | 'REJECTED',
+      updateVerificationStatusDto.rejectionReason,
+    );
   }
 }

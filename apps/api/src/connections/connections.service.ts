@@ -1,6 +1,8 @@
+// apps/api/src/connections/connections.service.ts
 import { Injectable, ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ConnectionStatus } from '@prisma/client'; // NEW: Import ConnectionStatus enum
 
 @Injectable()
 export class ConnectionsService {
@@ -8,6 +10,13 @@ export class ConnectionsService {
     private readonly databaseService: DatabaseService,
     private readonly notificationsService: NotificationsService,
   ) {}
+
+  // NEW: findOne method for the controller's authorization checks
+  async findOne(id: string) {
+    return this.databaseService.connection.findUnique({
+      where: { id },
+    });
+  }
 
   // 1. SEND CONNECTION REQUEST
   async create(data: { senderId: string; receiverId: string }) {
@@ -28,14 +37,15 @@ export class ConnectionsService {
     });
 
     if (existing) {
-      throw new ConflictException('Connection already exists or is pending');
+      // Use ConnectionStatus enum
+      throw new ConflictException(`Connection already exists or is ${existing.status.toLowerCase()}`);
     }
 
     const connection = await this.databaseService.connection.create({
       data: {
         senderId,
         receiverId,
-        status: 'PENDING',
+        status: ConnectionStatus.PENDING, // Use enum here
       },
     });
 
@@ -55,7 +65,7 @@ export class ConnectionsService {
     return this.databaseService.connection.findMany({
       where: {
         OR: [{ senderId: userId }, { receiverId: userId }],
-        status: 'ACCEPTED',
+        status: ConnectionStatus.ACCEPTED, // Use enum here
       },
       include: {
         sender: { include: { entrepreneurProfile: true, investorProfile: true } },
@@ -69,7 +79,7 @@ export class ConnectionsService {
     return this.databaseService.connection.findMany({
       where: {
         receiverId: userId,
-        status: 'PENDING',
+        status: ConnectionStatus.PENDING, // Use enum here
       },
       include: {
         sender: { include: { entrepreneurProfile: true, investorProfile: true } },
@@ -81,7 +91,7 @@ export class ConnectionsService {
   async respond(id: string, status: 'ACCEPTED' | 'REJECTED') {
     const connection = await this.databaseService.connection.update({
       where: { id },
-      data: { status },
+      data: { status: ConnectionStatus[status] }, // Convert string to enum member
       include: { receiver: { include: { entrepreneurProfile: true, investorProfile: true } } }
     });
 

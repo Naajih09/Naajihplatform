@@ -1,0 +1,42 @@
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor to add the JWT token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken'); // Assuming you store your token as 'accessToken'
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Optional: Response interceptor to handle global errors or refresh tokens
+// api.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     // Example: Handle 401 Unauthorized errors
+//     if (error.response?.status === 401) {
+//       // Potentially redirect to login or refresh token
+//       console.error('Unauthorized request, redirecting to login...');
+//       localStorage.removeItem('accessToken');
+//       localStorage.removeItem('userRole');
+//       window.location.href = '/login';
+//     }
+//     return Promise.reject(error);
+//   }
+// );
+
+export default api;

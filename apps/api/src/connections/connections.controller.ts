@@ -1,5 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ConnectionsService } from './connections.service';
+import { IsString, IsNotEmpty } from 'class-validator';
+
+// Standard DTO embedded
+export class CreateConnectionDto {
+  @IsString()
+  @IsNotEmpty()
+  senderId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  receiverId: string;
+}
 
 @Controller('connections')
 export class ConnectionsController {
@@ -7,7 +19,7 @@ export class ConnectionsController {
 
   // POST /api/connections -> Send Request
   @Post()
-  create(@Body() body: any) {
+  create(@Body() body: CreateConnectionDto) {
     return this.connectionsService.create(body);
   }
 
@@ -27,5 +39,14 @@ export class ConnectionsController {
   @Patch(':id')
   respond(@Param('id') id: string, @Body('status') status: 'ACCEPTED' | 'REJECTED') {
     return this.connectionsService.respond(id, status);
+  }
+
+  // DELETE /api/connections/:id -> Cancel/Remove Connection
+  @Delete(':id')
+  removeConnection(
+    @Param('id') id: string,
+    @Query('userId') userId: string // Expected via ?userId=...
+  ) {
+    return this.connectionsService.removeConnection(id, userId);
   }
 }

@@ -1,31 +1,74 @@
 import React, { useEffect, useState } from 'react';
-import { Users, Rocket, Wallet, CheckCircle, Clock, FileText, Activity } from 'lucide-react';
+import { Users, Rocket, Wallet, CheckCircle, Clock, FileText, Activity, ExternalLink, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ users: 0, pitches: 0 });
+  const [pendingVerifications, setPendingVerifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const resUsers = await fetch('http://localhost:3000/api/users');
-        const resPitches = await fetch('http://localhost:3000/api/pitches');
+        const token = localStorage.getItem('token');
+        const headers = { 'Authorization': `Bearer ${token}` };
+
+        const [resUsers, resPitches, resVerifications] = await Promise.all([
+          fetch(`${API_BASE}/api/users`, { headers }),
+          fetch(`${API_BASE}/api/pitches`, { headers }),
+          fetch(`${API_BASE}/api/verification/admin/pending`, { headers })
+        ]);
         
-        const users = await resUsers.json();
-        const pitches = await resPitches.json();
+        const users = resUsers.ok ? await resUsers.json() : [];
+        const pitches = resPitches.ok ? await resPitches.json() :[];
+        const verificationsResponse = resVerifications.ok ? await resVerifications.json() :[];
+
+        // Support standard array OR the new global interceptor { data: [...] } format
+        const verifications = verificationsResponse.data || verificationsResponse ||[];
 
         setStats({
-            users: Array.isArray(users) ? users.length : 0,
-            pitches: Array.isArray(pitches) ? pitches.length : 0
+            users: Array.isArray(users.data || users) ? (users.data || users).length : 0,
+            pitches: Array.isArray(pitches.data || pitches) ? (pitches.data || pitches).length : 0
         });
+        setPendingVerifications(verifications);
       } catch (err) {
-        console.error(err);
+        console.error("Dashboard fetch error:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchStats();
-  }, []);
+    fetchDashboardData();
+  },[]);
+
+  const handleAction = async (id: string, status: 'APPROVED' | 'REJECTED') => {
+    if (!window.confirm(`Are you sure you want to ${status} this verification?`)) return;
+    setActionLoading(id);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/api/verification/admin/${id}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
+      });
+      
+      if (res.ok) {
+        setPendingVerifications(prev => prev.filter(req => req.id !== id));
+      } else {
+        alert("Failed to update status");
+      }
+    } catch (error) {
+      alert("Error processing request");
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-20">
@@ -71,7 +114,10 @@ const Dashboard = () => {
             <h3 className="text-lg font-bold text-white">Pending Verification Requests</h3>
             <p className="text-sm text-gray-500">Entrepreneurs awaiting Sharia-compliance approval</p>
           </div>
-          <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-medium transition-colors">
+          <button 
+            onClick={() => navigate('/verification')} 
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-medium transition-colors"
+          >
              View All
           </button>
         </div>
@@ -80,19 +126,71 @@ const Dashboard = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-white/[0.02] text-gray-500 text-xs font-bold uppercase tracking-widest">
-                <th className="px-6 py-4">Entrepreneur</th>
-                <th className="px-6 py-4">Sector</th>
-                <th className="px-6 py-4">Submitted</th>
+                <th className="px-6 py-4">User</th>
+                <th className="px-6 py-4">Role</th>
                 <th className="px-6 py-4">Documents</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-sm text-gray-300">
-              {/* Fake Data for MVP Display */}
-              <TableRow name="Ahmad Ibrahim" sector="AgroTech" date="Oct 12" />
-              <TableRow name="Fatima Zahra" sector="Retail" date="Oct 14" />
-              <TableRow name="Zainab Bello" sector="Fashion" date="Oct 15" />
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-gray-500">
+                    <Loader2 className="animate-spin inline mr-2" /> Loading pending requests...
+                  </td>
+                </tr>
+              ) : pendingVerifications.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-gray-500">
+                    No pending verifications.
+                  </td>
+                </tr>
+              ) : (
+                pendingVerifications.slice(0, 5).map((req) => {
+                  const profile = req.user?.entrepreneurProfile || req.user?.investorProfile || {};
+                  const fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || req.user?.email;
+                  
+                  return (
+                    <tr key={req.id} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4 flex items-center gap-3">
+                          <div className="size-9 rounded bg-white/5 flex items-center justify-center text-lg font-bold text-white uppercase">
+                            {fullName[0]}
+                          </div>
+                          <div>
+                            <span className="font-bold text-white block">{fullName}</span>
+                            <span className="text-xs text-gray-500">{req.user?.email}</span>
+                          </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="bg-white/10 px-2 py-1 rounded text-[10px] font-bold uppercase">{req.user?.role}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <a href={req.documentUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                          <FileText size={14}/> View <ExternalLink size={10}/>
+                        </a>
+                      </td>
+                      <td className="px-6 py-4"><span className="text-amber-500 flex items-center gap-1 text-xs font-bold uppercase"><Clock size={12} /> Pending</span></td>
+                      <td className="px-6 py-4 text-right flex justify-end gap-2">
+                          <button 
+                            disabled={actionLoading === req.id}
+                            onClick={() => handleAction(req.id, 'APPROVED')} 
+                            className="px-3 py-1 bg-primary text-black rounded font-bold text-xs hover:opacity-90 disabled:opacity-50"
+                          >
+                            Approve
+                          </button>
+                          <button 
+                            disabled={actionLoading === req.id}
+                            onClick={() => handleAction(req.id, 'REJECTED')} 
+                            className="px-3 py-1 border border-white/10 text-gray-400 rounded font-bold text-xs hover:text-red-500 disabled:opacity-50"
+                          >
+                            Reject
+                          </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -105,7 +203,7 @@ const Dashboard = () => {
                 <Activity className="text-primary" size={20} /> Recent Audit Log
             </h3>
             <div className="space-y-4">
-                <AuditItem title='Pitch Approved: "SolarKits Nigeria"' meta="Approved by Yusuf • 2h ago" icon={CheckCircle} />
+                <AuditItem title='Pitch Approved: "SolarKits Nigeria"' meta="Approved by Admin • 2h ago" icon={CheckCircle} />
                 <AuditItem title='New Investor Verified: Dr. Kareem O.' meta="KYC validated • 5h ago" icon={Users} />
             </div>
         </div>
@@ -118,20 +216,13 @@ const Dashboard = () => {
                 <ProgressBar label="Musharakah" value={25} color="bg-primary/60" />
                 <ProgressBar label="Murabahah" value={10} color="bg-primary/30" />
             </div>
-            <div className="mt-6 pt-6 border-t border-primary/10">
-                <p className="text-[10px] text-gray-500 leading-relaxed">
-                    Live pool allocations under Sharia Supervisory Board guidelines.
-                </p>
-            </div>
         </div>
       </div>
-
     </div>
   );
 };
 
 // --- HELPER COMPONENTS ---
-
 const MetricCard = ({ label, value, trend, icon: Icon }: any) => (
   <div className="p-6 rounded-xl border border-white/5 bg-gradient-to-br from-[#262626] to-[#1a1a1a] flex flex-col justify-between min-h-[140px]">
     <div className="flex items-center justify-between">
@@ -146,23 +237,6 @@ const MetricCard = ({ label, value, trend, icon: Icon }: any) => (
       </div>
     </div>
   </div>
-);
-
-const TableRow = ({ name, sector, date }: any) => (
-  <tr className="hover:bg-white/[0.02] transition-colors">
-    <td className="px-6 py-4 flex items-center gap-3">
-        <div className="size-9 rounded bg-white/5 flex items-center justify-center text-lg font-bold text-white">{name[0]}</div>
-        <span className="font-bold">{name}</span>
-    </td>
-    <td className="px-6 py-4"><span className="bg-white/10 px-2 py-1 rounded text-[10px] font-bold uppercase">{sector}</span></td>
-    <td className="px-6 py-4 text-gray-500">{date}</td>
-    <td className="px-6 py-4 text-primary hover:underline cursor-pointer flex items-center gap-1"><FileText size={14}/> Review</td>
-    <td className="px-6 py-4"><span className="text-amber-500 flex items-center gap-1 text-xs font-bold uppercase"><Clock size={12} /> Pending</span></td>
-    <td className="px-6 py-4 text-right flex justify-end gap-2">
-        <button className="px-3 py-1 bg-primary text-black rounded font-bold text-xs hover:opacity-90">Approve</button>
-        <button className="px-3 py-1 border border-white/10 text-gray-400 rounded font-bold text-xs hover:text-red-500">Reject</button>
-    </td>
-  </tr>
 );
 
 const AuditItem = ({ title, meta, icon: Icon }: any) => (

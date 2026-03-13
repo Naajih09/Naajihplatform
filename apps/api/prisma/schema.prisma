@@ -161,6 +161,7 @@ model VerificationRequest {
   documentUrl String
   status      VerificationStatus @default(PENDING)
   createdAt   DateTime           @default(now())
+  rejectionReason String?
 }
 
 model Subscription {

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -10,20 +10,26 @@ export class ConnectionsService {
   ) {}
 
   // 1. SEND CONNECTION REQUEST
-  async create(data: any) {
+  async create(data: { senderId: string; receiverId: string }) {
     const { senderId, receiverId } = data;
+
+    if (senderId === receiverId) {
+      throw new ConflictException('You cannot connect with yourself.');
+    }
 
     // Check if connection already exists
     const existing = await this.databaseService.connection.findFirst({
       where: {
-        OR: [
+        OR:[
           { senderId, receiverId },
           { senderId: receiverId, receiverId: senderId },
         ],
       },
     });
 
-    if (existing) throw new Error('Connection already exists or is pending');
+    if (existing) {
+      throw new ConflictException('Connection already exists or is pending');
+    }
 
     const connection = await this.databaseService.connection.create({
       data: {
@@ -85,5 +91,25 @@ export class ConnectionsService {
     }
 
     return connection;
+  }
+
+  // 5. REMOVE / CANCEL CONNECTION (NEW)
+  async removeConnection(id: string, userId: string) {
+    const connection = await this.databaseService.connection.findUnique({
+      where: { id },
+    });
+
+    if (!connection) {
+      throw new NotFoundException('Connection not found');
+    }
+
+    // Authorization: Only people involved in the connection can delete it
+    if (connection.senderId !== userId && connection.receiverId !== userId) {
+      throw new UnauthorizedException('Not authorized to modify this connection');
+    }
+
+    return this.databaseService.connection.delete({
+      where: { id },
+    });
   }
 }

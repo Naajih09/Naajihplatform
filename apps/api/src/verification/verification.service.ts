@@ -10,17 +10,19 @@ export class VerificationService {
   ) {}
 
   // 1. SUBMIT REQUEST (User)
-  async create(data: any) {
+  async create(data: { userId: string; documentUrl: string }) {
     const existing = await this.databaseService.verificationRequest.findUnique({
       where: { userId: data.userId }
     });
 
+    // If resubmitting, update existing record and reset reason
     if (existing) {
       return this.databaseService.verificationRequest.update({
         where: { userId: data.userId },
         data: { 
           documentUrl: data.documentUrl,
-          status: 'PENDING'
+          status: 'PENDING',
+          rejectionReason: null 
         }
       });
     }
@@ -54,26 +56,35 @@ export class VerificationService {
   }
 
   // 4. ADMIN: APPROVE/REJECT
-  async updateStatus(id: string, status: 'APPROVED' | 'REJECTED') {
+  async updateStatus(id: string, status: 'APPROVED' | 'REJECTED', rejectionReason?: string) {
     // 1. Update the Request
     const request = await this.databaseService.verificationRequest.update({
       where: { id },
-      data: { status }
+      data: { 
+        status,
+        rejectionReason: status === 'REJECTED' ? rejectionReason : null
+      }
     });
 
-    // 2. If Approved, Update the User to isVerified = true
+    // 2. Update the User's overall verification status
     if (status === 'APPROVED') {
       await this.databaseService.user.update({
         where: { id: request.userId },
         data: { isVerified: true }
       });
+    } else if (status === 'REJECTED') {
+      await this.databaseService.user.update({
+        where: { id: request.userId },
+        data: { isVerified: false }
+      });
     }
 
     // 3. Notify User
-    await this.notificationsService.create(
-      request.userId, 
-      `Your verification request has been ${status.toLowerCase()}.`
-    );
+    const message = status === 'REJECTED' && rejectionReason
+      ? `Your verification request was rejected. Reason: ${rejectionReason}`
+      : `Your verification request has been ${status.toLowerCase()}.`;
+      
+    await this.notificationsService.create(request.userId, message);
 
     return request;
   }

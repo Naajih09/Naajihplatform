@@ -70,11 +70,19 @@ export class UsersController {
     );
   }
 
-  // 3. GET DASHBOARD STATS (Protected: Only ADMIN can view stats)
+  // 3. GET DASHBOARD STATS (User can view their own, Admin can view any)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.ENTREPRENEUR,
+    UserRole.INVESTOR,
+    UserRole.ASPIRING_BUSINESS_OWNER,
+  )
   @Get('stats/:id')
-  getStats(@Param('id') id: string) {
+  getStats(@Param('id') id: string, @Request() req) {
+    if (req.user.role !== UserRole.ADMIN && req.user.id !== id) {
+      throw new ForbiddenException('You can only view your own stats.');
+    }
     return this.usersService.getDashboardStats(id);
   }
 

@@ -8,6 +8,12 @@ const CreatePitch = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
   
   const [formData, setFormData] = useState({
     title: '', tagline: '', problemStatement: '', solution: '', 
@@ -25,13 +31,15 @@ const CreatePitch = () => {
     const uploadData = new FormData();
     uploadData.append('file', file);
     try {
-      const res = await fetch('http://localhost:3000/api/upload', { method: 'POST', body: uploadData });
+      const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: uploadData });
       const data = await res.json();
       if (data.url) {
         setFormData((prev) => ({ ...prev, pitchDeckUrl: data.url }));
-        alert("File Uploaded Successfully!");
+        setToast({ show: true, message: 'File uploaded successfully.', type: 'success' });
       } else throw new Error("No URL returned");
-    } catch (err) { alert("Failed to upload file."); } finally { setUploading(false); }
+    } catch (err) {
+      setToast({ show: true, message: 'Failed to upload file.', type: 'error' });
+    } finally { setUploading(false); }
   };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -44,13 +52,13 @@ const CreatePitch = () => {
       localStorage.getItem('access_token');
 
     if (!token) {
-        alert("You are not logged in!");
+        setToast({ show: true, message: 'You are not logged in.', type: 'error' });
         navigate('/login');
         return;
     }
 
     try {
-      const res = await fetch('http://localhost:3000/api/pitches', {
+      const res = await fetch(`${API_BASE}/pitches`, {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
@@ -61,9 +69,11 @@ const CreatePitch = () => {
         }),
       });
       if (!res.ok) throw new Error('Failed to post pitch');
-      alert('Pitch Posted Successfully!');
+      setToast({ show: true, message: 'Pitch posted successfully.', type: 'success' });
       navigate('/dashboard/opportunities');
-    } catch (err: any) { alert('Error: ' + err.message); } finally { setLoading(false); }
+    } catch (err: any) {
+      setToast({ show: true, message: err.message || 'Failed to post pitch.', type: 'error' });
+    } finally { setLoading(false); }
   };
 
   const inputStyles = "w-full p-3 bg-slate-50 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded-xl text-slate-900 dark:text-white focus:border-primary focus:outline-none transition-colors placeholder:text-gray-400";
@@ -71,6 +81,22 @@ const CreatePitch = () => {
 
   return (
     <div className='max-w-3xl mx-auto pb-20 font-sans'>
+      {toast.show && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          {toast.message}
+        </div>
+      )}
+      {user.role && user.role !== 'ENTREPRENEUR' ? (
+        <div className="bg-white dark:bg-[#1d1d20] rounded-2xl border border-slate-200 dark:border-gray-800 p-8 shadow-xl">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Pitch creation is for entrepreneurs</h2>
+          <p className="text-slate-500 dark:text-gray-400 mb-6">
+            Your current role does not allow pitch submissions. Switch to an entrepreneur account to create pitches.
+          </p>
+          <Button onClick={() => navigate('/dashboard/opportunities')} className="bg-primary text-neutral-dark font-bold">
+            Browse Opportunities
+          </Button>
+        </div>
+      ) : (
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Create New Pitch</h1>
         <Button variant="ghost" onClick={() => navigate('/dashboard/opportunities')}>Cancel</Button>
@@ -107,12 +133,13 @@ const CreatePitch = () => {
             <div><label className={labelStyles}>Market Size</label><input name="marketSize" onChange={handleChange} className={inputStyles} placeholder="e.g. 50M users" required aria-label="Market Size" /></div>
           </div>
           <div className='p-6 bg-slate-100 dark:bg-black/30 rounded-xl border border-slate-200 dark:border-gray-800 grid grid-cols-1 md:grid-cols-2 gap-6'>
-            <div><label className={labelStyles}>Ask (₦)</label><input name="fundingAsk" type="number" required onChange={handleChange} className={inputStyles} aria-label="Funding Ask" /></div>
+            <div><label className={labelStyles}>Ask (NGN)</label><input name="fundingAsk" type="number" required onChange={handleChange} className={inputStyles} aria-label="Funding Ask" /></div>
             <div><label className={labelStyles}>Equity (%)</label><input name="equityOffer" type="text" required onChange={handleChange} className={inputStyles} aria-label="Equity Offer" /></div>
           </div>
           <Button type='submit' className='w-full bg-primary text-neutral-dark font-bold hover:brightness-110' isLoading={loading}>Post Pitch</Button>
         </form>
       </div>
+      )}
     </div>
   );
 };

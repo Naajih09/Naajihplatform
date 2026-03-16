@@ -9,12 +9,25 @@ const PitchDetails = () => {
   const [pitch, setPitch] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [requestSent, setRequestSent] = useState(false);
+  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
   
   // Edit Mode State
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const authToken =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('access_token') ||
+    '';
+  const authHeaders = authToken
+    ? { Authorization: `Bearer ${authToken}` }
+    : {};
 
   useEffect(() => {
     fetchPitch();
@@ -22,12 +35,12 @@ const PitchDetails = () => {
 
   const fetchPitch = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/api/pitches/${id}`);
+      const res = await fetch(`${API_BASE}/pitches/${id}`);
       const data = await res.json();
       setPitch(data);
       setEditForm(data); // Pre-fill edit form
     } catch (err) {
-      console.error(err);
+      setToast({ show: true, message: 'Failed to load pitch.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -36,54 +49,48 @@ const PitchDetails = () => {
   const handleConnect = async () => {
     if (pitch.userId === user.id) return;
     try {
-      const res = await fetch('http://localhost:3000/api/connections', {
+      const res = await fetch(`${API_BASE}/connections`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ senderId: user.id, receiverId: pitch.userId })
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        body: JSON.stringify({ receiverId: pitch.userId })
       });
       if (res.ok) {
         setRequestSent(true);
-        alert(`Connection request sent!`);
+        setToast({ show: true, message: 'Connection request sent!', type: 'success' });
       }
-    } catch (error) { alert("Failed to connect"); }
+    } catch (error) { setToast({ show: true, message: 'Failed to connect.', type: 'error' }); }
   };
 
   // --- DELETE LOGIC ---
   const handleDelete = async () => {
     if (!confirm("Are you sure? This cannot be undone.")) return;
     try {
-      await fetch(`http://localhost:3000/api/pitches/${id}`, {
+      await fetch(`${API_BASE}/pitches/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${
-            localStorage.getItem('accessToken') ||
-            localStorage.getItem('access_token')
-          }`,
+          ...authHeaders,
         }
       });
-      alert("Pitch deleted.");
+      setToast({ show: true, message: 'Pitch deleted.', type: 'success' });
       navigate('/dashboard/opportunities');
-    } catch (err) { alert("Delete failed"); }
+    } catch (err) { setToast({ show: true, message: 'Delete failed.', type: 'error' }); }
   };
 
   // --- UPDATE LOGIC ---
   const handleUpdate = async () => {
     try {
-      await fetch(`http://localhost:3000/api/pitches/${id}`, {
+      await fetch(`${API_BASE}/pitches/${id}`, {
         method: 'PATCH',
         headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${
-              localStorage.getItem('accessToken') ||
-              localStorage.getItem('access_token')
-            }`
+            ...authHeaders
         },
         body: JSON.stringify(editForm)
       });
       setPitch(editForm);
       setIsEditing(false);
-      alert("Pitch updated!");
-    } catch (err) { alert("Update failed"); }
+      setToast({ show: true, message: 'Pitch updated.', type: 'success' });
+    } catch (err) { setToast({ show: true, message: 'Update failed.', type: 'error' }); }
   };
 
   if (loading) return <div className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></div>;
@@ -94,6 +101,11 @@ const PitchDetails = () => {
 
   return (
     <div className="max-w-4xl mx-auto pb-20 font-sans text-slate-900 dark:text-white">
+      {toast.show && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          {toast.message}
+        </div>
+      )}
       
       {/* Top Bar */}
       <div className="flex justify-between items-center mb-6">
@@ -202,7 +214,7 @@ const PitchDetails = () => {
                   // FIX 5: Added aria-label
                   <input aria-label="Edit Funding Ask" type="number" className={inputStyle} value={editForm.fundingAsk} onChange={e => setEditForm({...editForm, fundingAsk: e.target.value})} />
               ) : (
-                  <p className="text-3xl font-black text-slate-900 dark:text-white">₦{parseInt(pitch.fundingAsk).toLocaleString()}</p>
+                  <p className="text-3xl font-black text-slate-900 dark:text-white">NGN {parseInt(pitch.fundingAsk).toLocaleString()}</p>
               )}
            </div>
 

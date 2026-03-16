@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   Rocket, Wallet, GraduationCap, ArrowRight, CheckCircle, 
-  AlertCircle, Landmark, Eye, EyeOff, ChevronRight, Lock, ShieldCheck, BadgeDollarSign
+  AlertCircle, Eye, EyeOff, ChevronRight, Lock, ShieldCheck, BadgeDollarSign
 } from 'lucide-react';
 import Button from '../../components/Button';
 
@@ -13,6 +13,12 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
   
   const [formData, setFormData] = useState({
     fullName: '',
@@ -54,7 +60,7 @@ const Signup = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:3000/api/users', {
+      const response = await fetch(`${API_BASE}/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -71,8 +77,11 @@ const Signup = () => {
         throw new Error(errorData.message || "Failed to create account.");
       }
 
-      alert("Account created successfully!");
-      navigate('/login');
+      setToast({ show: true, message: 'Account created successfully. Please log in.', type: 'success' });
+      setTimeout(() => {
+        setToast({ show: false, message: '', type: 'success' });
+        navigate('/login');
+      }, 1500);
 
     } catch (err: any) {
       setError(err.message);
@@ -88,8 +97,8 @@ const Signup = () => {
         <header className="w-full border-b border-gray-200 dark:border-white/5 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-50">
           <div className="max-w-[1200px] mx-auto px-6 h-20 flex items-center justify-between">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-              <div className="size-10 bg-primary flex items-center justify-center rounded">
-                <Landmark className="text-background-dark font-bold" />
+              <div className="size-10 bg-primary flex items-center justify-center rounded text-black font-extrabold">
+                N
               </div>
               <h2 className="text-2xl font-bold tracking-tighter uppercase">NaajihBiz</h2>
             </div>
@@ -140,8 +149,8 @@ const Signup = () => {
       <header className="w-full px-6 md:px-20 py-5 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-white/5">
         <div className="max-w-[1200px] mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => setStep(1)}>
-                <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-background-dark">
-                    <Landmark size={20} className="font-bold" />
+                <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-black font-extrabold">
+                    N
                 </div>
                 <h2 className="text-xl font-bold tracking-tight">NaajihBiz</h2>
             </div>
@@ -166,6 +175,11 @@ const Signup = () => {
             {error && (
                 <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg flex items-center gap-2 text-sm">
                     <AlertCircle size={16} /> {error}
+                </div>
+            )}
+            {toast.show && (
+                <div className={`mb-6 p-3 border rounded-lg flex items-center gap-2 text-sm ${toast.type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-600' : 'bg-red-500/10 border-red-500/20 text-red-500'}`}>
+                    <AlertCircle size={16} /> {toast.message}
                 </div>
             )}
 
@@ -199,7 +213,7 @@ const Signup = () => {
                     <div className="flex flex-col gap-2">
                         <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Password</label>
                         <div className="relative">
-                            <input aria-label="Password" name="password" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="••••••••" type={showPassword ? "text" : "password"}/>
+                            <input aria-label="Password" name="password" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="********" type={showPassword ? "text" : "password"}/>
                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-slate-400 hover:text-white" aria-label="Toggle password visibility">
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
@@ -207,7 +221,7 @@ const Signup = () => {
                     </div>
                     <div className="flex flex-col gap-2">
                         <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Confirm</label>
-                        <input aria-label="Confirm Password" name="confirmPassword" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="••••••••" type="password"/>
+                        <input aria-label="Confirm Password" name="confirmPassword" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="********" type="password"/>
                     </div>
                 </div>
 

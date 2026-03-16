@@ -2,6 +2,7 @@ import { CheckCircle, ChevronLeft, Clock, FileText, PlayCircle } from 'lucide-re
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '../../components/Button';
+import { showToast } from '../../lib/utils';
 
 const CourseViewer = () => {
   const { lessonId } = useParams();
@@ -10,7 +11,14 @@ const CourseViewer = () => {
   const [loading, setLoading] = useState(true);
   const [isCompleting, setIsCompleting] = useState(false);
 
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const authToken =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('access_token') ||
+    '';
+  const authHeaders = authToken
+    ? { Authorization: `Bearer ${authToken}` }
+    : {};
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -26,7 +34,9 @@ const CourseViewer = () => {
         
         // For now, I'll use a hack of fetching all and finding it, 
         // but better to add a getLesson endpoint in backend soon.
-        const res = await fetch(`http://localhost:3000/api/academy/lesson/${lessonId}`);
+        const res = await fetch(`${API_BASE}/academy/lesson/${lessonId}`, {
+          headers: authHeaders,
+        });
         const data = await res.json();
         setLesson(data);
       } catch (err) {
@@ -42,14 +52,18 @@ const CourseViewer = () => {
   const handleComplete = async () => {
     setIsCompleting(true);
     try {
-      await fetch(`http://localhost:3000/api/academy/lesson/${lessonId}/complete`, {
+      await fetch(`${API_BASE}/academy/lesson/${lessonId}/complete`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id })
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeaders,
+        },
       });
+      showToast('Lesson marked as complete.', 'success');
       navigate(-1); // Go back to dashboard
     } catch (err) {
       console.error(err);
+      showToast('Unable to save progress. Try again.', 'error');
     } finally {
       setIsCompleting(false);
     }
@@ -57,6 +71,8 @@ const CourseViewer = () => {
 
   if (loading) return <div className="text-center py-20 text-gray-500">Loading lesson...</div>;
   if (!lesson) return <div className="text-center py-20 text-red-500">Lesson not found</div>;
+
+  const isLockedContent = !lesson.videoUrl && !lesson.content;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-20">
@@ -66,7 +82,7 @@ const CourseViewer = () => {
 
         <div className="bg-[#1d1d20] border border-gray-800 rounded-3xl overflow-hidden shadow-2xl">
             {/* Media Area */}
-            {lesson.contentType === 'VIDEO' ? (
+            {String(lesson.contentType || '').toUpperCase() === 'VIDEO' ? (
                 <div className="aspect-video bg-black relative flex items-center justify-center">
                     {lesson.videoUrl ? (
                          <iframe 
@@ -93,7 +109,7 @@ const CourseViewer = () => {
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-4">
                             <span className="bg-primary/20 text-primary text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-widest">
-                                {lesson.contentType}
+                                {String(lesson.contentType || 'Lesson').toUpperCase()}
                             </span>
                             <span className="text-slate-500 text-xs flex items-center gap-1 font-bold">
                                 <Clock size={12}/> {lesson.duration || 5} Mins
@@ -101,17 +117,25 @@ const CourseViewer = () => {
                         </div>
                         <h1 className="text-3xl font-black text-white">{lesson.title}</h1>
                         <div className="mt-8 prose prose-invert max-w-none text-gray-400 leading-relaxed" 
-                             dangerouslySetInnerHTML={{ __html: lesson.content || 'No content provided.' }}>
+                             dangerouslySetInnerHTML={{
+                               __html: isLockedContent
+                                 ? 'This lesson is locked. Join the program to access the content.'
+                                 : lesson.content || 'No content provided.',
+                             }}>
                         </div>
                     </div>
 
                     <div className="w-full md:w-auto mt-4">
                         <Button 
                             onClick={handleComplete}
-                            disabled={isCompleting}
+                            disabled={isCompleting || isLockedContent}
                             className="w-full md:w-auto bg-primary text-black font-black px-8 py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
                         >
-                            {isCompleting ? 'Saving...' : <><CheckCircle size={20}/> Mark as Complete</>}
+                            {isLockedContent
+                              ? 'Join program to unlock'
+                              : isCompleting
+                              ? 'Saving...'
+                              : <><CheckCircle size={20}/> Mark as Complete</>}
                         </Button>
                     </div>
                 </div>

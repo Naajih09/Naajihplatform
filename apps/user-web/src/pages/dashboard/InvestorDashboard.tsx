@@ -6,12 +6,13 @@ export default function InvestorDashboard() {
   const [pitches, setPitches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
   useEffect(() => {
     // In a real scenario, this uses RTK Query or fetch to /api/pitches
     const fetchPitches = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/api/pitches${filter !== 'All' ? `?category=${filter}` : ''}`);
+        const res = await fetch(`${API_BASE}/pitches${filter !== 'All' ? `?category=${filter}` : ''}`);
         if (res.ok) {
            const data = await res.json();
            setPitches(data);
@@ -72,7 +73,7 @@ export default function InvestorDashboard() {
                 <Wallet className="text-primary/50" size={24} />
               </div>
               <div className="mt-4">
-                <h3 className="text-3xl font-bold tracking-tight text-white">₦2.5M</h3>
+                <h3 className="text-3xl font-bold tracking-tight text-white">NGN 2.5M</h3>
                 <span className="text-white/50 text-xs font-bold">Platform-wide average</span>
               </div>
             </div>
@@ -142,7 +143,7 @@ export default function InvestorDashboard() {
                         <div className="grid grid-cols-2 gap-4 mb-6 py-4 border-y border-white/5">
                             <div>
                                 <p className="text-[10px] uppercase text-gray-500 mb-1">Funding Ask</p>
-                                <p className="font-bold text-white">₦{pitch.fundingAsk?.toLocaleString() || '0'}</p>
+                                <p className="font-bold text-white">NGN {pitch.fundingAsk?.toLocaleString() || '0'}</p>
                             </div>
                             <div>
                                 <p className="text-[10px] uppercase text-gray-500 mb-1">Equity Offered</p>

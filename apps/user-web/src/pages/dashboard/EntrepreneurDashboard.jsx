@@ -74,7 +74,7 @@ export default function EntrepreneurProfile() {
             {[
               ["Growth", "+120%", "YoY"],
               ["Users", "5,400+", "Active"],
-              ["Capital", "₦45M", "Raised"],
+              ["Capital", "NGN 45M", "Raised"],
               ["Rating", "4.9", "Trust"],
             ].map(([label, value, sub]) => (
               <div

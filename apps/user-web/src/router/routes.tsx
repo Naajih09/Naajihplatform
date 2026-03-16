@@ -5,6 +5,7 @@ import Verification from '../pages/dashboard/Verification';
 const HomePage = lazy(() => import('../pages/landing'));
 const Login = lazy(() => import('../pages/auth/Login'));
 const Signup = lazy(() => import('../pages/auth/Signup'));
+const CertificateVerify = lazy(() => import('../pages/certificate/CertificateVerify'));
 
 // --- Dashboard Pages ---
 const DashboardHome = lazy(() => import('../pages/dashboard/DashboardHome'));
@@ -20,6 +21,8 @@ const Settings = lazy(() => import('../pages/dashboard/Settings'));
 const verification = lazy(() => import('../pages/dashboard/Verification'));
 const LearningCenter = lazy(() => import('../pages/dashboard/LearningCenter'));
 const CourseViewer = lazy(() => import('../pages/dashboard/CourseViewer'));
+const AcademyDashboard = lazy(() => import('../pages/dashboard/AcademyDashboard'));
+const Certificate = lazy(() => import('../pages/dashboard/Certificate'));
 
 const routes = [
   // --- Public Routes ---
@@ -38,6 +41,11 @@ const routes = [
     element: <Signup />,
     layout: 'blank',
   },
+  {
+    path: 'certificate/verify/:programId/:userId',
+    element: <CertificateVerify />,
+    layout: 'blank',
+  },
 
   // --- Authenticated Dashboard Routes ---
   {
@@ -53,6 +61,21 @@ const routes = [
   {
     path: 'dashboard/learning-center/:id',
     element: <CourseViewer />,
+    layout: 'dashboard',
+  },
+  {
+    path: 'dashboard/academy/:id',
+    element: <AcademyDashboard />,
+    layout: 'dashboard',
+  },
+  {
+    path: 'dashboard/academy/course/:lessonId',
+    element: <CourseViewer />,
+    layout: 'dashboard',
+  },
+  {
+    path: 'dashboard/academy/certificate/:programId',
+    element: <Certificate />,
     layout: 'dashboard',
   },
   {

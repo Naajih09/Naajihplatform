@@ -2,10 +2,19 @@ import { Award, BookOpen, Calendar, ChevronRight, Network, PlayCircle, Rocket, S
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
+import { showToast } from '../../lib/utils';
 
 function DashboardHome() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const authToken =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('access_token') ||
+    '';
+  const authHeaders = authToken
+    ? { Authorization: `Bearer ${authToken}` }
+    : {};
 
   // Extract Name & Role
   const profile = user.entrepreneurProfile || user.investorProfile || {};
@@ -22,6 +31,7 @@ function DashboardHome() {
   // FIX: Removed <any[]>
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [joiningId, setJoiningId] = useState(null);
 
   // FETCH DATA BASED ON ROLE
   useEffect(() => {
@@ -30,12 +40,12 @@ function DashboardHome() {
       try {
 if (isAspirant) {
   // If Aspirant, fetch Programs
-  const res = await fetch('http://localhost:3000/api/academy');
+  const res = await fetch(`${API_BASE}/academy`, { headers: authHeaders });
   const data = await res.json();
   setCourses(data); // "courses" actually refers to Programs here
 } else {
   // If Entrepreneur/Investor, fetch Stats
-  const res = await fetch(`http://localhost:3000/api/users/stats/${user.id}`);
+  const res = await fetch(`${API_BASE}/users/stats/${user.id}`, { headers: authHeaders });
   const data = await res.json();
   setStats(data);
 }
@@ -48,6 +58,43 @@ if (isAspirant) {
 
     if (user.id) fetchData();
   }, [user.id, isAspirant]);
+
+  const handleJoin = async (event, programId, isEnrolled) => {
+    event.stopPropagation();
+    if (isEnrolled) {
+      navigate(`/dashboard/academy/${programId}`);
+      return;
+    }
+    if (!authToken) {
+      showToast('Please log in to join this program.', 'error');
+      return;
+    }
+    setJoiningId(programId);
+    try {
+      await fetch(`${API_BASE}/academy/join/${programId}`, {
+        method: 'POST',
+        headers: authHeaders,
+      });
+      setCourses(prev =>
+        prev.map(course =>
+          course.id === programId
+            ? {
+                ...course,
+                enrollments: [
+                  { id: 'local', enrolledAt: new Date().toISOString() },
+                ],
+              }
+            : course,
+        ),
+      );
+      navigate(`/dashboard/academy/${programId}`);
+    } catch (err) {
+      console.error(err);
+      showToast('Unable to join program right now.', 'error');
+    } finally {
+      setJoiningId(null);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-20">
@@ -96,7 +143,25 @@ if (isAspirant) {
           <h3 className="text-xl font-bold text-slate-900 dark:text-white">Recommended Courses</h3>
           {loading ? <div className="text-center py-10 text-gray-500">Loading Academy...</div> : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.map(course => (
+              {courses.map(course => {
+                const totalLessons = course.modules?.reduce(
+                  (sum, mod) => sum + (mod.lessons?.length || 0),
+                  0,
+                );
+                const completedLessons = course.modules?.reduce(
+                  (sum, mod) =>
+                    sum +
+                    (mod.lessons?.filter((lesson) => lesson.progress?.length > 0)
+                      .length || 0),
+                  0,
+                );
+                const enrollment = course.enrollments?.[0];
+                const enrollmentStatus = enrollment?.status;
+                const isEnrolled = enrollmentStatus === 'APPROVED';
+                const isPending = enrollmentStatus === 'PENDING';
+                const isRejected = enrollmentStatus === 'REJECTED';
+
+                return (
                 <div key={course.id} onClick={() => navigate(`/dashboard/academy/${course.id}`)}
                   className="bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 rounded-2xl overflow-hidden hover:border-primary/50 cursor-pointer transition-all shadow-sm group">
                   <div className="h-40 bg-slate-200 dark:bg-gray-800 flex items-center justify-center relative">
@@ -111,15 +176,38 @@ if (isAspirant) {
                   </div>
                   <div className="p-6">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs font-bold text-primary uppercase">{course.lessons?.length || 3} Lessons</span>
+                      <span className="text-xs font-bold text-primary uppercase">{totalLessons || 0} Lessons</span>
                       {!course.isPremium && <span className="bg-green-500/20 text-green-500 text-[10px] font-bold px-2 py-1 rounded">FREE</span>}
                     </div>
                     <h3 className="font-bold text-lg mb-2 text-slate-900 dark:text-white">{course.title}</h3>
                     <p className="text-sm text-slate-500 line-clamp-2">{course.description}</p>
-                    <Button className="mt-4 w-full bg-primary text-neutral-dark font-bold">Start Learning</Button>
+                    <div className="flex items-center justify-between mt-4 text-xs text-slate-500">
+                      <span>{completedLessons}/{totalLessons || 0} completed</span>
+                      <span className="uppercase font-bold">
+                        {isEnrolled ? 'Enrolled' : isPending ? 'Pending' : isRejected ? 'Rejected' : 'Not Joined'}
+                      </span>
+                    </div>
+                    <Button
+                      onClick={(event) => handleJoin(event, course.id, isEnrolled)}
+                      className={`mt-3 w-full font-bold ${
+                        isEnrolled ? 'bg-white/10 text-white' : 'bg-primary text-neutral-dark'
+                      }`}
+                      disabled={joiningId === course.id || isPending}
+                    >
+                      {joiningId === course.id
+                        ? 'Joining...'
+                        : isEnrolled
+                        ? 'Continue'
+                        : isPending
+                        ? 'Pending Approval'
+                        : isRejected
+                        ? 'Reapply'
+                        : 'Join Program'}
+                    </Button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

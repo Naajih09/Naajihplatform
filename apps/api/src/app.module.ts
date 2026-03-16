@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AcademyModule } from './academy/academy.module';
 import { AuthModule } from './auth/auth.module';
@@ -20,6 +21,7 @@ import { VerificationModule } from './verification/verification.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     ThrottlerModule.forRoot([
       {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, ArrowRight, Lock, Mail, ShieldCheck } from 'lucide-react';
+import { AlertCircle, ArrowRight, Lock, Mail } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../hooks/useAuth';
 import { UserRole } from '../types/enums';
@@ -47,12 +47,12 @@ const Login = () => {
     <div className="min-h-screen flex bg-[#111113] text-white">
       <div className="hidden lg:flex w-1/2 border-r border-white/10 p-12 flex-col justify-between relative overflow-hidden">
         <div className="z-10 flex items-center gap-3">
-          <div className="size-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-900/30">
-            <ShieldCheck size={22} />
+          <div className="size-10 bg-primary rounded-xl flex items-center justify-center text-black font-extrabold shadow-lg shadow-primary/30">
+            N
           </div>
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight">
-              Naajih<span className="text-blue-500">Admin</span>
+              NaajihBiz <span className="text-primary">Admin</span>
             </h1>
             <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">
               CEO Mode

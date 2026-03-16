@@ -10,23 +10,41 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState('security');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const authToken =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('access_token') ||
+    '';
+  const authHeaders = authToken
+    ? { Authorization: `Bearer ${authToken}` }
+    : {};
 
-  const handleLogout = () => { localStorage.removeItem('user'); navigate('/login'); };
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('access_token');
+    navigate('/login');
+  };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/users/password/${user.id}`, {
+      const res = await fetch(`${API_BASE}/users/password/${user.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({ password })
       });
       if (!res.ok) throw new Error("Failed to update password");
-      alert("Password updated successfully!");
+      setToast({ show: true, message: 'Password updated successfully.', type: 'success' });
       setPassword('');
     } catch (err) {
-      alert("Error updating password");
+      setToast({ show: true, message: 'Error updating password.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -35,16 +53,21 @@ const Settings = () => {
   const handleDeleteAccount = async () => {
     if (!confirm("Are you sure? This cannot be undone.")) return;
     try {
-      await fetch(`http://localhost:3000/api/users/${user.id}`, { method: 'DELETE' });
-      alert("Account deleted.");
+      await fetch(`${API_BASE}/users/${user.id}`, { method: 'DELETE', headers: authHeaders });
+      setToast({ show: true, message: 'Account deleted.', type: 'success' });
       handleLogout();
     } catch (err) {
-      alert("Failed to delete account");
+      setToast({ show: true, message: 'Failed to delete account.', type: 'error' });
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 font-sans pb-20">
+      {toast.show && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          {toast.message}
+        </div>
+      )}
       <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Settings</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

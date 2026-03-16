@@ -7,7 +7,7 @@ export default function BlankLayout({ children }: PropsWithChildren) {
   const [searchParams] = useSearchParams();
 
   if (isAuth) {
-    return <Navigate to={searchParams.get('returnUrl') ?? '/'} />;
+    return <Navigate to={searchParams.get('returnUrl') ?? '/dashboard'} />;
   }
 
   return <div className='min-h-screen'>{children}</div>;

@@ -7,34 +7,62 @@ const Connections = () => {
   const [pending, setPending] = useState<any[]>([]);
   const [friends, setFriends] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const navigate = useNavigate(); // <--- Init navigation
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const authToken =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('access_token') ||
+    '';
+  const authHeaders = authToken
+    ? { Authorization: `Bearer ${authToken}` }
+    : {};
 
   useEffect(() => { if (user.id) fetchData(); }, [user.id]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const resPending = await fetch(`http://localhost:3000/api/connections/pending/${user.id}`).then(r => r.json());
-      const resFriends = await fetch(`http://localhost:3000/api/connections/user/${user.id}`).then(r => r.json());
+      const resPending = await fetch(`${API_BASE}/connections/pending/${user.id}`, {
+        headers: authHeaders,
+      }).then(r => r.json());
+      const resFriends = await fetch(`${API_BASE}/connections/user/${user.id}`, {
+        headers: authHeaders,
+      }).then(r => r.json());
       setPending(Array.isArray(resPending) ? resPending : []);
       setFriends(Array.isArray(resFriends) ? resFriends : []);
-    } catch (error) { console.error(error); } finally { setLoading(false); }
+    } catch (error) {
+      setToast({ show: true, message: 'Failed to load connections.', type: 'error' });
+    } finally { setLoading(false); }
   };
 
   const handleResponse = async (id: string, status: 'ACCEPTED' | 'REJECTED') => {
     try {
-      await fetch(`http://localhost:3000/api/connections/${id}`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status })
+      await fetch(`${API_BASE}/connections/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        body: JSON.stringify({ status })
       });
       fetchData();
-      alert(status === 'ACCEPTED' ? "Connection Accepted!" : "Request Rejected");
-    } catch (error) { alert("Action failed"); }
+      setToast({ show: true, message: status === 'ACCEPTED' ? 'Connection accepted.' : 'Request rejected.', type: 'success' });
+    } catch (error) {
+      setToast({ show: true, message: 'Action failed.', type: 'error' });
+    }
   };
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 font-sans pb-20">
+      {toast.show && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          {toast.message}
+        </div>
+      )}
       <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Network</h1>
       
       {loading ? <div className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></div> : (

@@ -1,7 +1,6 @@
 import {
     CheckCircle,
     Compass,
-    Landmark,
     LayoutGrid,
     Link as LinkIcon,
     Menu,
@@ -12,9 +11,12 @@ import {
     Zap
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import NotificationBell from '../components/NotificationBell';
 import ThemeToggle from '../components/ThemeToggle';
+import { useAuth } from '@/hooks/useAuth';
+import { useAppDispatch } from '@/store/store';
+import { logout, setAuth, setToken } from '@/store/slices/auth-slice';
 
 interface DashboardLayoutProps {
   children?: React.ReactNode; 
@@ -22,8 +24,10 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isAuth, user: authUser } = useAuth();
+  const dispatch = useAppDispatch();
   const userString = localStorage.getItem('user');
-  const user = userString ? JSON.parse(userString) : {};
+  const user = authUser || (userString ? JSON.parse(userString) : {});
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -36,6 +40,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   const handleLogout = () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('access_token');
+    dispatch(setToken(null));
+    dispatch(setAuth(false));
+    dispatch(logout());
     navigate('/login');
   };
 
@@ -49,6 +58,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { label: 'Upgrade Plan', path: '/dashboard/subscription', icon: Zap, badge: 'PRO' },
   ];
 
+  if (!isAuth) {
+    const returnUrl = encodeURIComponent(location.pathname);
+    return <Navigate to={`/login?returnUrl=${returnUrl}`} replace />;
+  }
+
   return (
     <div className="flex h-screen bg-[#f8fafc] dark:bg-[#111113] text-slate-900 dark:text-white font-sans overflow-hidden transition-colors duration-300">
       
@@ -60,8 +74,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       {/* SIDEBAR */}
       <aside className={`fixed md:static inset-y-0 left-0 z-30 w-64 bg-white dark:bg-[#1d1d20] border-r border-slate-200 dark:border-gray-800 flex flex-col transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="p-6 flex items-center gap-3">
-          <div className="size-10 bg-primary rounded-xl flex items-center justify-center text-neutral-dark">
-            <Landmark className="font-bold" size={24} />
+          <div className="size-10 bg-primary rounded-xl flex items-center justify-center text-black font-extrabold">
+            N
           </div>
           <div>
             <h1 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">NaajihBiz</h1>

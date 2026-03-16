@@ -2,7 +2,10 @@
 <html lang="en" class="dark"> <!-- Added 'dark' class here -->
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/naajih-icon.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="32x32" href="/naajih-icon.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="16x16" href="/naajih-icon.svg" />
+    <link rel="apple-touch-icon" type="image/svg+xml" sizes="180x180" href="/naajih-icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NaajihBiz | Enabling Halal Business Growth</title>
     
@@ -21,9 +24,74 @@
       .text-glow {
         text-shadow: 0 0 10px rgba(170, 255, 0, 0.3);
       }
+      .app-splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #111113;
+        color: #f8fafc;
+        z-index: 9999;
+        transition: opacity 200ms ease;
+      }
+      .app-splash.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .splash-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+      .splash-logo {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: #aaff00;
+        display: grid;
+        place-items: center;
+        color: #111113;
+        font-weight: 800;
+        font-size: 24px;
+        box-shadow: 0 20px 50px rgba(170, 255, 0, 0.2);
+      }
+      .splash-text {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+      .splash-sub {
+        font-size: 12px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+      }
+      .splash-spinner {
+        width: 24px;
+        height: 24px;
+        border: 3px solid rgba(255, 255, 255, 0.2);
+        border-top-color: #aaff00;
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
     </style>
   </head>
   <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-lunar-white font-sans antialiased">
+    <div id="app-splash" class="app-splash">
+      <div class="splash-card">
+        <div class="splash-logo">N</div>
+        <div class="splash-text">NaajihBiz</div>
+        <div class="splash-sub">Loading</div>
+        <div class="splash-spinner" aria-hidden="true"></div>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -7,7 +7,8 @@ export const useSocket = (userId: string) => {
   useEffect(() => {
     if (!userId) return;
 
-    const socket = io('http://localhost:3000', {
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+    const socket = io(socketUrl, {
       transports: ['websocket'],
     });
 

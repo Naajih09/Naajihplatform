@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, AlertCircle, Landmark } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import Button from '../../components/Button';
 import { useAppDispatch } from '@/store/store';
 import { setAuth, setToken, setUser } from '@/store/slices/auth-slice';
 
 const Login = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const dispatch = useAppDispatch();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +20,7 @@ const Login = () => {
     setError('');
 
     try {
-      const res = await fetch('http://localhost:3000/api/users/login', {
+      const res = await fetch(`${API_BASE}/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -41,7 +43,8 @@ const Login = () => {
 
       
       // Redirect to Dashboard
-      navigate('/dashboard');
+      const returnUrl = searchParams.get('returnUrl');
+      navigate(returnUrl || '/dashboard', { replace: true });
 
     } catch (err: any) {
       console.error(err);
@@ -56,8 +59,8 @@ const Login = () => {
       {/* BRANDING SIDE */}
       <div className="hidden lg:flex w-1/2 bg-background-dark border-r border-white/10 p-12 flex-col justify-between relative overflow-hidden">
         <div className="z-10 flex items-center gap-2">
-          <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-background-dark">
-             <Landmark size={20} className="font-bold" />
+          <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-black font-extrabold">
+             N
           </div>
           <h2 className="text-2xl font-bold text-white">Naajih<span className="text-primary">Biz</span>.</h2>
         </div>
@@ -110,7 +113,7 @@ const Login = () => {
                   value={formData.password}
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
                   className="w-full pl-10 pr-4 py-3 bg-transparent border border-slate-300 dark:border-white/10 rounded-lg focus:border-primary focus:outline-none transition-colors"
-                  placeholder="••••••••"
+                  placeholder="********"
                 />
               </div>
             </div>

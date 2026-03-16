@@ -10,6 +10,7 @@ import { Readable } from 'stream';
 export class CloudinaryService {
   async uploadFile(
     file: Express.Multer.File,
+    folder = 'naajih-uploads',
   ): Promise<UploadApiResponse | UploadApiErrorResponse> {
     console.log(
       `🚀 Starting upload for: ${file.originalname} (Size: ${file.size} bytes)`,
@@ -19,7 +20,7 @@ export class CloudinaryService {
       const upload = cloudinary.uploader.upload_stream(
         {
           resource_type: 'auto',
-          folder: 'naajih-pitches',
+          folder,
           timeout: 60000, // <--- ADD THIS: Wait 60 seconds (default is shorter)
         },
         (error, result) => {

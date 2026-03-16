@@ -8,6 +8,11 @@ const Messages = () => {
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
   
   // --- NEW: Search State ---
   const [searchQuery, setSearchQuery] = useState('');
@@ -21,7 +26,7 @@ const Messages = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const API_BASE = import.meta.env.VITE_PUBLIC_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
   const authToken =
     localStorage.getItem('access_token') ||
     localStorage.getItem('accessToken') ||
@@ -106,11 +111,11 @@ const Messages = () => {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const res = await fetch('http://localhost:3000/api/upload', { method: 'POST', body: formData });
+      const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
       const data = await res.json();
       return data.url;
     } catch (err) {
-      alert("Upload failed");
+      setToast({ show: true, message: 'Upload failed.', type: 'error' });
       return null;
     } finally {
       setIsUploading(false);
@@ -134,8 +139,21 @@ const Messages = () => {
     scrollToBottom();
     setInputText('');
 
-    // Send via Socket
-    socket.emit('send_message', messageData);
+    try {
+      await fetch(`${API_BASE}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        body: JSON.stringify({
+          content,
+          receiverId: activeChat.id,
+          type,
+          attachmentUrl: url,
+        }),
+      });
+      socket.emit('send_message', messageData);
+    } catch (error) {
+      setToast({ show: true, message: 'Failed to send message.', type: 'error' });
+    }
   };
 
   const handleTextSubmit = (e: React.FormEvent) => {
@@ -200,6 +218,11 @@ const Messages = () => {
 
   return (
     <div className="max-w-6xl mx-auto h-[calc(100vh-140px)] bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 rounded-2xl overflow-hidden flex font-sans shadow-sm relative">
+      {toast.show && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          {toast.message}
+        </div>
+      )}
       
       {/* LEFT: Sidebar */}
       <div className={`

@@ -12,18 +12,33 @@ const Profile = () => {
   const [formData, setFormData] = useState<any>({});
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const authToken =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('access_token') ||
+    '';
+  const authHeaders = authToken
+    ? { Authorization: `Bearer ${authToken}` }
+    : {};
 
   // 2. CHECK IF LOGGED IN
   useEffect(() => {
     if (!localUser.id || !localUser.email) {
-      alert("Session expired. Please log in again.");
+      setToast({ show: true, message: 'Session expired. Please log in again.', type: 'error' });
       navigate('/login');
       return;
     }
 
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/api/users/${localUser.email}`);
+        const res = await fetch(`${API_BASE}/users/${localUser.email}`, {
+          headers: authHeaders,
+        });
         if (res.ok) {
           const data = await res.json();
           setUser(data);
@@ -32,7 +47,7 @@ const Profile = () => {
           setFormData(profileData || {});
         }
       } catch (err) {
-        console.error(err);
+        setToast({ show: true, message: 'Failed to load profile.', type: 'error' });
       }
     };
     fetchProfile();
@@ -44,7 +59,7 @@ const Profile = () => {
     
     // Safety Check
     if (!user.id) {
-        alert("Error: User ID missing. Please re-login.");
+        setToast({ show: true, message: 'User ID missing. Please re-login.', type: 'error' });
         return;
     }
 
@@ -54,9 +69,9 @@ const Profile = () => {
     else payload.investorProfile = formData;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/users/${user.id}`, {
+      const res = await fetch(`${API_BASE}/users/${user.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify(payload),
       });
 
@@ -66,9 +81,9 @@ const Profile = () => {
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
       setIsEditing(false);
-      alert("Profile Updated!");
+      setToast({ show: true, message: 'Profile updated.', type: 'success' });
     } catch (err: any) {
-      alert(err.message);
+      setToast({ show: true, message: err.message || 'Update failed.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -82,6 +97,11 @@ const Profile = () => {
 
   return (
     <div className="max-w-[1200px] mx-auto pb-20 font-sans text-slate-900 dark:text-white">
+      {toast.show && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          {toast.message}
+        </div>
+      )}
       
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -212,7 +232,7 @@ const Profile = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                     { l: 'Growth', v: '+120%', sub: 'Year over Year' },
-                    { l: 'Capital', v: '₦45M', sub: 'Target Raised' },
+                    { l: 'Capital', v: 'NGN 45M', sub: 'Target Raised' },
                     { l: 'Reputation', v: '4.9', sub: '5 Stars' },
                     { l: 'Status', v: 'Active', sub: 'Verified Account' }
                 ].map(stat => (

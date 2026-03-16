@@ -3,13 +3,18 @@ import { ShieldCheck, UploadCloud, CheckCircle, Clock, AlertTriangle, Loader2 } 
 
 const Verification = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const API_BASE = import.meta.env.VITE_PUBLIC_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
   const authToken =
     localStorage.getItem('accessToken') ||
     localStorage.getItem('access_token') ||
     '';
   const [status, setStatus] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
+  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
 
   // 1. CHECK STATUS ON LOAD
   useEffect(() => {
@@ -58,13 +63,20 @@ const Verification = () => {
           body: JSON.stringify({ documentUrl: data.url })
         });
         setStatus({ status: 'PENDING', documentUrl: data.url });
-        alert("Documents submitted successfully! Pending review.");
+        setToast({ show: true, message: 'Documents submitted successfully. Pending review.', type: 'success' });
       }
-    } catch (err) { alert("Upload failed."); } finally { setUploading(false); }
+    } catch (err) {
+      setToast({ show: true, message: 'Upload failed.', type: 'error' });
+    } finally { setUploading(false); }
   };
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 font-sans pb-20">
+      {toast.show && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          {toast.message}
+        </div>
+      )}
       
       {/* Header */}
       <div>

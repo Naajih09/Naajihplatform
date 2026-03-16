@@ -19,12 +19,25 @@ const Opportunities = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sentRequests, setSentRequests] = useState<Record<string, boolean>>({});
+  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
   
   // --- FILTER STATES ---
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const authToken =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('access_token') ||
+    '';
+  const authHeaders = authToken
+    ? { Authorization: `Bearer ${authToken}` }
+    : {};
 
   // --- 1. FETCH PITCHES (With Search & Filter) ---
   const [filters, setFilters] = useState({
@@ -44,13 +57,13 @@ const Opportunities = () => {
       if (filters.minTicket) params.append('minTicket', filters.minTicket);
       if (filters.maxTicket) params.append('maxTicket', filters.maxTicket);
 
-      const res = await fetch(`http://localhost:3000/api/pitches?${params.toString()}`);
+      const res = await fetch(`${API_BASE}/pitches?${params.toString()}`);
       const data = await res.json();
       
       // Safety check to ensure array
       setPitches(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Failed to load pitches", error);
+      setToast({ show: true, message: 'Failed to load pitches.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -67,15 +80,14 @@ const Opportunities = () => {
   // --- 2. HANDLE CONNECT ---
   const handleConnect = async (pitch: any) => {
     if (pitch.userId === user.id) {
-        alert("You cannot connect with your own pitch!");
+        setToast({ show: true, message: 'You cannot connect with your own pitch.', type: 'error' });
         return;
     }
     try {
-      const res = await fetch('http://localhost:3000/api/connections', {
+      const res = await fetch(`${API_BASE}/connections`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
-          senderId: user.id,
           receiverId: pitch.userId 
         })
       });
@@ -84,14 +96,19 @@ const Opportunities = () => {
       if (!res.ok) throw new Error(data.message || "Failed to send request");
 
       setSentRequests((prev) => ({ ...prev, [pitch.id]: true }));
-      alert(`Connection request sent to ${pitch.user?.entrepreneurProfile?.firstName || 'Entrepreneur'}!`);
+      setToast({ show: true, message: `Connection request sent to ${pitch.user?.entrepreneurProfile?.firstName || 'Entrepreneur'}!`, type: 'success' });
     } catch (error: any) {
-      alert(error.message);
+      setToast({ show: true, message: error.message || 'Failed to send request.', type: 'error' });
     }
   };
 
   return (
     <div className="max-w-[1440px] mx-auto space-y-8 pb-20 text-slate-900 dark:text-white font-sans">
+      {toast.show && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          {toast.message}
+        </div>
+      )}
       
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
@@ -154,7 +171,7 @@ const Opportunities = () => {
             </div>
 
             <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-500 uppercase">Ticket (₦):</span>
+                <span className="text-xs font-bold text-slate-500 uppercase">Ticket (NGN):</span>
                 <input 
                     type="number" 
                     placeholder="Min" 
@@ -212,7 +229,7 @@ const Opportunities = () => {
                 <div>
                     <p className="text-[10px] uppercase text-slate-500 font-bold">Ask</p>
                     <div className="flex items-center gap-1 text-slate-900 dark:text-white font-bold">
-                        <DollarSign size={14} className="text-primary"/> ₦{parseInt(pitch.fundingAsk).toLocaleString()}
+                        <DollarSign size={14} className="text-primary"/> NGN {parseInt(pitch.fundingAsk).toLocaleString()}
                     </div>
                 </div>
                 <div>
@@ -254,7 +271,8 @@ const Opportunities = () => {
         <CreatePitchModal 
           onClose={() => setIsModalOpen(false)} 
           onSuccess={() => { setIsModalOpen(false); fetchPitches(); }}
-          userId={user.id}
+          authHeaders={authHeaders}
+          apiBase={API_BASE}
         />
       )}
     </div>
@@ -262,7 +280,7 @@ const Opportunities = () => {
 };
 
 // --- SUB-COMPONENT: CREATE PITCH FORM (Included here for simplicity) ---
-const CreatePitchModal = ({ onClose, onSuccess, userId }: any) => {
+const CreatePitchModal = ({ onClose, onSuccess, apiBase, authHeaders }: any) => {
   const [formData, setFormData] = useState({
     title: '', tagline: '', problemStatement: '', solution: '', 
     traction: '', marketSize: '', fundingAsk: '', equityOffer: '', category: 'FinTech',
@@ -270,6 +288,7 @@ const CreatePitchModal = ({ onClose, onSuccess, userId }: any) => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -279,32 +298,35 @@ const CreatePitchModal = ({ onClose, onSuccess, userId }: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    setError('');
     const uploadData = new FormData();
     uploadData.append('file', file);
     try {
-      const res = await fetch('http://localhost:3000/api/upload', { method: 'POST', body: uploadData });
+      const res = await fetch(`${apiBase}/upload`, { method: 'POST', body: uploadData });
       const data = await res.json();
       if (data.url) {
         setFormData((prev) => ({ ...prev, pitchDeckUrl: data.url }));
-        alert("File Uploaded Successfully!");
+        // No-op: show success in UI
       }
-    } catch (err) { alert("Failed to upload file."); } finally { setUploading(false); }
+    } catch (err) {
+      setError('Failed to upload file.');
+    } finally { setUploading(false); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setError('');
     try {
-      const res = await fetch('http://localhost:3000/api/pitches', {
+      const res = await fetch(`${apiBase}/pitches`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, userId }),
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        body: JSON.stringify({ ...formData }),
       });
       if (!res.ok) throw new Error("Failed to post");
-      alert("Pitch Posted Successfully!");
       onSuccess();
     } catch (err: any) {
-      alert(err.message);
+      setError(err.message || 'Failed to post pitch.');
     } finally {
       setSubmitting(false);
     }
@@ -322,6 +344,11 @@ const CreatePitchModal = ({ onClose, onSuccess, userId }: any) => {
         </div>
         
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <div>
                 <label className={labelStyle}>Business Name</label>
@@ -350,7 +377,7 @@ const CreatePitchModal = ({ onClose, onSuccess, userId }: any) => {
             <div><label className={labelStyle}>Market Size</label><input name="marketSize" required className={inputStyle} onChange={handleChange} aria-label="Market Size" /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><label className={labelStyle}>Funding Ask (₦)</label><input name="fundingAsk" type="number" required className={inputStyle} onChange={handleChange} aria-label="Funding Ask" /></div>
+            <div><label className={labelStyle}>Funding Ask (NGN)</label><input name="fundingAsk" type="number" required className={inputStyle} onChange={handleChange} aria-label="Funding Ask" /></div>
             <div><label className={labelStyle}>Equity Offer (%)</label><input name="equityOffer" type="text" required className={inputStyle} onChange={handleChange} aria-label="Equity Offer" /></div>
           </div>
           <div className="pt-4">

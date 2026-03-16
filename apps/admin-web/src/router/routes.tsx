@@ -8,6 +8,10 @@ import PitchesList from '../pages/PitchesLists';
 import UsersList from '../pages/UsersLists';
 import AuditLogs from '../pages/AuditLogs';
 import Settings from '../pages/Settings';
+import AcademyPrograms from '../pages/AcademyPrograms';
+import AcademyProgramDetail from '../pages/AcademyProgramDetail';
+import AcademySubmissions from '../pages/AcademySubmissions';
+import AcademyEnrollments from '../pages/AcademyEnrollments';
 import ProtectedRoute from '../components/ProtectedRoute';
 import { UserRole } from '../types/enums'; 
 import Login from '../pages/Login';
@@ -45,6 +49,22 @@ export const routes = [
           {
             path: 'admin/settings',
             element: <Settings />,
+          },
+          {
+            path: 'admin/academy',
+            element: <AcademyPrograms />,
+          },
+          {
+            path: 'admin/academy/submissions',
+            element: <AcademySubmissions />,
+          },
+          {
+            path: 'admin/academy/enrollments',
+            element: <AcademyEnrollments />,
+          },
+          {
+            path: 'admin/academy/:id',
+            element: <AcademyProgramDetail />,
           },
           {
             path: 'admin/verification',

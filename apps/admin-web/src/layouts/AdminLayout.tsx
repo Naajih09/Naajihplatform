@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ShieldCheck, Users, FileText, CheckCircle, LogOut, LayoutDashboard, Menu, X, Activity, Settings } from 'lucide-react';
+import { Users, FileText, CheckCircle, LogOut, LayoutDashboard, Menu, X, Activity, Settings, BookOpen, ClipboardCheck, UserCheck } from 'lucide-react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 
 const AdminLayout = () => {
@@ -17,6 +17,9 @@ const AdminLayout = () => {
     { label: 'User Management', path: '/admin/users', icon: Users },
     { label: 'Pitch Moderation', path: '/admin/pitches', icon: FileText },
     { label: 'KYC Verification', path: '/admin/verification', icon: CheckCircle },
+    { label: 'Academy Programs', path: '/admin/academy', icon: BookOpen },
+    { label: 'Enrollments', path: '/admin/academy/enrollments', icon: UserCheck },
+    { label: 'Assignments', path: '/admin/academy/submissions', icon: ClipboardCheck },
     { label: 'Audit Log', path: '/admin/audit', icon: Activity },
     { label: 'Settings', path: '/admin/settings', icon: Settings },
   ];
@@ -39,11 +42,11 @@ const AdminLayout = () => {
       >
         <div className="p-6 flex items-center gap-3 justify-between">
           <div className="flex items-center gap-3">
-            <div className="size-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-900/20">
-              <ShieldCheck className="font-bold" size={24} />
+            <div className="size-10 bg-primary rounded-xl flex items-center justify-center text-black font-extrabold shadow-lg shadow-primary/30">
+              N
             </div>
             <div>
-              <h1 className="text-lg font-extrabold tracking-tight">Naajih<span className="text-blue-500">Admin</span></h1>
+              <h1 className="text-lg font-extrabold tracking-tight">NaajihBiz <span className="text-primary">Admin</span></h1>
               <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">CEO Mode</p>
             </div>
           </div>

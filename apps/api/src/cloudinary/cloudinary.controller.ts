@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Query,
   UseInterceptors,
   UploadedFile,
   ParseFilePipe,
@@ -19,12 +20,13 @@ export class CloudinaryController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 5000000 }), // 5MB Limit
+          new MaxFileSizeValidator({ maxSize: 50000000 }), // 50MB Limit
         ],
       }),
     )
     file: Express.Multer.File,
+    @Query('folder') folder?: string,
   ) {
-    return this.cloudinaryService.uploadFile(file);
+    return this.cloudinaryService.uploadFile(file, folder || 'naajih-uploads');
   }
 }

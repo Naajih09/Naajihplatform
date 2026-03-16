@@ -7,11 +7,21 @@ const NotificationBell = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const socket = useSocket(user.id);
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const authToken =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('access_token') ||
+    '';
+  const authHeaders = authToken
+    ? { Authorization: `Bearer ${authToken}` }
+    : {};
 
   // 1. Fetch initial notifications
   const fetchNotifications = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/api/notifications/${user.id}`);
+      const res = await fetch(`${API_BASE}/notifications/${user.id}`, {
+        headers: authHeaders,
+      });
       const data = await res.json();
       setNotifications(data);
     } catch (err) {
@@ -43,7 +53,10 @@ const NotificationBell = () => {
 
   const markAsRead = async (id: string) => {
     try {
-      await fetch(`http://localhost:3000/api/notifications/${id}/read`, { method: 'PATCH' });
+      await fetch(`${API_BASE}/notifications/${id}/read`, {
+        method: 'PATCH',
+        headers: authHeaders,
+      });
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
       );

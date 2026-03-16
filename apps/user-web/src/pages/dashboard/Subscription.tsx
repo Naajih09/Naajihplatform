@@ -6,6 +6,12 @@ export default function Subscription() {
   const [loading, setLoading] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<'paystack' | 'opay'>('paystack');
   const [searchParams] = useSearchParams();
+  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
   useEffect(() => {
     const reference = searchParams.get('reference') || searchParams.get('trxref') || searchParams.get('orderNo');
@@ -18,15 +24,15 @@ export default function Subscription() {
   const verifyPayment = async (provider: 'paystack' | 'opay', reference: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/payments/verify?provider=${provider}&reference=${reference}`);
+      const res = await fetch(`${API_BASE}/payments/verify?provider=${provider}&reference=${reference}`);
       const data = await res.json();
       if (data.status === 'success') {
-        alert("Subscription successful! You are now a Premium member.");
+        setToast({ show: true, message: 'Subscription successful! You are now a Premium member.', type: 'success' });
       } else {
-        alert("Payment verification failed.");
+        setToast({ show: true, message: 'Payment verification failed.', type: 'error' });
       }
     } catch (error) {
-      console.error("Verification error", error);
+      setToast({ show: true, message: 'Verification error.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -36,7 +42,7 @@ export default function Subscription() {
     setLoading(true);
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const res = await fetch('http://localhost:3000/api/payments/initialize', {
+      const res = await fetch(`${API_BASE}/payments/initialize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -49,11 +55,10 @@ export default function Subscription() {
       if (data.authorization_url) {
         window.location.href = data.authorization_url;
       } else {
-        alert("Failed to initialize payment");
+        setToast({ show: true, message: 'Failed to initialize payment.', type: 'error' });
       }
     } catch (error) {
-      console.error("Payment error", error);
-      alert("Payment error occurred");
+      setToast({ show: true, message: 'Payment error occurred.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -61,6 +66,11 @@ export default function Subscription() {
 
   return (
     <div className="min-h-screen bg-background-dark text-white px-6 md:px-10 py-8 pb-24">
+      {toast.show && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          {toast.message}
+        </div>
+      )}
       <div className="max-w-[1000px] mx-auto space-y-8">
         
         {/* Header */}
@@ -91,7 +101,7 @@ export default function Subscription() {
             <div className="bg-[#1d1d20] border border-white/10 rounded-2xl p-8 flex flex-col">
                 <h3 className="text-2xl font-bold mb-2">Basic Access</h3>
                 <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-5xl font-black">₦0</span>
+                    <span className="text-5xl font-black">NGN 0</span>
                     <span className="text-white/50">/ forever</span>
                 </div>
                 <p className="text-sm text-white/70 mb-8 flex-grow">
@@ -119,7 +129,7 @@ export default function Subscription() {
 
                 <h3 className="text-2xl font-bold text-primary mb-2">Premium Network</h3>
                 <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-5xl font-black">₦15,000</span>
+                    <span className="text-5xl font-black">NGN 15,000</span>
                     <span className="text-white/50">/ month</span>
                 </div>
                 

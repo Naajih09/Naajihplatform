@@ -6,7 +6,7 @@ export enum MessageType {
   TEXT = 'TEXT',
   IMAGE = 'IMAGE',
   AUDIO = 'AUDIO',
-  PDF = 'PDF'
+  PDF = 'PDF',
 }
 
 export class UpdateMessageDto extends PartialType(CreateMessageDto) {}

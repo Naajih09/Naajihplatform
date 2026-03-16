@@ -54,7 +54,12 @@ const PitchDetails = () => {
     try {
       await fetch(`http://localhost:3000/api/pitches/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+        headers: {
+          'Authorization': `Bearer ${
+            localStorage.getItem('accessToken') ||
+            localStorage.getItem('access_token')
+          }`,
+        }
       });
       alert("Pitch deleted.");
       navigate('/dashboard/opportunities');
@@ -68,7 +73,10 @@ const PitchDetails = () => {
         method: 'PATCH',
         headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            'Authorization': `Bearer ${
+              localStorage.getItem('accessToken') ||
+              localStorage.getItem('access_token')
+            }`
         },
         body: JSON.stringify(editForm)
       });

@@ -23,20 +23,17 @@ api.interceptors.request.use(
   }
 );
 
-// Optional: Response interceptor to handle global errors or refresh tokens
-// api.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     // Example: Handle 401 Unauthorized errors
-//     if (error.response?.status === 401) {
-//       // Potentially redirect to login or refresh token
-//       console.error('Unauthorized request, redirecting to login...');
-//       localStorage.removeItem('accessToken');
-//       localStorage.removeItem('userRole');
-//       window.location.href = '/login';
-//     }
-//     return Promise.reject(error);
-//   }
-// );
+// Response interceptor to handle global auth errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('userRole');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

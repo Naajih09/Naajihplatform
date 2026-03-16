@@ -6,8 +6,12 @@ import Verification from '../pages/Verification';
 import { ErrorBoundaryFallback } from '../../../../packages/ui/src';
 import PitchesList from '../pages/PitchesLists';
 import UsersList from '../pages/UsersLists';
+import AuditLogs from '../pages/AuditLogs';
+import Settings from '../pages/Settings';
 import ProtectedRoute from '../components/ProtectedRoute';
 import { UserRole } from '../types/enums'; 
+import Login from '../pages/Login';
+import Unauthorized from '../pages/Unauthorized';
 
 export const routes = [
   {
@@ -35,6 +39,14 @@ export const routes = [
             element: <PitchesList />,
           },
           {
+            path: 'admin/audit',
+            element: <AuditLogs />,
+          },
+          {
+            path: 'admin/settings',
+            element: <Settings />,
+          },
+          {
             path: 'admin/verification',
             element: (
               <div className="p-10">
@@ -48,11 +60,11 @@ export const routes = [
   },
   {
     path: '/login',
-    element: <div>Login Page (to be implemented)</div>,
+    element: <Login />,
   },
   {
     path: '/unauthorized',
-    element: <div>Unauthorized Access</div>,
+    element: <Unauthorized />,
   },
 ];
 

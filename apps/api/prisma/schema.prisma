@@ -30,6 +30,12 @@ enum VerificationStatus {
   REJECTED
 }
 
+enum PitchStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum ConnectionStatus {
   PENDING
   ACCEPTED
@@ -48,6 +54,7 @@ model User {
   password    String
   role        UserRole
   isVerified  Boolean             @default(false)
+  isActive    Boolean             @default(true)
   enrollments ProgramEnrollment[]
 
   // Profile Relations
@@ -73,6 +80,7 @@ model User {
   lessonProgress  UserLessonProgress[]
   taskSubmissions UserTaskSubmission[]
   milestones      UserMilestone[]
+  auditLogs       AuditLog[] @relation("AuditActor")
 }
 
 // --- 2. PROFILES ---
@@ -119,6 +127,7 @@ model Pitch {
   equityOffer      String
   category         String
   pitchDeckUrl     String?
+  status           PitchStatus @default(PENDING)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -179,6 +188,17 @@ model Notification {
   message   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  action     String
+  entityType String
+  entityId   String?
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id])
+  metadata   Json?
+  createdAt  DateTime @default(now())
 }
 
 // --- NAJIH ACADEMY (ALX STYLE) ---

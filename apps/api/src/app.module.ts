@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AcademyModule } from './academy/academy.module';
 import { AuthModule } from './auth/auth.module';
+import { AuditModule } from './audit/audit.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ConnectionsModule } from './connections/connections.module';
 import { DatabaseModule } from './database/database.module';
@@ -13,7 +14,6 @@ import { PaymentsModule } from './payments/payments.module';
 import { PitchesModule } from './pitches/pitches.module';
 import { UsersModule } from './users/users.module';
 import { VerificationModule } from './verification/verification.module';
-
 
 @Module({
   imports: [
@@ -41,9 +41,10 @@ import { VerificationModule } from './verification/verification.module';
     VerificationModule,
     NotificationsModule,
     AuthModule,
+    AuditModule,
     AcademyModule,
     PaymentsModule,
-  ], 
+  ],
   controllers: [],
   providers: [
     {

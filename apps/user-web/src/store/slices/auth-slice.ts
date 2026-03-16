@@ -6,6 +6,8 @@ const initialState: AuthState = {
   permissions: {},
 
   isAuth: false,
+
+  token: null,
 };
 
 const authSlice = createSlice({
@@ -16,9 +18,9 @@ const authSlice = createSlice({
       state.isAuth = payload;
     },
 
-    // setToken: (state, { payload }: PayloadAction<TokenData | null>) => {
-    //   state.token = payload;
-    // },
+    setToken: (state, { payload }: PayloadAction<TokenData | null>) => {
+      state.token = payload;
+    },
     setUser: (state, { payload }: PayloadAction<IUser>) => {
       state.user = { ...state.user, ...payload };
     },
@@ -43,6 +45,7 @@ export const {
   logout,
 
   setPermissions,
+  setToken,
 } = authSlice.actions;
 
 export default authSlice.reducer;

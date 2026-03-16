@@ -6,26 +6,21 @@ import {
   Patch,
   Body,
   UseGuards,
-  Request, 
-  ForbiddenException, 
+  Request,
+  ForbiddenException,
+  Query,
 } from '@nestjs/common';
 import { VerificationService } from './verification.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard'; 
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole, VerificationStatus } from '@prisma/client'; 
+import { UserRole, VerificationStatus } from '@prisma/client';
 
 // DTO for submitting verification requests
 // Consider moving this to `apps/api/src/verification/dto/submit-verification.dto.ts`
 import { IsString, IsUrl, IsNotEmpty } from 'class-validator';
 
 export class SubmitVerificationDto {
-  @IsString()
-  @IsNotEmpty()
-  // userId should ideally come from the authenticated user, not the body
-  // If you must pass it, validate it against the authenticated user's ID
-  userId: string;
-
   @IsUrl()
   @IsNotEmpty()
   documentUrl: string;
@@ -58,11 +53,10 @@ export class VerificationController {
     @Body() submitVerificationDto: SubmitVerificationDto, // Use DTO
     @Request() req, // Get user info from JWT
   ) {
-    // Ensure the userId in the body matches the authenticated user's ID
-    if (req.user.id !== submitVerificationDto.userId) {
-      throw new ForbiddenException('You can only submit verification for your own account.');
-    }
-    return this.verificationService.create(submitVerificationDto);
+    return this.verificationService.create({
+      userId: req.user.id,
+      documentUrl: submitVerificationDto.documentUrl,
+    });
   }
 
   // 2️⃣ USER: Check verification status
@@ -72,7 +66,9 @@ export class VerificationController {
   async getVerificationStatus(@Param('userId') userId: string, @Request() req) {
     // Ensure the userId in the param matches the authenticated user's ID, unless it's an ADMIN
     if (req.user.role !== UserRole.ADMIN && req.user.id !== userId) {
-      throw new ForbiddenException('You can only view your own verification status.');
+      throw new ForbiddenException(
+        'You can only view your own verification status.',
+      );
     }
     return this.verificationService.getStatus(userId);
   }
@@ -80,8 +76,13 @@ export class VerificationController {
   // 3️⃣ ADMIN: Get all pending verification requests
   @Get('admin/pending')
   @Roles(UserRole.ADMIN) // Only ADMIN
-  getPendingVerifications() {
-    return this.verificationService.findAllPending();
+  getPendingVerifications(
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.verificationService.findAllPending({ page, pageSize, status, search });
   }
 
   // 4️⃣ ADMIN: Approve or reject verification
@@ -90,6 +91,7 @@ export class VerificationController {
   updateVerificationStatus(
     @Param('id') id: string, // Verification Request ID
     @Body() updateVerificationStatusDto: UpdateVerificationStatusDto, // Use DTO
+    @Request() req,
   ) {
     if (
       updateVerificationStatusDto.status !== 'APPROVED' &&
@@ -99,8 +101,9 @@ export class VerificationController {
     }
     return this.verificationService.updateStatus(
       id,
-      updateVerificationStatusDto.status as 'APPROVED' | 'REJECTED',
+      updateVerificationStatusDto.status,
       updateVerificationStatusDto.rejectionReason,
+      req.user.id,
     );
   }
 }

@@ -11,6 +11,10 @@ const PitchesList = () => {
   const[searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Modal & Toast
   const[selectedPitch, setSelectedPitch] = useState<any | null>(null);
@@ -23,12 +27,23 @@ const PitchesList = () => {
 
   const fetchPitches = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/api/pitches`, {
+      setLoading(true);
+      const token = localStorage.getItem('accessToken');
+      const params = new URLSearchParams();
+      if (searchQuery) params.set('search', searchQuery);
+      if (categoryFilter !== 'ALL') params.set('category', categoryFilter);
+      if (statusFilter !== 'ALL') params.set('status', statusFilter);
+      params.set('page', String(currentPage));
+      params.set('pageSize', String(pageSize));
+
+      const res = await fetch(`${API_BASE}/api/pitches/admin?${params.toString()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      setPitches(data.data || data ||[]);
+      const list = data.data || data || [];
+      setPitches(list);
+      setTotalItems(data.meta?.total ?? list.length);
+      setTotalPages(data.meta?.totalPages ?? 1);
     } catch (err) {
       console.error(err);
       showToast("Failed to fetch pitches", "error");
@@ -39,12 +54,16 @@ const PitchesList = () => {
 
   useEffect(() => {
     fetchPitches();
-  },[]);
+  }, [searchQuery, categoryFilter, statusFilter, currentPage, pageSize]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, categoryFilter, statusFilter, pageSize]);
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Remove this pitch entirely from the platform? This cannot be undone.")) return;
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken');
       const res = await fetch(`${API_BASE}/api/pitches/${id}`, { 
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` } 
@@ -64,7 +83,7 @@ const PitchesList = () => {
 
   const handleStatusUpdate = async (id: string, newStatus: 'APPROVED' | 'REJECTED') => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken');
       // Assumes your backend has a PATCH /api/pitches/:id endpoint capable of updating status
       const res = await fetch(`${API_BASE}/api/pitches/${id}`, {
         method: 'PATCH',
@@ -87,25 +106,10 @@ const PitchesList = () => {
     }
   };
 
-  // Filter & Search Logic
-  let processedPitches = [...pitches];
-
-  if (categoryFilter !== 'ALL') {
-    processedPitches = processedPitches.filter(p => p.category === categoryFilter || p.sector === categoryFilter);
-  }
-  if (statusFilter !== 'ALL') {
-    processedPitches = processedPitches.filter(p => (p.status || 'PENDING') === statusFilter);
-  }
-  if (searchQuery) {
-    const query = searchQuery.toLowerCase();
-    processedPitches = processedPitches.filter(p => 
-      p.title?.toLowerCase().includes(query) || 
-      p.tagline?.toLowerCase().includes(query)
-    );
-  }
-
   // Extract unique categories for filter dropdown
   const categories = Array.from(new Set(pitches.map(p => p.category || p.sector).filter(Boolean)));
+
+  const safePage = Math.min(currentPage, totalPages);
 
   const getStatusBadge = (status: string = 'PENDING') => {
     switch(status) {
@@ -159,6 +163,18 @@ const PitchesList = () => {
             <option value="APPROVED">Approved</option>
             <option value="REJECTED">Rejected</option>
           </select>
+
+          <select
+            value={pageSize}
+            onChange={(e) => setPageSize(Number(e.target.value))}
+            className="bg-[#1d1d20] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none"
+            aria-label="Items per page"
+            title="Items per page"
+          >
+            <option value={6}>6 per page</option>
+            <option value={12}>12 per page</option>
+            <option value={24}>24 per page</option>
+          </select>
         </div>
       </div>
 
@@ -171,11 +187,11 @@ const PitchesList = () => {
 
       {loading ? <div className="text-center py-20 text-white"><Loader2 className="animate-spin inline mr-2"/> Loading Pitches...</div> : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-           {processedPitches.length === 0 ? (
+           {pitches.length === 0 ? (
              <div className="col-span-full py-10 text-center text-gray-500 bg-[#1d1d20] rounded-xl border border-white/5">
                No pitches found matching criteria.
              </div>
-           ) : processedPitches.map((pitch) => {
+           ) : pitches.map((pitch) => {
              const ask = pitch.fundingAsk ? parseInt(pitch.fundingAsk) : 0;
              const status = pitch.status || 'PENDING';
              
@@ -194,7 +210,7 @@ const PitchesList = () => {
                   <div className="bg-black/30 p-3 rounded-lg mb-4 flex justify-between items-center border border-white/5">
                     <div>
                       <p className="text-[10px] text-gray-500 uppercase font-bold">Funding Ask</p>
-                      <p className="text-white font-bold">₦{ask.toLocaleString()}</p>
+                      <p className="text-white font-bold">NGN {ask.toLocaleString()}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] text-gray-500 uppercase font-bold">Equity</p>
@@ -219,6 +235,33 @@ const PitchesList = () => {
                </div>
              );
            })}
+        </div>
+      )}
+
+      {!loading && totalItems > 0 && (
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-gray-400">
+          <div>
+            Showing {(safePage - 1) * pageSize + 1}-{Math.min(safePage * pageSize, totalItems)} of {totalItems}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-white disabled:opacity-40"
+              disabled={safePage === 1}
+            >
+              Prev
+            </button>
+            <span className="text-gray-500">
+              Page {safePage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-white disabled:opacity-40"
+              disabled={safePage === totalPages}
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
 
@@ -254,7 +297,7 @@ const PitchesList = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-white/5 p-3 rounded border border-white/5">
                   <p className="text-gray-500 text-[10px] uppercase font-bold mb-1">Funding Ask</p>
-                  <p className="text-white font-bold">₦{parseInt(selectedPitch.fundingAsk || '0').toLocaleString()}</p>
+                  <p className="text-white font-bold">NGN {parseInt(selectedPitch.fundingAsk || '0').toLocaleString()}</p>
                 </div>
                 <div className="bg-white/5 p-3 rounded border border-white/5">
                   <p className="text-gray-500 text-[10px] uppercase font-bold mb-1">Equity Offered</p>
@@ -264,7 +307,7 @@ const PitchesList = () => {
                   <p className="text-gray-500 text-[10px] uppercase font-bold mb-1">Valuation</p>
                   <p className="text-white font-bold">
                     {selectedPitch.fundingAsk && selectedPitch.equityOffered ? 
-                      `₦${Math.round((parseInt(selectedPitch.fundingAsk) / parseFloat(selectedPitch.equityOffered)) * 100).toLocaleString()}` : 'N/A'}
+                      `NGN ${Math.round((parseInt(selectedPitch.fundingAsk) / parseFloat(selectedPitch.equityOffered)) * 100).toLocaleString()}` : 'N/A'}
                   </p>
                 </div>
                 <div className="bg-white/5 p-3 rounded border border-white/5">

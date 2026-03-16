@@ -5,17 +5,22 @@ import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PaymentsService {
-  private readonly PAYSTACK_SECRET_KEY = "sk_test_e3dd5e59df60bbba4ea58351f3f3b6e2c2e9941d";
-  private readonly OPAY_SECRET_KEY = "OPAYPRV17728253752030.1304038873532969";
-  private readonly OPAY_MERCHANT_ID = "281826030662239";
-  private readonly OPAY_PUB_KEY = "OPAYPUB17728253752030.23745205607820175";
+  private readonly PAYSTACK_SECRET_KEY =
+    'sk_test_e3dd5e59df60bbba4ea58351f3f3b6e2c2e9941d';
+  private readonly OPAY_SECRET_KEY = 'OPAYPRV17728253752030.1304038873532969';
+  private readonly OPAY_MERCHANT_ID = '281826030662239';
+  private readonly OPAY_PUB_KEY = 'OPAYPUB17728253752030.23745205607820175';
 
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly notificationsService: NotificationsService,
   ) {}
 
-  async initializeTransaction(provider: 'paystack' | 'opay', email: string, amount: number) {
+  async initializeTransaction(
+    provider: 'paystack' | 'opay',
+    email: string,
+    amount: number,
+  ) {
     if (provider === 'paystack') {
       return this.initializePaystack(email, amount);
     } else {
@@ -43,8 +48,9 @@ export class PaymentsService {
 
   private async initializeOPay(email: string, amount: number) {
     const reference = `OPAY_${Date.now()}`;
-    const url = 'https://api.opaycheckout.com/api/v1/international/cashier/create';
-    
+    const url =
+      'https://api.opaycheckout.com/api/v1/international/cashier/create';
+
     const response = await axios.post(
       url,
       {
@@ -94,7 +100,8 @@ export class PaymentsService {
         customerEmail = data.customer.email;
       }
     } else {
-      const url = 'https://api.opaycheckout.com/api/v1/international/cashier/query';
+      const url =
+        'https://api.opaycheckout.com/api/v1/international/cashier/query';
       const response = await axios.post(
         url,
         {
@@ -118,7 +125,7 @@ export class PaymentsService {
     if (status === 'success') {
       // Find user by email or some other logic if email isn't available
       const user = await this.databaseService.user.findFirst({
-         where: customerEmail ? { email: customerEmail } : {}, // Placeholder logic
+        where: customerEmail ? { email: customerEmail } : {}, // Placeholder logic
       });
 
       if (user) {
@@ -136,7 +143,10 @@ export class PaymentsService {
         });
 
         // Notify user
-        await this.notificationsService.create(user.id, `Subscription upgraded to PREMIUM! Enjoy your new perks.`);
+        await this.notificationsService.create(
+          user.id,
+          `Subscription upgraded to PREMIUM! Enjoy your new perks.`,
+        );
       }
     }
     return { status };

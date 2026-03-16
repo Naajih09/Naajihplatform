@@ -16,7 +16,10 @@ export class AcademyController {
   }
 
   @Post('lesson/:lessonId/complete')
-  completeLesson(@Param('lessonId') lessonId: string, @Body('userId') userId: string) {
+  completeLesson(
+    @Param('lessonId') lessonId: string,
+    @Body('userId') userId: string,
+  ) {
     return this.academyService.completeLesson(userId, lessonId);
   }
 

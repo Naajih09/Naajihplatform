@@ -6,7 +6,7 @@ import { MessagesGateway } from './messages.gateway';
 import { MessagesService } from './messages.service';
 
 @Module({
-  imports: [DatabaseModule, NotificationsModule], 
+  imports: [DatabaseModule, NotificationsModule],
   controllers: [MessagesController],
   providers: [MessagesService, MessagesGateway],
 })

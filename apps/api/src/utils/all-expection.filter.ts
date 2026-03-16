@@ -45,7 +45,9 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
 
     if (!this.shouldSuppressLog(request, errorPayload.statusCode)) {
       const stack =
-        exception instanceof Error ? exception.stack : JSON.stringify(exception);
+        exception instanceof Error
+          ? exception.stack
+          : JSON.stringify(exception);
       this.logger.error(
         `[${requestId}] ${request.method} ${request.url} -> ${errorPayload.statusCode} :: ${errorPayload.message}`,
         stack,
@@ -92,9 +94,7 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
     } else if (exception instanceof Error) {
       message = exception.message || message;
       error = exception.name || error;
-      details = this.isDevelopment()
-        ? { stack: exception.stack }
-        : undefined;
+      details = this.isDevelopment() ? { stack: exception.stack } : undefined;
     }
 
     return {
@@ -110,7 +110,9 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
     };
   }
 
-  private transformPrismaKnownError(exception: Prisma.PrismaClientKnownRequestError) {
+  private transformPrismaKnownError(
+    exception: Prisma.PrismaClientKnownRequestError,
+  ) {
     const base = {
       statusCode: HttpStatus.BAD_REQUEST,
       error: 'DatabaseError',
@@ -170,9 +172,7 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
 
   private extractMessage(message: unknown): string {
     if (Array.isArray(message)) {
-      return message
-        .filter((value) => typeof value === 'string')
-        .join('; ');
+      return message.filter((value) => typeof value === 'string').join('; ');
     }
     if (typeof message === 'string') {
       return message;

@@ -1,5 +1,10 @@
 // apps/api/src/connections/connections.service.ts
-import { Injectable, ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConnectionStatus } from '@prisma/client'; // NEW: Import ConnectionStatus enum
@@ -29,7 +34,7 @@ export class ConnectionsService {
     // Check if connection already exists
     const existing = await this.databaseService.connection.findFirst({
       where: {
-        OR:[
+        OR: [
           { senderId, receiverId },
           { senderId: receiverId, receiverId: senderId },
         ],
@@ -38,7 +43,9 @@ export class ConnectionsService {
 
     if (existing) {
       // Use ConnectionStatus enum
-      throw new ConflictException(`Connection already exists or is ${existing.status.toLowerCase()}`);
+      throw new ConflictException(
+        `Connection already exists or is ${existing.status.toLowerCase()}`,
+      );
     }
 
     const connection = await this.databaseService.connection.create({
@@ -52,10 +59,16 @@ export class ConnectionsService {
     // Notify receiver
     const sender = await this.databaseService.user.findUnique({
       where: { id: senderId },
-      include: { entrepreneurProfile: true, investorProfile: true }
+      include: { entrepreneurProfile: true, investorProfile: true },
     });
-    const senderName = sender?.entrepreneurProfile?.firstName || sender?.investorProfile?.firstName || 'Someone';
-    await this.notificationsService.create(receiverId, `${senderName} sent you a connection request.`);
+    const senderName =
+      sender?.entrepreneurProfile?.firstName ||
+      sender?.investorProfile?.firstName ||
+      'Someone';
+    await this.notificationsService.create(
+      receiverId,
+      `${senderName} sent you a connection request.`,
+    );
 
     return connection;
   }
@@ -68,8 +81,12 @@ export class ConnectionsService {
         status: ConnectionStatus.ACCEPTED, // Use enum here
       },
       include: {
-        sender: { include: { entrepreneurProfile: true, investorProfile: true } },
-        receiver: { include: { entrepreneurProfile: true, investorProfile: true } },
+        sender: {
+          include: { entrepreneurProfile: true, investorProfile: true },
+        },
+        receiver: {
+          include: { entrepreneurProfile: true, investorProfile: true },
+        },
       },
     });
   }
@@ -82,7 +99,9 @@ export class ConnectionsService {
         status: ConnectionStatus.PENDING, // Use enum here
       },
       include: {
-        sender: { include: { entrepreneurProfile: true, investorProfile: true } },
+        sender: {
+          include: { entrepreneurProfile: true, investorProfile: true },
+        },
       },
     });
   }
@@ -92,12 +111,22 @@ export class ConnectionsService {
     const connection = await this.databaseService.connection.update({
       where: { id },
       data: { status: ConnectionStatus[status] }, // Convert string to enum member
-      include: { receiver: { include: { entrepreneurProfile: true, investorProfile: true } } }
+      include: {
+        receiver: {
+          include: { entrepreneurProfile: true, investorProfile: true },
+        },
+      },
     });
 
     if (status === 'ACCEPTED') {
-      const receiverName = connection.receiver?.entrepreneurProfile?.firstName || connection.receiver?.investorProfile?.firstName || 'Someone';
-      await this.notificationsService.create(connection.senderId, `${receiverName} accepted your connection request.`);
+      const receiverName =
+        connection.receiver?.entrepreneurProfile?.firstName ||
+        connection.receiver?.investorProfile?.firstName ||
+        'Someone';
+      await this.notificationsService.create(
+        connection.senderId,
+        `${receiverName} accepted your connection request.`,
+      );
     }
 
     return connection;
@@ -115,7 +144,9 @@ export class ConnectionsService {
 
     // Authorization: Only people involved in the connection can delete it
     if (connection.senderId !== userId && connection.receiverId !== userId) {
-      throw new UnauthorizedException('Not authorized to modify this connection');
+      throw new UnauthorizedException(
+        'Not authorized to modify this connection',
+      );
     }
 
     return this.databaseService.connection.delete({

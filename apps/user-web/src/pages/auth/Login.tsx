@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, AlertCircle, Landmark } from 'lucide-react';
 import Button from '../../components/Button';
+import { useAppDispatch } from '@/store/store';
+import { setAuth, setToken, setUser } from '@/store/slices/auth-slice';
 
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -26,10 +29,15 @@ const Login = () => {
       if (!res.ok) throw new Error(data.message || 'Login failed. Check your email/password.');
 
       // Success! Save user info
-      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('accessToken', data.access_token);
+      localStorage.removeItem('access_token');
 
-       const userToSave = data.user ? data.user : data; 
+      const userToSave = data.user ? data.user : data;
       localStorage.setItem('user', JSON.stringify(userToSave));
+
+      dispatch(setToken({ accessToken: data.access_token }));
+      dispatch(setUser(userToSave));
+      dispatch(setAuth(true));
 
       
       // Redirect to Dashboard

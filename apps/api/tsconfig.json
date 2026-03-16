@@ -1,25 +1,33 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "resolvePackageJsonExports": true,
+    "module": "commonjs",
+    "moduleResolution": "node", 
+    "resolveJsonModule": true,
     "esModuleInterop": true,
-    "isolatedModules": true,
+    "isolatedModules": false, 
     "declaration": true,
     "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2023",
+    "target": "es2022", 
+    "jsx": "react-jsx", 
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "strictNullChecks": true,
+    "strictNullChecks": false, 
     "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
-  }
+    "noImplicitAny": false, 
+    "strictBindCallApply": false, 
+    "noFallthroughCasesInSwitch": false,
+    "lib": ["ESNext"], 
+    "experimentalDecorators": true, 
+    "emitDecoratorMetadata": true, 
+    "useDefineForClassFields": false, 
+    "paths": { 
+      "src/*": ["src/*"]
+    }
+  },
+  "include": ["src/**/*.ts"], 
+  "exclude": ["node_modules", "dist"]
 }

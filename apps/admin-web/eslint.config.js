@@ -14,9 +14,7 @@ export default defineConfig([
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommended, // Spread recommended configs
-      ...pluginReact.configs.recommended, // NEW: Add React recommended config
-      reactHooks.configs.recommended, // Using flat config recommended
-      reactRefresh.configs.recommended, // Using flat config recommended
+      pluginReact.configs.flat.recommended, // Add React recommended config for flat config
     ],
     languageOptions: {
       ecmaVersion: 2020,
@@ -26,7 +24,6 @@ export default defineConfig([
         ecmaFeatures: {
           jsx: true,
         },
-        project: './tsconfig.json', // Ensure this points to your project's tsconfig
       },
       globals: {
         ...globals.browser,
@@ -45,25 +42,33 @@ export default defineConfig([
       },
     },
     rules: {
+      ...reactHooks.configs.recommended.rules,
+      '@typescript-eslint/no-explicit-any': 'warn',
       'react/react-in-jsx-scope': 'off',
       'react/jsx-uses-react': 'off', 
 
       'react/forbid-dom-props': ['warn', { forbid: ['style'] }], // This will warn on `style={{...}}` on DOM elements
 
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
   {
-    files: ['**/*.js'],
+    files: ['eslint.config.js', 'postcss.config.js'],
     extends: [js.configs.recommended],
     languageOptions: {
       ecmaVersion: 2020,
       sourceType: 'module',
-      globals: globals.browser,
+      globals: globals.node,
+    },
+  },
+  {
+    files: ['tailwind.config.js'],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 2020,
+      sourceType: 'commonjs',
+      globals: globals.node,
     },
   },
 ]);

@@ -12,7 +12,8 @@ import { JwtStrategy } from './jwt.strategy'; // <--- Ensure this file exists!
     PassportModule.register({ defaultStrategy: 'jwt' }), // <--- Explicitly set default
     JwtModule.register({
       global: true,
-      secret: process.env.JWT_SECRET || 'DO_NOT_SHARE_THIS_SECRET_KEY_NAAJIH_2026',
+      secret:
+        process.env.JWT_SECRET || 'DO_NOT_SHARE_THIS_SECRET_KEY_NAAJIH_2026',
       signOptions: { expiresIn: '7d' },
     }),
   ],

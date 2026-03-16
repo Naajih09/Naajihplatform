@@ -14,14 +14,14 @@ export class NotificationsService {
     return this.databaseService.notification.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
-      take: 10 // Limit to last 10
+      take: 10, // Limit to last 10
     });
   }
 
   // 2. CREATE NOTIFICATION (Internal use)
   async create(userId: string, message: string) {
     const notification = await this.databaseService.notification.create({
-      data: { userId, message }
+      data: { userId, message },
     });
 
     // Send real-time
@@ -34,7 +34,7 @@ export class NotificationsService {
   async markRead(id: string) {
     return this.databaseService.notification.update({
       where: { id },
-      data: { isRead: true }
+      data: { isRead: true },
     });
   }
 }

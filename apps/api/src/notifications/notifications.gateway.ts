@@ -1,11 +1,11 @@
 import {
-    ConnectedSocket,
-    MessageBody,
-    OnGatewayConnection,
-    OnGatewayDisconnect,
-    SubscribeMessage,
-    WebSocketGateway,
-    WebSocketServer,
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
@@ -14,7 +14,9 @@ import { Server, Socket } from 'socket.io';
     origin: '*',
   },
 })
-export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class NotificationsGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -36,6 +38,8 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
   }
 
   sendNotification(userId: string, notification: any) {
-    this.server.to(`notifications_${userId}`).emit('notification_received', notification);
+    this.server
+      .to(`notifications_${userId}`)
+      .emit('notification_received', notification);
   }
 }

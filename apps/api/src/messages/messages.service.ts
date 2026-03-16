@@ -1,12 +1,22 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 
 @Injectable()
 export class MessagesService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  // 1. SEND MESSAGE 
-  async create(data: { content?: string; senderId: string; receiverId: string; attachmentUrl?: string; type?: string }) {
+  // 1. SEND MESSAGE
+  async create(data: {
+    content?: string;
+    senderId: string;
+    receiverId: string;
+    attachmentUrl?: string;
+    type?: string;
+  }) {
     return this.databaseService.message.create({
       data: {
         content: data.content || '',
@@ -22,29 +32,35 @@ export class MessagesService {
   async getConversation(user1: string, user2: string) {
     return this.databaseService.message.findMany({
       where: {
-        OR:[
+        OR: [
           { senderId: user1, receiverId: user2 },
           { senderId: user2, receiverId: user1 },
         ],
       },
-      orderBy: { createdAt: 'asc' }, 
+      orderBy: { createdAt: 'asc' },
       include: {
-        sender: { include: { entrepreneurProfile: true, investorProfile: true } }
-      }
+        sender: {
+          include: { entrepreneurProfile: true, investorProfile: true },
+        },
+      },
     });
   }
 
-  // 3. GET MY CHAT LIST 
+  // 3. GET MY CHAT LIST
   async getMyChatPartners(userId: string) {
     // Find all connections where status is ACCEPTED
     return this.databaseService.connection.findMany({
       where: {
-        OR:[{ senderId: userId }, { receiverId: userId }], // Note: If your schema uses 'requesterId' instead of 'senderId', change it here.
+        OR: [{ senderId: userId }, { receiverId: userId }], // Note: If your schema uses 'requesterId' instead of 'senderId', change it here.
         status: 'ACCEPTED',
       },
       include: {
-        sender: { include: { entrepreneurProfile: true, investorProfile: true } },
-        receiver: { include: { entrepreneurProfile: true, investorProfile: true } },
+        sender: {
+          include: { entrepreneurProfile: true, investorProfile: true },
+        },
+        receiver: {
+          include: { entrepreneurProfile: true, investorProfile: true },
+        },
       },
     });
   }

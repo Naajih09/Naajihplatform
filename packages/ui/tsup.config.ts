@@ -12,7 +12,7 @@ export default defineConfig((options: Options) => ({
   outDir: 'dist',
 
   // Single entry point for better bundling
-  entry: ['src/index.ts'],
+  entry: ['src/index.ts' , 'src/utils.tsx'],
   format: ['esm', 'cjs'],
 
   // Generate source maps for debugging
@@ -60,10 +60,11 @@ export default defineConfig((options: Options) => ({
     'zod',
   ],
 
+    target: 'es2022',
+
   // ESBuild options for React
   esbuildOptions(options) {
     options.jsx = 'automatic';
-    options.target = 'es2017';
     options.banner = {
       js: '"use client";',
     };
@@ -72,3 +73,6 @@ export default defineConfig((options: Options) => ({
   // Run custom script after build
   onSuccess: 'node strip-use-client.mjs',
 }));
+
+
+

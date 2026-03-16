@@ -21,6 +21,14 @@ const Messages = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const API_BASE = import.meta.env.VITE_PUBLIC_BASE_URL || 'http://localhost:3000/api';
+  const authToken =
+    localStorage.getItem('access_token') ||
+    localStorage.getItem('accessToken') ||
+    '';
+  const authHeaders = authToken
+    ? { Authorization: `Bearer ${authToken}` }
+    : {};
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // --- SOCKET HOOK ---
@@ -30,7 +38,9 @@ const Messages = () => {
   useEffect(() => {
     const fetchPartners = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/api/messages/partners/${user.id}`);
+        const res = await fetch(`${API_BASE}/messages/partners`, {
+          headers: authHeaders,
+        });
         const data = await res.json();
         setPartners(data);
       } catch (error) {
@@ -48,7 +58,10 @@ const Messages = () => {
 
     const fetchMessages = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/api/messages/conversation/${user.id}/${activeChat.id}`);
+        const res = await fetch(
+          `${API_BASE}/messages/conversation/${activeChat.id}`,
+          { headers: authHeaders }
+        );
         const data = await res.json();
         setMessages(data);
         scrollToBottom();

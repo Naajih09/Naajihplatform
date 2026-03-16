@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { UserRole } from '../types/enums';
 
 interface AuthState {
@@ -10,36 +10,35 @@ interface AuthState {
 }
 
 export const useAuth = (): AuthState => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const readStoredAuth = () => {
+    if (typeof window === 'undefined') {
+      return { isAuthenticated: false, userRole: null as UserRole | null };
+    }
 
-  const login = useCallback((token: string, role: UserRole) => {
-    localStorage.setItem('accessToken', token);
-    localStorage.setItem('userRole', role);
-    setIsAuthenticated(true);
-    setUserRole(role);
-  }, []);
-
-  const logout = useCallback(() => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('userRole');
-    setIsAuthenticated(false);
-    setUserRole(null);
-  }, []);
-
-  useEffect(() => {
     const token = localStorage.getItem('accessToken');
     const role = localStorage.getItem('userRole') as UserRole | null;
 
     if (token && role) {
-      setIsAuthenticated(true);
-      setUserRole(role);
-    } else {
-      setIsAuthenticated(false);
-      setUserRole(null);
+      return { isAuthenticated: true, userRole: role };
     }
-    setIsLoading(false);
+
+    return { isAuthenticated: false, userRole: null as UserRole | null };
+  };
+
+  const [{ isAuthenticated, userRole }, setAuth] = useState(readStoredAuth);
+  const isLoading = false;
+
+  const login = useCallback((token: string, role: UserRole) => {
+    localStorage.setItem('accessToken', token);
+    localStorage.setItem('userRole', role);
+    setAuth({ isAuthenticated: true, userRole: role });
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    setAuth({ isAuthenticated: false, userRole: null });
   }, []);
 
   return {

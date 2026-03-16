@@ -1,4 +1,12 @@
-import { IsEmail, IsString, MinLength, IsEnum, IsOptional, IsNotEmpty } from 'class-validator'; // Added IsOptional and IsNotEmpty
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  IsEnum,
+  IsOptional,
+  IsNotEmpty,
+  IsIn,
+} from 'class-validator'; // Added IsOptional and IsNotEmpty
 import { UserRole } from '@prisma/client';
 
 export class CreateUserDto {
@@ -10,14 +18,22 @@ export class CreateUserDto {
   password: string;
 
   @IsEnum(UserRole)
+  @IsIn(
+    [
+      UserRole.ENTREPRENEUR,
+      UserRole.INVESTOR,
+      UserRole.ASPIRING_BUSINESS_OWNER,
+    ],
+    { message: 'Admin accounts cannot be created via signup.' }
+  )
   role: UserRole;
 
   @IsString()
-  @IsNotEmpty({ message: 'First name is required' }) 
+  @IsNotEmpty({ message: 'First name is required' })
   firstName: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Last name is required' }) 
+  @IsNotEmpty({ message: 'Last name is required' })
   lastName: string;
 
   @IsString()

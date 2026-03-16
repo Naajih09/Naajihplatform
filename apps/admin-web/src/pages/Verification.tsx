@@ -1,4 +1,4 @@
-import { CheckCircle, ExternalLink, FileText, Loader2, XCircle, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { CheckCircle, ExternalLink, FileText, Loader2, XCircle, ChevronLeft, ChevronRight, X, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
@@ -9,7 +9,11 @@ const Verification = () => {
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('PENDING');
 
   // Modals State
   const[rejectModal, setRejectModal] = useState<{show: boolean; id: string | null}>({ show: false, id: null });
@@ -26,12 +30,21 @@ const Verification = () => {
 
   const fetchRequests = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/api/verification/admin/pending`, {
+      setLoading(true);
+      const token = localStorage.getItem('accessToken');
+      const params = new URLSearchParams();
+      params.set('page', String(currentPage));
+      params.set('pageSize', String(pageSize));
+      if (searchQuery) params.set('search', searchQuery);
+      if (statusFilter) params.set('status', statusFilter);
+      const res = await fetch(`${API_BASE}/api/verification/admin/pending?${params.toString()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      setRequests(data.data || data ||[]);
+      const list = data.data || data || [];
+      setRequests(list);
+      setTotalItems(data.meta?.total ?? list.length);
+      setTotalPages(data.meta?.totalPages ?? 1);
     } catch (err) {
       console.error(err);
       showToast("Failed to fetch requests", "error");
@@ -42,7 +55,7 @@ const Verification = () => {
 
   useEffect(() => {
     fetchRequests();
-  },[]);
+  }, [currentPage, pageSize, searchQuery, statusFilter]);
 
   const handleApprove = async (id: string) => {
     if (!window.confirm(`Are you sure you want to APPROVE this user?`)) return;
@@ -61,7 +74,7 @@ const Verification = () => {
 
   const executeAction = async (id: string, status: 'APPROVED' | 'REJECTED', reason?: string) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken');
       const res = await fetch(`${API_BASE}/api/verification/admin/${id}`, {
         method: 'PATCH',
         headers: { 
@@ -82,13 +95,45 @@ const Verification = () => {
     }
   };
 
-  // Pagination Logic
-  const totalPages = Math.ceil(requests.length / itemsPerPage);
-  const currentRequests = requests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const safePage = Math.min(currentPage, totalPages);
 
   return (
     <div className="max-w-6xl mx-auto pb-20 relative">
-      <h1 className="text-3xl font-black mb-8 text-white">KYC Verification Queue</h1>
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-black text-white">KYC Verification Queue</h1>
+          <p className="text-sm text-gray-500 mt-1">Review pending, approved, and rejected verification requests.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+            <input
+              value={searchQuery}
+              onChange={(e) => { setCurrentPage(1); setSearchQuery(e.target.value); }}
+              placeholder="Search email or name"
+              className="w-full md:w-64 pl-9 pr-4 py-2 bg-[#1d1d20] border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-primary"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => { setCurrentPage(1); setStatusFilter(e.target.value); }}
+            className="bg-[#1d1d20] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none"
+            aria-label="Filter by status"
+            title="Filter by status"
+          >
+            <option value="PENDING">Pending</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+          </select>
+          <button
+            type="button"
+            onClick={() => exportCsv(requests)}
+            className="px-3 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            Export CSV
+          </button>
+        </div>
+      </div>
 
       {/* Toast Notification */}
       {toast.show && (
@@ -116,7 +161,7 @@ const Verification = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-gray-300 text-sm">
-              {currentRequests.map((req) => {
+              {requests.map((req) => {
                 const profile = req.user?.entrepreneurProfile || req.user?.investorProfile || {};
                 const fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || req.user?.email;
 
@@ -152,14 +197,27 @@ const Verification = () => {
           </table>
 
           {/* Pagination */}
-          {totalPages > 1 && (
+          {totalItems > 0 && (
             <div className="p-4 border-t border-white/5 flex items-center justify-between text-sm text-gray-400">
-              <span>Showing Page {currentPage} of {totalPages}</span>
-              <div className="flex gap-2">
+              <span>
+                Showing {(safePage - 1) * pageSize + 1}-{Math.min(safePage * pageSize, totalItems)} of {totalItems}
+              </span>
+              <div className="flex items-center gap-2">
+                <select
+                  value={pageSize}
+                  onChange={(e) => { setCurrentPage(1); setPageSize(Number(e.target.value)); }}
+                  className="bg-[#111113] border border-white/10 rounded px-2 py-1 text-xs text-white"
+                  aria-label="Items per page"
+                  title="Items per page"
+                >
+                  <option value={5}>5 / page</option>
+                  <option value={10}>10 / page</option>
+                  <option value={20}>20 / page</option>
+                </select>
                 <button 
                   type="button"
-                  disabled={currentPage === 1} 
-                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  disabled={safePage === 1} 
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   className="p-1 rounded hover:bg-white/10 disabled:opacity-30"
                   title="Previous page"
                   aria-label="Previous page"
@@ -169,8 +227,8 @@ const Verification = () => {
                 </button>
                 <button 
                   type="button"
-                  disabled={currentPage === totalPages} 
-                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={safePage === totalPages} 
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   className="p-1 rounded hover:bg-white/10 disabled:opacity-30"
                   title="Next page"
                   aria-label="Next page"
@@ -247,6 +305,34 @@ const Verification = () => {
 
     </div>
   );
+};
+
+const exportCsv = (rows: any[]) => {
+  if (!rows.length) return;
+  const headers = ['email', 'role', 'status', 'documentUrl', 'createdAt'];
+  const lines = [
+    headers.join(','),
+    ...rows.map((req) => {
+      const email = req.user?.email || '';
+      const role = req.user?.role || '';
+      const status = req.status || '';
+      const documentUrl = req.documentUrl || '';
+      const createdAt = req.createdAt ? new Date(req.createdAt).toISOString() : '';
+      return [email, role, status, documentUrl, createdAt]
+        .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+        .join(',');
+    }),
+  ];
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `verification-requests-${Date.now()}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };
 
 export default Verification;

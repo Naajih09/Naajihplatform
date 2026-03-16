@@ -69,46 +69,49 @@ export class AcademyService {
 
   // 6️⃣ SEED PROGRAMS + MODULES + LESSONS
   async seed() {
-    const programsData =[
+    const programsData = [
       {
-        title: "1. Build a Profitable Business in 30 Days",
-        description: "The Flagship Program. Go from zero to your first customer in one month. No theory, just execution.",
-        cohort: "Cohort 1 (Feb 2026)",
-        modules:[
+        title: '1. Build a Profitable Business in 30 Days',
+        description:
+          'The Flagship Program. Go from zero to your first customer in one month. No theory, just execution.',
+        cohort: 'Cohort 1 (Feb 2026)',
+        modules: [
           {
-            title: "Week 1: Finding a Pain-Killer Idea",
+            title: 'Week 1: Finding a Pain-Killer Idea',
             order: 1,
             unlockDate: new Date(),
-            lessons:[
+            lessons: [
               {
-                title: "The Pain-Killer Framework",
+                title: 'The Pain-Killer Framework',
                 order: 1,
-                videoUrl: "", // ✅ FIXED: Replaced ", with ""
-                content: "<h3>The Pain-Killer Framework</h3><p>Don't build vitamins. Build Pain-Killers. Go to the market and find 10 people screaming for a solution.</p><strong>Task:</strong> Interview 5 potential customers today.",
-                contentType: "video",
+                videoUrl: '', // ✅ FIXED: Replaced ", with ""
+                content:
+                  "<h3>The Pain-Killer Framework</h3><p>Don't build vitamins. Build Pain-Killers. Go to the market and find 10 people screaming for a solution.</p><strong>Task:</strong> Interview 5 potential customers today.",
+                contentType: 'video',
                 duration: 600,
               },
               {
-                title: "Interview Customers",
+                title: 'Interview Customers',
                 order: 2,
-                videoUrl: "", // ✅ FIXED
-                content: "Task: Interview 5 potential customers today.",
-                contentType: "video",
+                videoUrl: '', // ✅ FIXED
+                content: 'Task: Interview 5 potential customers today.',
+                contentType: 'video',
                 duration: 300,
               },
             ],
           },
           {
-            title: "Week 2: The MVP (Minimum Viable Product)",
+            title: 'Week 2: The MVP (Minimum Viable Product)',
             order: 2,
             unlockDate: new Date(),
-            lessons:[
+            lessons: [
               {
-                title: "Build it Ugly",
+                title: 'Build it Ugly',
                 order: 1,
-                videoUrl: "", // ✅ FIXED
-                content: "<h3>Build it Ugly</h3><p>If you aren't embarrassed by your first version, you launched too late. Do not code yet. Use WhatsApp, Excel, or paper.</p>",
-                contentType: "video",
+                videoUrl: '', // ✅ FIXED
+                content:
+                  "<h3>Build it Ugly</h3><p>If you aren't embarrassed by your first version, you launched too late. Do not code yet. Use WhatsApp, Excel, or paper.</p>",
+                contentType: 'video',
                 duration: 600,
               },
             ],

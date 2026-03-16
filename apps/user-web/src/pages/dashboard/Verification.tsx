@@ -3,6 +3,11 @@ import { ShieldCheck, UploadCloud, CheckCircle, Clock, AlertTriangle, Loader2 } 
 
 const Verification = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const API_BASE = import.meta.env.VITE_PUBLIC_BASE_URL || 'http://localhost:3000/api';
+  const authToken =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('access_token') ||
+    '';
   const [status, setStatus] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -10,7 +15,9 @@ const Verification = () => {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/api/verification/${user.id}`);
+        const res = await fetch(`${API_BASE}/verification/${user.id}`, {
+          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+        });
         
         const text = await res.text();
         if (text) {
@@ -38,14 +45,17 @@ const Verification = () => {
     formData.append('file', file);
 
     try {
-      const res = await fetch('http://localhost:3000/api/upload', { method: 'POST', body: formData });
+      const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
       const data = await res.json();
 
       if (data.url) {
-        await fetch('http://localhost:3000/api/verification', {
+        await fetch(`${API_BASE}/verification/submit`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user.id, documentUrl: data.url })
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify({ documentUrl: data.url })
         });
         setStatus({ status: 'PENDING', documentUrl: data.url });
         alert("Documents submitted successfully! Pending review.");

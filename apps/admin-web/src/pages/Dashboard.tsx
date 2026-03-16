@@ -1,43 +1,79 @@
-// apps/admin-web/src/pages/Dashboard.tsx
-import { useEffect, useState } from 'react'; // Removed 'React' import as it's no longer needed
+import { useEffect, useState } from 'react'; 
 import { Users, Rocket, Wallet, CheckCircle, Clock, FileText, Activity, ExternalLink, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import api from '../utils/api'; // 
+import api from '../utils/api'; 
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ users: 0, pitches: 0 });
+  const [userStats, setUserStats] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    verifiedUsers: 0,
+    roles: {} as Record<string, number>,
+  });
   const [pendingVerifications, setPendingVerifications] = useState<any[]>([]);
+  const [pendingTotal, setPendingTotal] = useState(0);
+  const [investmentBreakdown, setInvestmentBreakdown] = useState<
+    { label: string; value: number }[]
+  >([]);
+  const [fundingTotal, setFundingTotal] = useState(0);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // const token = localStorage.getItem('token'); // Token is now handled by the API interceptor
-        // const headers = { 'Authorization': `Bearer ${token}` }; // Handled by API interceptor
 
-        const [resUsers, resPitches, resVerifications] = await Promise.all([
-          api.get('/users'), // NEW: Use centralized API client
-          api.get('/pitches'), // NEW: Use centralized API client
-          api.get('/verification/admin/pending') // NEW: Use centralized API client
+        const [resUserStats, resStats, resVerifications, resAudit] = await Promise.all([
+          api.get('/users/admin/stats'),
+          api.get('/pitches/admin/stats'),
+          api.get('/verification/admin/pending?page=1&pageSize=5'),
+          api.get('/audit/recent?limit=5'),
         ]);
         
-        // Axios responses directly contain data
-        const users = resUsers.data;
-        const pitches = resPitches.data;
+        const usersResponse = resUserStats.data;
+        const statsResponse = resStats.data;
         const verificationsResponse = resVerifications.data;
+        const auditResponse = resAudit.data;
 
-        // Support standard array OR the new global interceptor { data: [...] } format
         const verifications = verificationsResponse.data || verificationsResponse || [];
+        const verificationsTotal = verificationsResponse.meta?.total ?? verifications.length;
+        const audits = auditResponse.data || auditResponse || [];
+
+        const totalUsers = usersResponse?.totalUsers ?? 0;
+        const totalPitches = statsResponse?.totalPitches ?? 0;
 
         setStats({
-            users: Array.isArray(users.data || users) ? (users.data || users).length : 0,
-            pitches: Array.isArray(pitches.data || pitches) ? (pitches.data || pitches).length : 0
+            users: totalUsers,
+            pitches: totalPitches
+        });
+        setUserStats({
+          totalUsers: usersResponse?.totalUsers ?? 0,
+          activeUsers: usersResponse?.activeUsers ?? 0,
+          verifiedUsers: usersResponse?.verifiedUsers ?? 0,
+          roles: usersResponse?.roles ?? {},
         });
         setPendingVerifications(verifications);
+        setPendingTotal(verificationsTotal);
+
+        setInvestmentBreakdown(statsResponse?.investmentBreakdown || []);
+        setFundingTotal(statsResponse?.fundingTotal || 0);
+        setAuditLogs(audits);
       } catch (err) {
         console.error("Dashboard fetch error:", err);
+        showToast('Failed to load dashboard data.', 'error');
       } finally {
         setLoading(false);
       }
@@ -49,16 +85,15 @@ const Dashboard = () => {
     if (!window.confirm(`Are you sure you want to ${status} this verification?`)) return;
     setActionLoading(id);
     try {
-      // const token = localStorage.getItem('token'); // Token handled by interceptor
-      const res = await api.patch(`/verification/admin/${id}`, { status }); // NEW: Use centralized API client
+      const res = await api.patch(`/verification/admin/${id}`, { status }); 
       
-      if (res.status === 200 || res.status === 204) { // Check for successful status codes
+      if (res.status === 200 || res.status === 204) { 
         setPendingVerifications(prev => prev.filter(req => req.id !== id));
       } else {
-        alert("Failed to update status");
+        showToast("Failed to update status", "error");
       }
     } catch (error) {
-      alert("Error processing request");
+      showToast("Error processing request", "error");
     } finally {
       setActionLoading(null);
     }
@@ -67,6 +102,14 @@ const Dashboard = () => {
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-20">
       
+      {/* Toast */}
+      {toast.show && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          {toast.type === 'success' ? <CheckCircle size={18} /> : <Clock size={18} />}
+          {toast.message}
+        </div>
+      )}
+
       {/* Header */}
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-white">Platform Command Center</h2>
@@ -79,33 +122,52 @@ const Dashboard = () => {
         <MetricCard 
           label="Total Active Users" 
           value={loading ? '...' : stats.users} 
-          trend="+12.4%" 
+          trend="Live" 
           icon={Users} 
         />
         <MetricCard 
           label="Active Halal Pitches" 
           value={loading ? '...' : stats.pitches} 
-          trend="+5.2%" 
+          trend="Live" 
           icon={Rocket} 
         />
-        {/*
-          ACTION REQUIRED: Refactor this div to use Tailwind classes.
-          It currently has inline styles that the new ESLint rule will flag.
-          E.g., style={{ backgroundColor: '#f0f0f0', padding: '16px' }}
-          Becomes: className="bg-gray-100 p-4"
-        */}
+        
         <div className="p-6 rounded-xl bg-gradient-to-br from-[#262626] to-[#1a1a1a] border border-primary/30 flex flex-col justify-between min-h-[140px]">
           <div className="flex items-center justify-between">
             <span className="text-gray-400 text-sm font-medium">Total Funding Volume</span>
             <Wallet className="text-primary" size={24} />
           </div>
           <div className="mt-4">
-            <h3 className="text-3xl font-bold tracking-tight text-primary">₦450.2M</h3>
+            <h3 className="text-3xl font-bold tracking-tight text-primary">
+              {loading ? '...' : `NGN ${fundingTotal.toLocaleString()}`}
+            </h3>
             <div className="flex items-center gap-1 mt-1">
-              <span className="bg-primary/20 text-primary px-1.5 py-0.5 rounded text-[10px] font-bold">Mudarabah Basis</span>
+              <span className="bg-primary/20 text-primary px-1.5 py-0.5 rounded text-[10px] font-bold">Based on pitch funding ask</span>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* User Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <MetricCard
+          label="Active Users"
+          value={loading ? '...' : userStats.activeUsers}
+          trend="Live"
+          icon={Users}
+        />
+        <MetricCard
+          label="Verified Users"
+          value={loading ? '...' : userStats.verifiedUsers}
+          trend="Live"
+          icon={CheckCircle}
+        />
+        <MetricCard
+          label="Pending Verifications"
+          value={loading ? '...' : pendingTotal}
+          trend="Live"
+          icon={Clock}
+        />
       </div>
 
       {/* Table Section */}
@@ -116,7 +178,7 @@ const Dashboard = () => {
             <p className="text-sm text-gray-500">Entrepreneurs awaiting Sharia-compliance approval</p>
           </div>
           <button 
-            onClick={() => navigate('/admin/verification')} // Changed to /admin/verification
+            onClick={() => navigate('/admin/verification')} 
             className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-medium transition-colors"
           >
              View All
@@ -204,8 +266,26 @@ const Dashboard = () => {
                 <Activity className="text-primary" size={20} /> Recent Audit Log
             </h3>
             <div className="space-y-4">
-                <AuditItem title='Pitch Approved: "SolarKits Nigeria"' meta="Approved by Admin • 2h ago" icon={CheckCircle} />
-                <AuditItem title='New Investor Verified: Dr. Kareem O.' meta="KYC validated • 5h ago" icon={Users} />
+                {loading ? (
+                  <div className="text-xs text-gray-500">Loading audit activity...</div>
+                ) : auditLogs.length === 0 ? (
+                  <div className="text-xs text-gray-500">No recent activity yet.</div>
+                ) : (
+                  auditLogs.map((log) => (
+                    <AuditItem
+                      key={log.id}
+                      title={formatAuditTitle(log)}
+                      meta={formatAuditMeta(log)}
+                      icon={
+                        log.action === 'PITCH_STATUS_UPDATED'
+                          ? CheckCircle
+                          : log.action === 'VERIFICATION_STATUS_UPDATED'
+                          ? CheckCircle
+                          : Users
+                      }
+                    />
+                  ))
+                )}
             </div>
         </div>
 
@@ -213,14 +293,47 @@ const Dashboard = () => {
         <div className="bg-primary/5 rounded-xl border border-primary/20 p-6">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-4">Investment Types</h3>
             <div className="space-y-4">
-                <ProgressBar label="Mudarabah" value={65} color="bg-primary" />
-                <ProgressBar label="Musharakah" value={25} color="bg-primary/60" />
-                <ProgressBar label="Murabahah" value={10} color="bg-primary/30" />
+                {loading ? (
+                  <div className="text-xs text-gray-500">Loading categories...</div>
+                ) : investmentBreakdown.length === 0 ? (
+                  <div className="text-xs text-gray-500">No pitch categories yet.</div>
+                ) : (
+                  investmentBreakdown.map((item, index) => (
+                    <ProgressBar
+                      key={item.label}
+                      label={item.label}
+                      value={item.value}
+                      color={index === 0 ? 'bg-primary' : index === 1 ? 'bg-primary/60' : 'bg-primary/30'}
+                    />
+                  ))
+                )}
             </div>
         </div>
       </div>
     </div>
   );
+};
+
+const formatAuditTitle = (log: any) => {
+  if (log.action === 'VERIFICATION_STATUS_UPDATED') {
+    const status = log.metadata?.status || 'UPDATED';
+    const target = log.metadata?.targetUserEmail || log.metadata?.targetUserId || 'user';
+    return `Verification ${String(status).toLowerCase()} for ${target}`;
+  }
+
+  if (log.action === 'PITCH_STATUS_UPDATED') {
+    const status = log.metadata?.status || 'UPDATED';
+    const title = log.metadata?.pitchTitle || 'pitch';
+    return `Pitch ${String(status).toLowerCase()}: ${title}`;
+  }
+
+  return log.action || 'Activity';
+};
+
+const formatAuditMeta = (log: any) => {
+  const actor = log.actor?.email || 'System';
+  const time = log.createdAt ? new Date(log.createdAt).toLocaleString() : '';
+  return `${actor} - ${time}`;
 };
 
 // --- HELPER COMPONENTS ---
@@ -257,7 +370,7 @@ const ProgressBar = ({ label, value, color }: any) => (
             <span className="text-primary font-bold">{value}%</span>
         </div>
         <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-            <div className={`h-full ${color}`} style={{ width: `${value}%` }}></div>
+            <div className={`h-full ${color} progress-bar-width-${value}`}></div>
         </div>
     </div>
 );

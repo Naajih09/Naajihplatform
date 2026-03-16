@@ -7,7 +7,7 @@ import * as bcrypt from 'bcryptjs';
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
   ) {}
 
   async login(email: string, pass: string) {
@@ -17,10 +17,14 @@ export class AuthService {
     // 2. Validate User & Password
     // Note: If you have plain text passwords in DB right now, temporary use:
     // if (!user || user.password !== pass) {
-    
+
     // Ideally, use bcrypt:
-    if (!user || !(await bcrypt.compare(pass, user.password).catch(() => false)) && user.password !== pass) {
-        throw new UnauthorizedException("Invalid Credentials");
+    if (
+      !user ||
+      (!(await bcrypt.compare(pass, user.password).catch(() => false)) &&
+        user.password !== pass)
+    ) {
+      throw new UnauthorizedException('Invalid Credentials');
     }
 
     // 3. Create the Token Payload

@@ -39,7 +39,9 @@ const CreatePitch = () => {
     setLoading(true);
 
     // 1. Get the token stored securely
-    const token = localStorage.getItem('access_token');
+    const token =
+      localStorage.getItem('accessToken') ||
+      localStorage.getItem('access_token');
 
     if (!token) {
         alert("You are not logged in!");

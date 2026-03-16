@@ -11,10 +11,15 @@ const UsersList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
   const[sortBy, setSortBy] = useState<'date' | 'name'>('date');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Modals & Toasts
   const [viewUser, setViewUser] = useState<any | null>(null);
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({ show: false, message: '', type: 'success' });
+  const [roleDraft, setRoleDraft] = useState<string>('');
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ show: true, message, type });
@@ -23,12 +28,23 @@ const UsersList = () => {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/api/users`, {
+      setLoading(true);
+      const token = localStorage.getItem('accessToken');
+      const params = new URLSearchParams();
+      if (searchQuery) params.set('search', searchQuery);
+      if (roleFilter !== 'ALL') params.set('role', roleFilter);
+      params.set('sortBy', sortBy);
+      params.set('page', String(currentPage));
+      params.set('pageSize', String(pageSize));
+
+      const res = await fetch(`${API_BASE}/api/users?${params.toString()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      setUsers(data.data || data ||[]);
+      const list = data.data || data || [];
+      setUsers(list);
+      setTotalItems(data.meta?.total ?? list.length);
+      setTotalPages(data.meta?.totalPages ?? 1);
     } catch (err) {
       console.error(err);
       showToast("Failed to fetch users", "error");
@@ -39,13 +55,17 @@ const UsersList = () => {
 
   useEffect(() => {
     fetchUsers();
-  },[]);
+  }, [searchQuery, roleFilter, sortBy, currentPage, pageSize]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, roleFilter, sortBy, pageSize]);
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to BAN and DELETE this user? This cannot be undone.")) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken');
       const res = await fetch(`${API_BASE}/api/users/${id}`, { 
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -62,29 +82,89 @@ const UsersList = () => {
     }
   };
 
-  // Processing Data (Search, Filter, Sort)
-  let processedUsers = [...users];
+  const handleStatusToggle = async (user: any) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch(`${API_BASE}/api/users/${user.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isActive: !user.isActive }),
+      });
 
-  if (roleFilter !== 'ALL') {
-    processedUsers = processedUsers.filter(u => u.role === roleFilter);
-  }
+      if (res.ok) {
+        showToast(`User ${user.isActive ? 'deactivated' : 'activated'} successfully.`, 'success');
+        setUsers(users.map(u => u.id === user.id ? { ...u, isActive: !user.isActive } : u));
+        if (viewUser?.id === user.id) {
+          setViewUser({ ...viewUser, isActive: !viewUser.isActive });
+        }
+      } else {
+        showToast('Failed to update user status', 'error');
+      }
+    } catch (err) {
+      showToast('Network error occurred', 'error');
+    }
+  };
 
-  if (searchQuery) {
-    const query = searchQuery.toLowerCase();
-    processedUsers = processedUsers.filter(u => {
-      const profile = u.entrepreneurProfile || u.investorProfile || {};
-      const fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.toLowerCase();
-      return fullName.includes(query) || u.email.toLowerCase().includes(query);
-    });
-  }
+  const handleRoleUpdate = async () => {
+    if (!viewUser) return;
+    if (!roleDraft || roleDraft === viewUser.role) {
+      showToast('No role change selected', 'error');
+      return;
+    }
 
-  processedUsers.sort((a, b) => {
-    if (sortBy === 'date') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    
-    const nameA = (a.entrepreneurProfile?.firstName || a.email).toLowerCase();
-    const nameB = (b.entrepreneurProfile?.firstName || b.email).toLowerCase();
-    return nameA.localeCompare(nameB);
-  });
+    try {
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch(`${API_BASE}/api/users/${viewUser.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role: roleDraft }),
+      });
+
+      if (res.ok) {
+        showToast('Role updated successfully.', 'success');
+        setUsers(users.map(u => u.id === viewUser.id ? { ...u, role: roleDraft } : u));
+        setViewUser({ ...viewUser, role: roleDraft });
+      } else {
+        showToast('Failed to update role', 'error');
+      }
+    } catch (err) {
+      showToast('Network error occurred', 'error');
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!viewUser) return;
+    const newPassword = window.prompt('Enter a new password for this user');
+    if (!newPassword) return;
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch(`${API_BASE}/api/users/password/${viewUser.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ password: newPassword }),
+      });
+
+      if (res.ok) {
+        showToast('Password reset successfully.', 'success');
+      } else {
+        showToast('Failed to reset password', 'error');
+      }
+    } catch (err) {
+      showToast('Network error occurred', 'error');
+    }
+  };
+
+  const safePage = Math.min(currentPage, totalPages);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 relative">
@@ -131,6 +211,17 @@ const UsersList = () => {
             <option value="date">Sort: Newest</option>
             <option value="name">Sort: A-Z</option>
           </select>
+          <select
+            value={pageSize}
+            onChange={(e) => setPageSize(Number(e.target.value))}
+            className="bg-[#1d1d20] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none"
+            title="Items per page"
+            aria-label="Items per page"
+          >
+            <option value={10}>10 per page</option>
+            <option value={20}>20 per page</option>
+            <option value={50}>50 per page</option>
+          </select>
         </div>
       </div>
 
@@ -157,10 +248,10 @@ const UsersList = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 text-sm text-gray-300">
-                {processedUsers.length === 0 ? (
+                {users.length === 0 ? (
                   <tr><td colSpan={5} className="py-10 text-center text-gray-500">No users found matching your criteria.</td></tr>
                 ) : (
-                  processedUsers.map((user) => {
+                  users.map((user) => {
                     const profile = user.entrepreneurProfile || user.investorProfile || {};
                     const isInvestor = user.role === 'INVESTOR';
                     return (
@@ -187,12 +278,19 @@ const UsersList = () => {
                             <span className="text-green-500 flex items-center gap-1 text-xs font-bold"><Shield size={12}/> Verified</span> : 
                             <span className="text-gray-600 flex items-center gap-1 text-xs"><ShieldAlert size={12}/> Unverified</span>
                           }
+                          {user.isActive === false && (
+                            <span className="text-red-500 flex items-center gap-1 text-xs font-bold mt-1">Inactive</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
-                          <button onClick={() => setViewUser(user)} className="p-2 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded transition-colors" title="View Profile">
+                          <button
+                            onClick={() => { setViewUser(user); setRoleDraft(user.role); }}
+                            className="p-2 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded transition-colors"
+                            title="View Profile"
+                          >
                             <Eye size={16} />
                           </button>
-                          <button onClick={() => handleDelete(user.id)} className="p-2 bg-red-900/20 text-red-500 hover:bg-red-600 hover:text-white rounded transition-colors" title="Ban User">
+                          <button onClick={() => handleDelete(user.id)} className="p-2 bg-red-900/20 text-red-500 hover:bg-red-600 hover:text-white rounded transition-colors" title="Delete User">
                             <Trash2 size={16}/>
                           </button>
                         </td>
@@ -206,12 +304,39 @@ const UsersList = () => {
         </div>
       )}
 
+      {!loading && totalItems > 0 && (
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-gray-400">
+          <div>
+            Showing {(safePage - 1) * pageSize + 1}-{Math.min(safePage * pageSize, totalItems)} of {totalItems}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-white disabled:opacity-40"
+              disabled={safePage === 1}
+            >
+              Prev
+            </button>
+            <span className="text-gray-500">
+              Page {safePage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-white disabled:opacity-40"
+              disabled={safePage === totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* View User Modal */}
       {viewUser && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-[#1d1d20] border border-white/10 rounded-xl w-full max-w-lg p-6 relative">
             <button 
-              onClick={() => setViewUser(null)} 
+              onClick={() => { setViewUser(null); setRoleDraft(''); }} 
               className="absolute top-4 right-4 text-gray-500 hover:text-white"
               title="Close Profile Modal"
               type="button"
@@ -233,6 +358,12 @@ const UsersList = () => {
                 <div>
                   <p className="text-gray-500 text-xs uppercase mb-1">Role</p>
                   <p className="font-medium text-white">{viewUser.role}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs uppercase mb-1">Status</p>
+                  <p className={`font-medium ${viewUser.isActive === false ? 'text-red-400' : 'text-green-400'}`}>
+                    {viewUser.isActive === false ? 'Inactive' : 'Active'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-gray-500 text-xs uppercase mb-1">Joined On</p>
@@ -260,9 +391,46 @@ const UsersList = () => {
                 </div>
               )}
             </div>
+
+            <div className="mt-6 border-t border-white/10 pt-4 space-y-3">
+              <div className="flex flex-col md:flex-row md:items-center gap-3">
+                <label className="text-xs text-gray-500 uppercase font-bold">Update Role</label>
+                <select
+                  value={roleDraft || viewUser.role}
+                  onChange={(e) => setRoleDraft(e.target.value)}
+                  className="bg-[#111113] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none"
+                >
+                  <option value="ENTREPRENEUR">Entrepreneur</option>
+                  <option value="INVESTOR">Investor</option>
+                  <option value="ASPIRING_BUSINESS_OWNER">Aspiring Owner</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+                <button
+                  onClick={handleRoleUpdate}
+                  className="px-4 py-2 bg-white/10 text-white rounded hover:bg-white/20"
+                >
+                  Save Role
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={handlePasswordReset}
+                  className="px-4 py-2 bg-primary/20 text-primary border border-primary/30 rounded hover:bg-primary hover:text-black"
+                >
+                  Reset Password
+                </button>
+                <button
+                  onClick={() => handleStatusToggle(viewUser)}
+                  className={`px-4 py-2 rounded ${viewUser.isActive === false ? 'bg-green-600/20 text-green-400 border border-green-600/30' : 'bg-red-600/20 text-red-400 border border-red-600/30'}`}
+                >
+                  {viewUser.isActive === false ? 'Activate User' : 'Deactivate User'}
+                </button>
+              </div>
+            </div>
             
             <div className="mt-6 flex justify-end">
-              <button onClick={() => setViewUser(null)} className="px-4 py-2 bg-white/10 text-white rounded hover:bg-white/20">Close</button>
+              <button onClick={() => { setViewUser(null); setRoleDraft(''); }} className="px-4 py-2 bg-white/10 text-white rounded hover:bg-white/20">Close</button>
             </div>
           </div>
         </div>

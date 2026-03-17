@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CheckCircle, ChevronLeft, Download } from 'lucide-react';
+import Button from '../../components/Button';
+import { showToast } from '../../lib/utils';
 
 const Certificate = () => {
   const { programId } = useParams();
   const navigate = useNavigate();
   const [certificate, setCertificate] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [subscription, setSubscription] = useState<any>(null);
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
   const authToken =
@@ -25,6 +28,10 @@ const Certificate = () => {
         const res = await fetch(`${API_BASE}/academy/certificate/${programId}`, {
           headers: authHeaders,
         });
+        if (res.status === 403) {
+          setCertificate(null);
+          return;
+        }
         const data = await res.json();
         setCertificate(data);
       } catch (err) {
@@ -37,12 +44,49 @@ const Certificate = () => {
     fetchCertificate();
   }, [programId]);
 
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user?.email || !authToken) return;
+    fetch(`${API_BASE}/users/${user.email}`, { headers: authHeaders })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) {
+          setSubscription(data.subscription || null);
+          localStorage.setItem('user', JSON.stringify(data));
+        }
+      })
+      .catch(() => null);
+  }, []);
+
   if (loading) {
     return <div className="text-center py-20 text-gray-500">Loading certificate...</div>;
   }
 
+  const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
+  const hasPremium =
+    subscription?.plan === 'PREMIUM' &&
+    (!activeUntil || new Date(activeUntil) > new Date());
+
   if (!certificate) {
-    return <div className="text-center py-20 text-red-500">Certificate not available.</div>;
+    return (
+      <div className="max-w-3xl mx-auto py-20 text-center space-y-4">
+        <p className="text-red-500">Certificate not available.</p>
+        {!hasPremium && (
+          <div className="space-y-3">
+            <p className="text-slate-500">Certificates are a Premium benefit.</p>
+            <Button
+              onClick={() => {
+                showToast('Premium access required.', 'error');
+                navigate('/dashboard/subscription');
+              }}
+              className="bg-primary text-neutral-dark font-bold px-6 py-3 rounded-xl"
+            >
+              Upgrade to Premium
+            </Button>
+          </div>
+        )}
+      </div>
+    );
   }
 
   const verificationUrl = `${window.location.origin}/certificate/verify/${certificate.program?.id}/${certificate.userId}`;

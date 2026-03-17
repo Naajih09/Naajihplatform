@@ -47,6 +47,33 @@ enum SubscriptionPlan {
   PREMIUM
 }
 
+enum PaymentProvider {
+  PAYSTACK
+  OPAY
+}
+
+enum PaymentStatus {
+  INITIALIZED
+  SUCCESS
+  FAILED
+}
+
+enum CommunityStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CommunityReportTarget {
+  POST
+  COMMENT
+}
+
+enum CommunityReportStatus {
+  OPEN
+  RESOLVED
+}
+
 // --- 1. MAIN USER TABLE ---
 model User {
   id          String              @id @default(uuid())
@@ -55,6 +82,9 @@ model User {
   role        UserRole
   isVerified  Boolean             @default(false)
   isActive    Boolean             @default(true)
+  emailVerified Boolean           @default(false)
+  emailVerificationToken String?
+  emailVerificationExpires DateTime?
   enrollments ProgramEnrollment[]
 
   // Profile Relations
@@ -81,6 +111,10 @@ model User {
   taskSubmissions UserTaskSubmission[]
   milestones      UserMilestone[]
   auditLogs       AuditLog[] @relation("AuditActor")
+  paymentTransactions PaymentTransaction[]
+  communityPosts  CommunityPost[]
+  communityComments CommunityComment[]
+  communityReports CommunityReport[]
 }
 
 // --- 2. PROFILES ---
@@ -179,6 +213,8 @@ model Subscription {
   user    User             @relation(fields: [userId], references: [id])
   plan    SubscriptionPlan @default(FREE)
   endDate DateTime?
+  trialEndsAt DateTime?
+  trialUsed Boolean @default(false)
 }
 
 model Notification {
@@ -188,6 +224,21 @@ model Notification {
   message   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model PaymentTransaction {
+  id        String          @id @default(uuid())
+  reference String          @unique
+  provider  PaymentProvider
+  status    PaymentStatus   @default(INITIALIZED)
+  amount    Int
+  currency  String          @default("NGN")
+  email     String?
+  userId    String?
+  user      User?           @relation(fields: [userId], references: [id])
+  metadata  Json?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 model AuditLog {
@@ -221,6 +272,7 @@ model Program {
   title       String
   cohort      String
   description String
+  isPremium   Boolean @default(false)
 
   modules Module[]
 
@@ -336,4 +388,43 @@ model ProgramEnrollment {
   program Program @relation(fields: [programId], references: [id])
 
   @@unique([userId, programId]) // Prevent duplicate enrollments
+}
+
+model CommunityPost {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  body      String
+  tags      String[]
+  status    CommunityStatus @default(PENDING)
+  isPinned  Boolean @default(false)
+  comments  CommunityComment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CommunityComment {
+  id        String   @id @default(uuid())
+  postId    String
+  post      CommunityPost @relation(fields: [postId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  body      String
+  status    CommunityStatus @default(PENDING)
+  createdAt DateTime @default(now())
+}
+
+model CommunityReport {
+  id         String               @id @default(uuid())
+  targetType CommunityReportTarget
+  targetId   String
+  reason     String
+  status     CommunityReportStatus @default(OPEN)
+  reporterId String
+  reporter   User                 @relation(fields: [reporterId], references: [id])
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  @@unique([reporterId, targetType, targetId])
 }

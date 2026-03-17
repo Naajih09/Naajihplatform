@@ -6,7 +6,7 @@ import api from '../utils/api';
 const AcademyPrograms = () => {
   const [programs, setPrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ title: '', description: '', cohort: '' });
+  const [form, setForm] = useState({ title: '', description: '', cohort: '', isPremium: false });
   const [programCsvFile, setProgramCsvFile] = useState<File | null>(null);
   const [programImportErrors, setProgramImportErrors] = useState<string[]>([]);
   const [programPreviewHeaders, setProgramPreviewHeaders] = useState<string[]>([]);
@@ -49,7 +49,7 @@ const AcademyPrograms = () => {
     }
     try {
       await api.post('/academy/admin/programs', form);
-      setForm({ title: '', description: '', cohort: '' });
+      setForm({ title: '', description: '', cohort: '', isPremium: false });
       showToast('Program created.', 'success');
       fetchPrograms();
     } catch (error) {
@@ -58,8 +58,8 @@ const AcademyPrograms = () => {
   };
 
   const downloadProgramTemplate = () => {
-    const headers = ['title', 'description', 'cohort'];
-    const sample = ['Startup Launchpad', 'Build your first MVP', 'Cohort 3 - Aug 2026'];
+    const headers = ['title', 'description', 'cohort', 'isPremium'];
+    const sample = ['Startup Launchpad', 'Build your first MVP', 'Cohort 3 - Aug 2026', 'false'];
     const csv = `${headers.join(',')}\n${sample.join(',')}`;
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -159,6 +159,17 @@ const AcademyPrograms = () => {
             placeholder="Short description"
             className="bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
           />
+          <label className="flex items-center gap-2 text-sm text-gray-300">
+            <input
+              type="checkbox"
+              checked={form.isPremium}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, isPremium: event.target.checked }))
+              }
+              className="accent-primary"
+            />
+            Premium program
+          </label>
         </div>
         <button
           onClick={handleCreate}
@@ -244,6 +255,11 @@ const AcademyPrograms = () => {
                   <h3 className="text-xl font-bold flex items-center gap-2">
                     <BookOpen size={18} className="text-primary" /> {program.title}
                   </h3>
+                  <div className="mt-2">
+                    <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${program.isPremium ? 'bg-primary/20 text-primary' : 'bg-white/5 text-gray-300'}`}>
+                      {program.isPremium ? 'Premium' : 'Free'}
+                    </span>
+                  </div>
                   <p className="text-xs text-gray-400 mt-1">
                     {program.cohort || 'No cohort set'}
                   </p>

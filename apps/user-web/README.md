@@ -1,16 +1,40 @@
-# React + Vite
+# Naajih User Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+User-facing web app for founders, investors, and aspiring business owners.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Auth (signup/login) with role-based UX
+- Dashboard and profile management
+- Pitch creation and discovery
+- Connections and messaging
+- Verification requests
+- Subscriptions (Paystack/OPay)
+- Academy learning experience and certificates
 
-## React Compiler
+## Setup
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+```bash
+pnpm install
+```
 
-## Expanding the ESLint configuration
+## Environment Variables
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Create `apps/user-web/.env`:
+
+- `VITE_API_BASE_URL` (e.g. `http://localhost:3000/api`)
+- `VITE_CALENDLY_URL` (e.g. `https://calendly.com/your-org/office-hours`)
+- `VITE_SUBSCRIPTION_AMOUNT_NGN` (e.g. `5000`)
+- `VITE_TRIAL_DAYS` (e.g. `14`)
+
+## Development
+
+```bash
+pnpm --filter ./apps/user-web dev
+```
+
+## Build
+
+```bash
+pnpm --filter ./apps/user-web build
+```

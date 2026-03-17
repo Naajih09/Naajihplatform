@@ -4,18 +4,35 @@ import { Link } from "react-router-dom";
 
 export default function InvestorDashboard() {
   const [pitches, setPitches] = useState([]);
+  const [recommended, setRecommended] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
+  const [networkCount, setNetworkCount] = useState(0);
+  const [avgTicket, setAvgTicket] = useState(0);
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const authToken =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('access_token') ||
+    '';
+  const authHeaders = authToken
+    ? { Authorization: `Bearer ${authToken}` }
+    : {};
 
   useEffect(() => {
-    // In a real scenario, this uses RTK Query or fetch to /api/pitches
     const fetchPitches = async () => {
       try {
         const res = await fetch(`${API_BASE}/pitches${filter !== 'All' ? `?category=${filter}` : ''}`);
         if (res.ok) {
-           const data = await res.json();
-           setPitches(data);
+          const data = await res.json();
+          const list = data?.data || data || [];
+          setPitches(list);
+
+          const asks = list
+            .map((pitch: any) => Number(pitch.fundingAsk))
+            .filter((value: number) => Number.isFinite(value) && value > 0);
+          const avg = asks.length > 0 ? Math.round(asks.reduce((sum: number, v: number) => sum + v, 0) / asks.length) : 0;
+          setAvgTicket(avg);
         }
       } catch (error) {
         console.error("Error fetching pitches", error);
@@ -26,6 +43,42 @@ export default function InvestorDashboard() {
 
     fetchPitches();
   }, [filter]);
+
+  useEffect(() => {
+    const fetchConnections = async () => {
+      if (!user?.id) return;
+      try {
+        const res = await fetch(`${API_BASE}/connections/user/${user.id}`, {
+          headers: authHeaders,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setNetworkCount(Array.isArray(data) ? data.length : 0);
+        }
+      } catch (error) {
+        console.error("Error fetching connections", error);
+      }
+    };
+    fetchConnections();
+  }, [user?.id]);
+
+  useEffect(() => {
+    const fetchRecommended = async () => {
+      if (!authToken) return;
+      try {
+        const res = await fetch(`${API_BASE}/pitches/recommended`, {
+          headers: authHeaders,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setRecommended(Array.isArray(data) ? data : []);
+        }
+      } catch (error) {
+        console.error("Error fetching recommendations", error);
+      }
+    };
+    fetchRecommended();
+  }, [authToken]);
 
   return (
     <div className="min-h-screen bg-background-dark text-white px-6 md:px-10 py-8 pb-24">
@@ -73,7 +126,9 @@ export default function InvestorDashboard() {
                 <Wallet className="text-primary/50" size={24} />
               </div>
               <div className="mt-4">
-                <h3 className="text-3xl font-bold tracking-tight text-white">NGN 2.5M</h3>
+                <h3 className="text-3xl font-bold tracking-tight text-white">
+                  {avgTicket > 0 ? `NGN ${avgTicket.toLocaleString()}` : '--'}
+                </h3>
                 <span className="text-white/50 text-xs font-bold">Platform-wide average</span>
               </div>
             </div>
@@ -87,7 +142,7 @@ export default function InvestorDashboard() {
                 <Building2 className="text-primary" size={24} />
               </div>
               <div className="mt-4 relative z-10">
-                <h3 className="text-3xl font-bold tracking-tight text-primary">0</h3>
+                <h3 className="text-3xl font-bold tracking-tight text-primary">{networkCount}</h3>
                 <span className="text-white/70 text-xs font-medium">Connected founders</span>
               </div>
             </div>
@@ -96,6 +151,51 @@ export default function InvestorDashboard() {
 
         {/* Pitch Feed */}
         <div className="mt-10">
+          {recommended.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-white mb-4">Recommended for You</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {recommended.slice(0, 4).map((pitch: any) => (
+                  <div key={pitch.id} className="bg-[#1d1d20] border border-white/5 hover:border-primary/30 transition-all rounded-xl p-6 group flex flex-col">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors">{pitch.title}</h3>
+                        <p className="text-sm text-white/50">{pitch.tagline}</p>
+                      </div>
+                      <span className="bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">
+                        {pitch.category || "General"}
+                      </span>
+                    </div>
+                    
+                    <p className="text-sm text-gray-400 line-clamp-3 mb-6 flex-grow">
+                      {pitch.problemStatement}
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-4 mb-6 py-4 border-y border-white/5">
+                      <div>
+                        <p className="text-[10px] uppercase text-gray-500 mb-1">Funding Ask</p>
+                        <p className="font-bold text-white">NGN {pitch.fundingAsk?.toLocaleString() || '0'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase text-gray-500 mb-1">Equity Offered</p>
+                        <p className="font-bold text-white">{pitch.equityOffer || '0'}%</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Link to={`/dashboard/opportunities/${pitch.id}`} className="flex-1 text-center bg-primary text-black font-bold text-sm py-2.5 rounded-lg hover:bg-primary/90 transition-colors">
+                        Review Deal
+                      </Link>
+                      <button className="px-4 py-2 border border-white/10 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition-colors">
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between mb-6">
              <h2 className="text-xl font-bold text-white flex items-center gap-2">
                <Filter size={18} className="text-primary" /> Deal Flow Pipeline

@@ -8,6 +8,8 @@ import {
     PlusCircle, Settings,
     User,
     X,
+    Users,
+    Video,
     Zap
 } from 'lucide-react';
 import React, { useState } from 'react';
@@ -48,15 +50,26 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     navigate('/login');
   };
 
-  const navItems = [
-    { label: 'Dashboard', path: '/dashboard', icon: LayoutGrid },
-    { label: 'Opportunities', path: '/dashboard/opportunities', icon: Compass },
-    { label: 'Messages', path: '/dashboard/messages', icon: MessageSquare },
-    { label: 'Connections', path: '/dashboard/connections', icon: LinkIcon },
-    { label: 'Profile', path: '/dashboard/profile', icon: User },
-    { label: 'Verification', path: '/dashboard/verification', icon: CheckCircle }, 
-    { label: 'Upgrade Plan', path: '/dashboard/subscription', icon: Zap, badge: 'PRO' },
-  ];
+  const isAspirant = user.role === 'ASPIRING_BUSINESS_OWNER';
+
+  const navItems = isAspirant
+    ? [
+        { label: 'Dashboard', path: '/dashboard', icon: LayoutGrid },
+        { label: 'Learning Center', path: '/dashboard/learning-center', icon: Compass },
+        { label: 'Community', path: '/dashboard/community', icon: Users },
+        { label: 'Mentor Booking', path: '/dashboard/mentors', icon: Video },
+        { label: 'Profile', path: '/dashboard/profile', icon: User },
+        { label: 'Upgrade Plan', path: '/dashboard/subscription', icon: Zap, badge: 'PRO' },
+      ]
+    : [
+        { label: 'Dashboard', path: '/dashboard', icon: LayoutGrid },
+        { label: 'Opportunities', path: '/dashboard/opportunities', icon: Compass },
+        { label: 'Messages', path: '/dashboard/messages', icon: MessageSquare },
+        { label: 'Connections', path: '/dashboard/connections', icon: LinkIcon },
+        { label: 'Profile', path: '/dashboard/profile', icon: User },
+        { label: 'Verification', path: '/dashboard/verification', icon: CheckCircle },
+        { label: 'Upgrade Plan', path: '/dashboard/subscription', icon: Zap, badge: 'PRO' },
+      ];
 
   if (!isAuth) {
     const returnUrl = encodeURIComponent(location.pathname);

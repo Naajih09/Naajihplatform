@@ -66,6 +66,12 @@ export class PitchesController {
     return this.pitchesService.getAdminStats();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('recommended')
+  getRecommended(@Request() req: any) {
+    return this.pitchesService.getRecommended(req.user.id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.pitchesService.findOne(id);

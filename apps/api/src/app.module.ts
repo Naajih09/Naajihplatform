@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { AuditModule } from './audit/audit.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ConnectionsModule } from './connections/connections.module';
+import { CommunityModule } from './community/community.module';
 import { DatabaseModule } from './database/database.module';
 import { MessagesModule } from './messages/messages.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -38,6 +39,7 @@ import { VerificationModule } from './verification/verification.module';
     UsersModule,
     PitchesModule,
     ConnectionsModule,
+    CommunityModule,
     CloudinaryModule,
     MessagesModule,
     VerificationModule,

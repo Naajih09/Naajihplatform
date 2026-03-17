@@ -1,13 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsGateway } from './notifications.gateway';
+import { MailerService } from '../mailer/mailer.service';
+import { notificationEmail } from '../mailer/templates';
 
 @Injectable()
 export class NotificationsService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly notificationsGateway: NotificationsGateway,
+    private readonly mailerService: MailerService,
   ) {}
+
+  private get emailEnabled() {
+    return process.env.NOTIFICATION_EMAIL_ENABLED === 'true';
+  }
 
   // 1. GET MY NOTIFICATIONS
   async findAll(userId: string) {
@@ -26,6 +33,20 @@ export class NotificationsService {
 
     // Send real-time
     this.notificationsGateway.sendNotification(userId, notification);
+
+    if (this.emailEnabled) {
+      const user = await this.databaseService.user.findUnique({
+        where: { id: userId },
+        select: { email: true, emailVerified: true },
+      });
+      if (user?.email && user.emailVerified) {
+        await this.mailerService.sendMail(
+          user.email,
+          'Naajih Notification',
+          notificationEmail(message),
+        );
+      }
+    }
 
     return notification;
   }

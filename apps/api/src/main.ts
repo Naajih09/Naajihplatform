@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { json } from 'express';
 import 'dotenv/config';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './utils/all-expection.filter';
@@ -9,6 +10,15 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const { httpAdapter } = app.get(HttpAdapterHost);
+
+  // Capture raw body for webhook signature verification
+  app.use(
+    json({
+      verify: (req: any, _res, buf) => {
+        req.rawBody = buf;
+      },
+    }),
+  );
 
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
   app.setGlobalPrefix(process.env.API_PREFIX || 'api');

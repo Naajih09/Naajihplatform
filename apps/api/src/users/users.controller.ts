@@ -94,6 +94,14 @@ export class UsersController {
     return this.usersService.getAdminStats();
   }
 
+  // 3c. ADMIN INSIGHTS (Time series)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('admin/insights')
+  getAdminInsights() {
+    return this.usersService.getAdminInsights();
+  }
+
   // 4. FIND ALL (Protected: Only ADMIN can view all users)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -106,6 +114,40 @@ export class UsersController {
     @Query('pageSize') pageSize?: string,
   ) {
     return this.usersService.findAll({ search, role, sortBy, page, pageSize });
+  }
+
+  // 5b. REQUEST EMAIL VERIFICATION (Authenticated)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.ENTREPRENEUR,
+    UserRole.INVESTOR,
+    UserRole.ASPIRING_BUSINESS_OWNER,
+  )
+  @Post('verify-email/request')
+  requestVerification(@Request() req) {
+    return this.usersService.requestEmailVerification(req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.ENTREPRENEUR,
+    UserRole.INVESTOR,
+    UserRole.ASPIRING_BUSINESS_OWNER,
+  )
+  @Post('subscription/trial')
+  startTrial(@Request() req) {
+    return this.usersService.startTrial(req.user.id);
+  }
+
+  // 5c. VERIFY EMAIL TOKEN (Public)
+  @Get('verify-email')
+  verifyEmail(@Query('token') token?: string) {
+    if (!token) {
+      throw new BadRequestException('Token is required');
+    }
+    return this.usersService.verifyEmailToken(token);
   }
 
   // 5. FIND ONE (Protected: User can view their own, Admin can view any)

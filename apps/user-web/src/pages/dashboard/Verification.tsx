@@ -9,6 +9,8 @@ const Verification = () => {
     localStorage.getItem('access_token') ||
     '';
   const [status, setStatus] = useState<any>(null);
+  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
+  const [emailSending, setEmailSending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
     show: false,
@@ -20,6 +22,16 @@ const Verification = () => {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
+        const profileRes = await fetch(`${API_BASE}/users/${user.email}`, {
+          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+        });
+        if (profileRes.ok) {
+          const profile = await profileRes.json();
+          setEmailVerified(Boolean(profile?.emailVerified));
+          localStorage.setItem('user', JSON.stringify(profile));
+        } else {
+          setEmailVerified(Boolean(user.emailVerified));
+        }
         const res = await fetch(`${API_BASE}/verification/${user.id}`, {
           headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
         });
@@ -39,6 +51,30 @@ const Verification = () => {
     };
     fetchStatus();
   }, [user.id]);
+
+  const requestEmailVerification = async () => {
+    if (!authToken) {
+      setToast({ show: true, message: 'Please log in again.', type: 'error' });
+      return;
+    }
+    setEmailSending(true);
+    try {
+      const res = await fetch(`${API_BASE}/users/verify-email/request`, {
+        method: 'POST',
+        headers: { ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+      });
+      if (res.ok) {
+        setToast({ show: true, message: 'Verification email sent.', type: 'success' });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setToast({ show: true, message: data?.message || 'Failed to send email.', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ show: true, message: 'Failed to send email.', type: 'error' });
+    } finally {
+      setEmailSending(false);
+    }
+  };
 
   // 2. HANDLE FILE UPLOAD
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,6 +124,28 @@ const Verification = () => {
         
         {/* --- LEFT: MAIN FLOW --- */}
         <div className="lg:col-span-2 space-y-6">
+
+          {/* Email Verification */}
+          <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+            <h3 className="font-bold text-slate-900 dark:text-white mb-2">Email Verification</h3>
+            <p className="text-sm text-slate-500 dark:text-gray-400 mb-4">
+              {emailVerified ? 'Your email is verified.' : 'Verify your email to secure your account.'}
+            </p>
+            <div className="flex items-center gap-3">
+              <div className={`px-3 py-1 rounded text-xs font-bold ${emailVerified ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400'}`}>
+                {emailVerified ? 'Verified' : 'Not Verified'}
+              </div>
+              {!emailVerified && (
+                <button
+                  onClick={requestEmailVerification}
+                  disabled={emailSending}
+                  className="px-4 py-2 rounded-lg bg-primary text-neutral-dark text-xs font-bold disabled:opacity-60"
+                >
+                  {emailSending ? 'Sending...' : 'Send Verification Email'}
+                </button>
+              )}
+            </div>
+          </div>
           
           {/* Status Card */}
           <div className={`p-6 rounded-xl border-l-4 flex items-start gap-4 ${

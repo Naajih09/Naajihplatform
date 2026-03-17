@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { User, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 import { DatabaseService } from '../database/database.service';
+import { MailerService } from '../mailer/mailer.service';
+import { verificationEmail } from '../mailer/templates';
 
 interface CreateUserDto {
   email: string;
@@ -13,7 +16,45 @@ interface CreateUserDto {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly mailerService: MailerService,
+  ) {}
+
+  private getVerificationTtlHours() {
+    const hours = Number(process.env.EMAIL_VERIFICATION_TTL_HOURS || 24);
+    return Number.isFinite(hours) && hours > 0 ? hours : 24;
+  }
+
+  private getTrialDurationDays() {
+    const days = Number(process.env.TRIAL_DURATION_DAYS || 14);
+    return Number.isFinite(days) && days > 0 ? days : 14;
+  }
+
+  private async issueEmailVerification(userId: string, email: string) {
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(
+      Date.now() + this.getVerificationTtlHours() * 60 * 60 * 1000,
+    );
+
+    await this.databaseService.user.update({
+      where: { id: userId },
+      data: {
+        emailVerificationToken: token,
+        emailVerificationExpires: expires,
+      },
+    });
+
+    const apiPrefix = process.env.API_PREFIX || 'api';
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    const verifyUrl = `${backendUrl}/${apiPrefix}/users/verify-email?token=${token}`;
+
+    await this.mailerService.sendMail(
+      email,
+      'Verify your Naajih account',
+      verificationEmail(verifyUrl, this.getVerificationTtlHours()),
+    );
+  }
 
   // 1. SIGNUP (Create User + Profile + Hash Password)
   async create(createUserDto: CreateUserDto) {
@@ -48,6 +89,8 @@ export class UsersService {
       include: { entrepreneurProfile: true, investorProfile: true },
     });
 
+    await this.issueEmailVerification(newUser.id, newUser.email);
+
     const { password: _, ...result } = newUser;
     return result;
   }
@@ -61,6 +104,7 @@ export class UsersService {
         email,
         password: hashedPassword,
         role: UserRole.ADMIN,
+        emailVerified: true,
         entrepreneurProfile: { create: { firstName, lastName } },
       },
       include: { entrepreneurProfile: true, investorProfile: true },
@@ -173,8 +217,54 @@ export class UsersService {
   async findOne(email: string) {
     return this.databaseService.user.findUnique({
       where: { email },
-      include: { entrepreneurProfile: true, investorProfile: true },
+      include: { entrepreneurProfile: true, investorProfile: true, subscription: true },
     });
+  }
+
+  async requestEmailVerification(userId: string) {
+    const user = await this.databaseService.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, emailVerified: true },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (user.emailVerified) {
+      return { status: 'ok', message: 'Email already verified' };
+    }
+
+    await this.issueEmailVerification(user.id, user.email);
+    return { status: 'ok', message: 'Verification email sent' };
+  }
+
+  async verifyEmailToken(token: string) {
+    const user = await this.databaseService.user.findFirst({
+      where: { emailVerificationToken: token },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid token');
+    }
+
+    if (
+      user.emailVerificationExpires &&
+      user.emailVerificationExpires < new Date()
+    ) {
+      throw new BadRequestException('Token expired');
+    }
+
+    await this.databaseService.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+      },
+    });
+
+    return { status: 'ok', message: 'Email verified' };
   }
 
   // 5. UPDATE PROFILE
@@ -239,6 +329,7 @@ export class UsersService {
 
   // Admin stats (platform overview)
   async getAdminStats() {
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const [totalUsers, activeUsers, verifiedUsers, roleCounts] = await Promise.all([
       this.databaseService.user.count(),
       this.databaseService.user.count({ where: { isActive: true } }),
@@ -246,6 +337,15 @@ export class UsersService {
       this.databaseService.user.groupBy({
         by: ['role'],
         _count: { _all: true },
+      }),
+    ]);
+
+    const [newUsersLast7Days, newConnectionsLast7Days] = await Promise.all([
+      this.databaseService.user.count({
+        where: { createdAt: { gte: since } },
+      }),
+      this.databaseService.connection.count({
+        where: { createdAt: { gte: since } },
       }),
     ]);
 
@@ -259,7 +359,55 @@ export class UsersService {
       activeUsers,
       verifiedUsers,
       roles,
+      newUsersLast7Days,
+      newConnectionsLast7Days,
     };
+  }
+
+  // Admin insights (last 7 days time series)
+  async getAdminInsights() {
+    const days = 7;
+    const today = new Date();
+    const results: Array<{
+      date: string;
+      newUsers: number;
+      newPitches: number;
+      newConnections: number;
+    }> = [];
+
+    for (let i = days - 1; i >= 0; i -= 1) {
+      const start = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - i,
+      );
+      const end = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - i + 1,
+      );
+
+      const [newUsers, newPitches, newConnections] = await Promise.all([
+        this.databaseService.user.count({
+          where: { createdAt: { gte: start, lt: end } },
+        }),
+        this.databaseService.pitch.count({
+          where: { createdAt: { gte: start, lt: end } },
+        }),
+        this.databaseService.connection.count({
+          where: { createdAt: { gte: start, lt: end } },
+        }),
+      ]);
+
+      results.push({
+        date: start.toISOString().slice(0, 10),
+        newUsers,
+        newPitches,
+        newConnections,
+      });
+    }
+
+    return results;
   }
 
   // 7. CHANGE PASSWORD
@@ -324,5 +472,46 @@ export class UsersService {
         },
       });
     }
+  }
+
+  async startTrial(userId: string) {
+    const subscription = await this.databaseService.subscription.findUnique({
+      where: { userId },
+    });
+
+    if (subscription?.trialUsed) {
+      throw new ForbiddenException('Trial already used.');
+    }
+
+    const now = new Date();
+    if (subscription?.plan === 'PREMIUM' && subscription?.endDate && subscription.endDate > now) {
+      throw new ForbiddenException('Active premium subscription already exists.');
+    }
+
+    const trialEndsAt = new Date(
+      Date.now() + this.getTrialDurationDays() * 24 * 60 * 60 * 1000,
+    );
+
+    if (subscription) {
+      return this.databaseService.subscription.update({
+        where: { userId },
+        data: {
+          plan: 'PREMIUM',
+          endDate: trialEndsAt,
+          trialEndsAt,
+          trialUsed: true,
+        },
+      });
+    }
+
+    return this.databaseService.subscription.create({
+      data: {
+        userId,
+        plan: 'PREMIUM',
+        endDate: trialEndsAt,
+        trialEndsAt,
+        trialUsed: true,
+      },
+    });
   }
 }

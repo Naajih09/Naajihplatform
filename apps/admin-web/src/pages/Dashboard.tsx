@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react'; 
 import { Users, Rocket, Wallet, CheckCircle, Clock, FileText, Activity, ExternalLink, Loader2 } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api'; 
 
@@ -11,6 +20,8 @@ const Dashboard = () => {
     activeUsers: 0,
     verifiedUsers: 0,
     roles: {} as Record<string, number>,
+    newUsersLast7Days: 0,
+    newConnectionsLast7Days: 0,
   });
   const [pendingVerifications, setPendingVerifications] = useState<any[]>([]);
   const [pendingTotal, setPendingTotal] = useState(0);
@@ -18,7 +29,11 @@ const Dashboard = () => {
     { label: string; value: number }[]
   >([]);
   const [fundingTotal, setFundingTotal] = useState(0);
+  const [newPitchesLast7Days, setNewPitchesLast7Days] = useState(0);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [insights, setInsights] = useState<
+    { date: string; newUsers: number; newPitches: number; newConnections: number }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
@@ -36,17 +51,19 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
       try {
 
-        const [resUserStats, resStats, resVerifications, resAudit] = await Promise.all([
+        const [resUserStats, resStats, resVerifications, resAudit, resInsights] = await Promise.all([
           api.get('/users/admin/stats'),
           api.get('/pitches/admin/stats'),
           api.get('/verification/admin/pending?page=1&pageSize=5'),
           api.get('/audit/recent?limit=5'),
+          api.get('/users/admin/insights'),
         ]);
         
         const usersResponse = resUserStats.data;
         const statsResponse = resStats.data;
         const verificationsResponse = resVerifications.data;
         const auditResponse = resAudit.data;
+        const insightsResponse = resInsights.data;
 
         const verifications = verificationsResponse.data || verificationsResponse || [];
         const verificationsTotal = verificationsResponse.meta?.total ?? verifications.length;
@@ -64,13 +81,17 @@ const Dashboard = () => {
           activeUsers: usersResponse?.activeUsers ?? 0,
           verifiedUsers: usersResponse?.verifiedUsers ?? 0,
           roles: usersResponse?.roles ?? {},
+          newUsersLast7Days: usersResponse?.newUsersLast7Days ?? 0,
+          newConnectionsLast7Days: usersResponse?.newConnectionsLast7Days ?? 0,
         });
         setPendingVerifications(verifications);
         setPendingTotal(verificationsTotal);
 
         setInvestmentBreakdown(statsResponse?.investmentBreakdown || []);
         setFundingTotal(statsResponse?.fundingTotal || 0);
+        setNewPitchesLast7Days(statsResponse?.newPitchesLast7Days ?? 0);
         setAuditLogs(audits);
+        setInsights(Array.isArray(insightsResponse) ? insightsResponse : []);
       } catch (err) {
         console.error("Dashboard fetch error:", err);
         showToast('Failed to load dashboard data.', 'error');
@@ -167,6 +188,31 @@ const Dashboard = () => {
           value={loading ? '...' : pendingTotal}
           trend="Live"
           icon={Clock}
+        />
+      </div>
+
+      {/* Growth (Last 7 Days) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <MetricCard
+          label="New Users"
+          value={loading ? '...' : userStats.newUsersLast7Days}
+          trend="Last 7 days"
+          subLabel="New signups"
+          icon={Users}
+        />
+        <MetricCard
+          label="New Pitches"
+          value={loading ? '...' : newPitchesLast7Days}
+          trend="Last 7 days"
+          subLabel="New submissions"
+          icon={Rocket}
+        />
+        <MetricCard
+          label="New Connections"
+          value={loading ? '...' : userStats.newConnectionsLast7Days}
+          trend="Last 7 days"
+          subLabel="New requests"
+          icon={Activity}
         />
       </div>
 
@@ -310,6 +356,60 @@ const Dashboard = () => {
             </div>
         </div>
       </div>
+
+      {/* Insights */}
+      <div className="bg-[#1d1d20] rounded-xl border border-white/5 overflow-hidden">
+        <div className="p-6 border-b border-white/5">
+          <h3 className="text-lg font-bold text-white">Last 7 Days Activity</h3>
+          <p className="text-sm text-gray-500">Daily new users, pitches, and connections</p>
+        </div>
+        <div className="p-6">
+          {loading ? (
+            <div className="py-8 text-center text-gray-500">
+              <Loader2 className="animate-spin inline mr-2" /> Loading insights...
+            </div>
+          ) : insights.length === 0 ? (
+            <div className="py-8 text-center text-gray-500">
+              No activity data yet.
+            </div>
+          ) : (
+            <div className="h-72">
+              <div className="flex flex-wrap gap-4 mb-4 text-xs">
+                <span className="flex items-center gap-2 text-gray-300">
+                  <span className="inline-block size-2 rounded-full bg-[#fbbf24]"></span>
+                  New Users
+                </span>
+                <span className="flex items-center gap-2 text-gray-300">
+                  <span className="inline-block size-2 rounded-full bg-[#60a5fa]"></span>
+                  New Pitches
+                </span>
+                <span className="flex items-center gap-2 text-gray-300">
+                  <span className="inline-block size-2 rounded-full bg-[#34d399]"></span>
+                  New Connections
+                </span>
+              </div>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={insights}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                  <XAxis dataKey="date" stroke="#6b7280" tick={{ fontSize: 12 }} />
+                  <YAxis stroke="#6b7280" tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: '#111827',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: 8,
+                      color: '#e5e7eb',
+                    }}
+                  />
+                  <Line type="monotone" dataKey="newUsers" stroke="#fbbf24" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="newPitches" stroke="#60a5fa" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="newConnections" stroke="#34d399" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -337,7 +437,7 @@ const formatAuditMeta = (log: any) => {
 };
 
 // --- HELPER COMPONENTS ---
-const MetricCard = ({ label, value, trend, icon: Icon }: any) => (
+const MetricCard = ({ label, value, trend, subLabel = 'Vs last month', icon: Icon }: any) => (
   <div className="p-6 rounded-xl border border-white/5 bg-gradient-to-br from-[#262626] to-[#1a1a1a] flex flex-col justify-between min-h-[140px]">
     <div className="flex items-center justify-between">
       <span className="text-gray-400 text-sm font-medium">{label}</span>
@@ -347,7 +447,7 @@ const MetricCard = ({ label, value, trend, icon: Icon }: any) => (
       <h3 className="text-3xl font-bold tracking-tight text-white">{value}</h3>
       <div className="flex items-center gap-1 mt-1">
         <span className="text-primary text-xs font-bold">{trend}</span>
-        <span className="text-gray-500 text-[10px] uppercase">Vs last month</span>
+        <span className="text-gray-500 text-[10px] uppercase">{subLabel}</span>
       </div>
     </div>
   </div>

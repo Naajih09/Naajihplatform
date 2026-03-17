@@ -30,6 +30,7 @@ function DashboardHome() {
 
   // FIX: Removed <any[]>
   const [courses, setCourses] = useState([]);
+  const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [joiningId, setJoiningId] = useState(null);
 
@@ -59,7 +60,25 @@ if (isAspirant) {
     if (user.id) fetchData();
   }, [user.id, isAspirant]);
 
-  const handleJoin = async (event, programId, isEnrolled) => {
+  useEffect(() => {
+    if (!authToken || !user?.email) return;
+    fetch(`${API_BASE}/users/${user.email}`, { headers: authHeaders })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) {
+          setSubscription(data.subscription || null);
+          localStorage.setItem('user', JSON.stringify(data));
+        }
+      })
+      .catch(() => null);
+  }, [authToken, user?.email]);
+
+  const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
+  const hasPremium =
+    subscription?.plan === 'PREMIUM' &&
+    (!activeUntil || new Date(activeUntil) > new Date());
+
+  const handleJoin = async (event, programId, isEnrolled, isPremium) => {
     event.stopPropagation();
     if (isEnrolled) {
       navigate(`/dashboard/academy/${programId}`);
@@ -67,6 +86,11 @@ if (isAspirant) {
     }
     if (!authToken) {
       showToast('Please log in to join this program.', 'error');
+      return;
+    }
+    if (isPremium && !hasPremium) {
+      showToast('Premium subscription required for this program.', 'error');
+      navigate('/dashboard/subscription');
       return;
     }
     setJoiningId(programId);
@@ -177,7 +201,11 @@ if (isAspirant) {
                   <div className="p-6">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-xs font-bold text-primary uppercase">{totalLessons || 0} Lessons</span>
-                      {!course.isPremium && <span className="bg-green-500/20 text-green-500 text-[10px] font-bold px-2 py-1 rounded">FREE</span>}
+                      {course.isPremium ? (
+                        <span className="bg-amber-500/20 text-amber-500 text-[10px] font-bold px-2 py-1 rounded">PREMIUM</span>
+                      ) : (
+                        <span className="bg-green-500/20 text-green-500 text-[10px] font-bold px-2 py-1 rounded">FREE</span>
+                      )}
                     </div>
                     <h3 className="font-bold text-lg mb-2 text-slate-900 dark:text-white">{course.title}</h3>
                     <p className="text-sm text-slate-500 line-clamp-2">{course.description}</p>
@@ -188,7 +216,7 @@ if (isAspirant) {
                       </span>
                     </div>
                     <Button
-                      onClick={(event) => handleJoin(event, course.id, isEnrolled)}
+                      onClick={(event) => handleJoin(event, course.id, isEnrolled, Boolean(course.isPremium))}
                       className={`mt-3 w-full font-bold ${
                         isEnrolled ? 'bg-white/10 text-white' : 'bg-primary text-neutral-dark'
                       }`}
@@ -202,6 +230,8 @@ if (isAspirant) {
                         ? 'Pending Approval'
                         : isRejected
                         ? 'Reapply'
+                        : course.isPremium && !hasPremium
+                        ? 'Upgrade to Access'
                         : 'Join Program'}
                     </Button>
                   </div>

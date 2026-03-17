@@ -12,6 +12,12 @@ const Profile = () => {
   const [formData, setFormData] = useState<any>({});
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState({
+    activePitches: 0,
+    pendingConnections: 0,
+    isVerified: false,
+    totalViews: 0,
+  });
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
     show: false,
     message: '',
@@ -50,7 +56,21 @@ const Profile = () => {
         setToast({ show: true, message: 'Failed to load profile.', type: 'error' });
       }
     };
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/users/stats/${localUser.id}`, {
+          headers: authHeaders,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        }
+      } catch (err) {
+        console.error('Failed to load stats', err);
+      }
+    };
     fetchProfile();
+    fetchStats();
   }, []);
 
   // SAVE DATA
@@ -231,10 +251,10 @@ const Profile = () => {
             // --- VIEW MODE STATS ---
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                    { l: 'Growth', v: '+120%', sub: 'Year over Year' },
-                    { l: 'Capital', v: 'NGN 45M', sub: 'Target Raised' },
-                    { l: 'Reputation', v: '4.9', sub: '5 Stars' },
-                    { l: 'Status', v: 'Active', sub: 'Verified Account' }
+                    { l: 'Active Pitches', v: String(stats.activePitches), sub: 'Total' },
+                    { l: 'Pending', v: String(stats.pendingConnections), sub: 'Connections' },
+                    { l: 'Verified', v: stats.isVerified ? 'Yes' : 'No', sub: 'Account' },
+                    { l: 'Total Views', v: String(stats.totalViews || 0), sub: 'Profile' }
                 ].map(stat => (
                     <div key={stat.l} className="bg-white dark:bg-[#1d1f23]/50 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-center shadow-sm">
                         <span className="text-slate-500 dark:text-[#abb89d] text-[10px] font-bold uppercase">{stat.l}</span>

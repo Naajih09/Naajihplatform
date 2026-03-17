@@ -125,6 +125,28 @@ export class AcademyService {
 
   // 5️⃣ JOIN PROGRAM (ProgramEnrollment)
   async joinProgram(userId: string, programId: string) {
+    const program = await this.databaseService.program.findUnique({
+      where: { id: programId },
+      select: { id: true, isPremium: true },
+    });
+
+    if (!program) {
+      throw new ForbiddenException('Program not found.');
+    }
+
+    if (program.isPremium) {
+      const subscription = await this.databaseService.subscription.findUnique({
+        where: { userId },
+      });
+      const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
+      const hasAccess =
+        subscription?.plan === 'PREMIUM' &&
+        (!activeUntil || activeUntil > new Date());
+      if (!hasAccess) {
+        throw new ForbiddenException('Premium subscription required.');
+      }
+    }
+
     const existing = await this.databaseService.programEnrollment.findUnique({
       where: { userId_programId: { userId, programId } },
     });
@@ -227,19 +249,21 @@ export class AcademyService {
     title: string;
     description?: string;
     cohort?: string;
+    isPremium?: boolean;
   }) {
     return this.databaseService.program.create({
       data: {
         title: body.title,
         description: body.description ?? '',
         cohort: body.cohort ?? '',
+        isPremium: Boolean(body.isPremium),
       },
     });
   }
 
   async adminUpdateProgram(
     id: string,
-    body: { title?: string; description?: string; cohort?: string },
+    body: { title?: string; description?: string; cohort?: string; isPremium?: boolean },
   ) {
     return this.databaseService.program.update({
       where: { id },
@@ -247,6 +271,7 @@ export class AcademyService {
         title: body.title,
         description: body.description,
         cohort: body.cohort,
+        isPremium: body.isPremium,
       },
     });
   }
@@ -458,11 +483,19 @@ export class AcademyService {
         errors.push(`Row ${row.rowNumber}: Missing title.`);
         continue;
       }
+      const isPremiumValue = String(data.isPremium || '')
+        .trim()
+        .toLowerCase();
+      const isPremium =
+        isPremiumValue === 'true' ||
+        isPremiumValue === '1' ||
+        isPremiumValue === 'yes';
       await this.databaseService.program.create({
         data: {
           title: data.title,
           description: data.description || '',
           cohort: data.cohort || '',
+          isPremium,
         },
       });
       created++;
@@ -726,6 +759,17 @@ export class AcademyService {
   }
 
   async getCertificate(userId: string, programId: string) {
+    const subscription = await this.databaseService.subscription.findUnique({
+      where: { userId },
+    });
+    const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
+    const hasPremium =
+      subscription?.plan === 'PREMIUM' &&
+      (!activeUntil || activeUntil > new Date());
+    if (!hasPremium) {
+      throw new ForbiddenException('Premium subscription required.');
+    }
+
     const program = await this.databaseService.program.findUnique({
       where: { id: programId },
       select: { id: true, title: true, cohort: true },
@@ -993,6 +1037,7 @@ export class AcademyService {
         description:
           'The Flagship Program. Go from zero to your first customer in one month. No theory, just execution.',
         cohort: 'Cohort 1 (Feb 2026)',
+        isPremium: false,
         modules: [
           {
             title: 'Week 1: Finding a Pain-Killer Idea',
@@ -1157,6 +1202,7 @@ export class AcademyService {
             title: programData.title,
             description: programData.description,
             cohort: programData.cohort,
+            isPremium: Boolean(programData.isPremium),
             modules: {
               create: programData.modules.map((mod) => ({
                 title: mod.title,

@@ -127,6 +127,7 @@ export class PitchesService {
 
   // Admin stats (counts, funding total, category breakdown)
   async getAdminStats() {
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const pitches = await this.prisma.pitch.findMany({
       select: { fundingAsk: true, category: true },
     });
@@ -151,10 +152,15 @@ export class PitchesService {
       .sort((a, b) => b.value - a.value)
       .slice(0, 4);
 
+    const newPitchesLast7Days = await this.prisma.pitch.count({
+      where: { createdAt: { gte: since } },
+    });
+
     return {
       totalPitches,
       fundingTotal,
       investmentBreakdown,
+      newPitchesLast7Days,
     };
   }
 
@@ -192,6 +198,58 @@ export class PitchesService {
   async remove(id: string) {
     return this.prisma.pitch.delete({
       where: { id },
+    });
+  }
+
+  // 6. RECOMMENDED PITCHES (Simple industry/category match)
+  async getRecommended(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        entrepreneurProfile: true,
+        investorProfile: true,
+      },
+    });
+
+    if (!user) {
+      return [];
+    }
+
+    const industries = new Set<string>();
+    if (user.investorProfile?.focusIndustries?.length) {
+      user.investorProfile.focusIndustries.forEach((i) => industries.add(i));
+    }
+    if (user.entrepreneurProfile?.industry) {
+      industries.add(user.entrepreneurProfile.industry);
+    }
+
+    const industryList = Array.from(industries);
+
+    const where =
+      industryList.length > 0
+        ? {
+            OR: [
+              { category: { in: industryList } },
+              {
+                user: {
+                  entrepreneurProfile: {
+                    industry: { in: industryList },
+                  },
+                },
+              },
+            ],
+          }
+        : {};
+
+    return this.prisma.pitch.findMany({
+      where,
+      include: {
+        user: {
+          include: { entrepreneurProfile: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
     });
   }
 }

@@ -62,7 +62,11 @@ export class VerificationController {
   // 2️⃣ USER: Check verification status
   // Entrepreneur/Investor can check their own status
   @Get(':userId')
-  @Roles(UserRole.ENTREPRENEUR, UserRole.INVESTOR, UserRole.ADMIN) // Admin can also check
+  @Roles(
+    UserRole.ENTREPRENEUR,
+    UserRole.INVESTOR,
+    UserRole.ADMIN,
+  ) // Admin can also check
   async getVerificationStatus(@Param('userId') userId: string, @Request() req) {
     // Ensure the userId in the param matches the authenticated user's ID, unless it's an ADMIN
     if (req.user.role !== UserRole.ADMIN && req.user.id !== userId) {

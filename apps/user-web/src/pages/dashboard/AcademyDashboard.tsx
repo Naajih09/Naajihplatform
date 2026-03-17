@@ -20,6 +20,7 @@ const AcademyDashboard = () => {
   const [activeModule, setActiveModule] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
   const [milestones, setMilestones] = useState<any[]>([]);
+  const [subscription, setSubscription] = useState<any>(null);
   const [submissionUrls, setSubmissionUrls] = useState<Record<string, string>>({});
   const [submittingTaskId, setSubmittingTaskId] = useState<string | null>(null);
 
@@ -74,6 +75,19 @@ const AcademyDashboard = () => {
     fetchMilestones();
   }, [authToken]);
 
+  useEffect(() => {
+    if (!authToken || !user?.email) return;
+    fetch(`${API_BASE}/users/${user.email}`, { headers: authHeaders })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) {
+          setSubscription(data.subscription || null);
+          localStorage.setItem('user', JSON.stringify(data));
+        }
+      })
+      .catch(() => null);
+  }, [authToken, user?.email]);
+
   if (loading) return <div className="text-center py-20 text-gray-500">Loading your curriculum...</div>;
   if (!program) return <div className="text-center py-20 text-red-500">Program not found</div>;
 
@@ -82,10 +96,19 @@ const AcademyDashboard = () => {
   const isEnrolled = enrollmentStatus === 'APPROVED';
   const isPending = enrollmentStatus === 'PENDING';
   const isRejected = enrollmentStatus === 'REJECTED';
+  const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
+  const hasPremium =
+    subscription?.plan === 'PREMIUM' &&
+    (!activeUntil || new Date(activeUntil) > new Date());
 
   const handleJoin = async () => {
     if (!authToken) {
       showToast('Please log in to join this program.', 'error');
+      return;
+    }
+    if (program?.isPremium && !hasPremium) {
+      showToast('Premium subscription required for this program.', 'error');
+      navigate('/dashboard/subscription');
       return;
     }
     setIsJoining(true);
@@ -190,6 +213,9 @@ const AcademyDashboard = () => {
                <span className="bg-primary/20 text-primary text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                  {program.cohort || 'Cohort 1'}
                </span>
+               <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full ${program.isPremium ? 'bg-amber-500/20 text-amber-400' : 'bg-green-500/20 text-green-400'}`}>
+                 {program.isPremium ? 'Premium' : 'Free'}
+               </span>
                {enrollmentStatus && (
                  <span
                    className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full ${
@@ -245,6 +271,8 @@ const AcademyDashboard = () => {
                 ? 'Enrollment pending approval.'
                 : isRejected
                 ? 'Enrollment declined. You can reapply.'
+                : program.isPremium && !hasPremium
+                ? 'Premium subscription required to enroll.'
                 : 'Join this cohort to unlock the lessons.'}
             </h3>
             <p className="text-sm text-gray-400 mt-1">
@@ -252,6 +280,8 @@ const AcademyDashboard = () => {
                 ? 'An admin will review your request shortly.'
                 : isRejected
                 ? 'Update your details and submit again.'
+                : program.isPremium && !hasPremium
+                ? 'Upgrade your plan to access premium programs.'
                 : 'Enroll once and your progress will be tracked automatically.'}
             </p>
           </div>
@@ -260,7 +290,15 @@ const AcademyDashboard = () => {
             disabled={isJoining || isPending}
             className="bg-primary text-neutral-dark font-bold px-6 py-3 rounded-xl"
           >
-            {isJoining ? 'Submitting...' : isPending ? 'Pending Approval' : isRejected ? 'Reapply' : 'Join Program'}
+            {isJoining
+              ? 'Submitting...'
+              : isPending
+              ? 'Pending Approval'
+              : isRejected
+              ? 'Reapply'
+              : program.isPremium && !hasPremium
+              ? 'Upgrade to Access'
+              : 'Join Program'}
           </Button>
         </div>
       )}
@@ -465,14 +503,23 @@ const AcademyDashboard = () => {
             <div className="bg-primary/10 border border-primary/40 rounded-xl p-6">
               <h3 className="text-lg font-bold mb-2 text-white">Certificate Unlocked</h3>
               <p className="text-xs text-gray-300 mb-4">
-                You completed the full curriculum. Download will be available soon.
+                {hasPremium
+                  ? 'You completed the full curriculum. Download your certificate.'
+                  : 'Certificates are available on Premium plans.'}
               </p>
               <Button
                 className="w-full bg-primary text-neutral-dark font-bold"
-                disabled={!programCertificate}
-                onClick={() => navigate(`/dashboard/academy/certificate/${program.id}`)}
+                disabled={!programCertificate || !hasPremium}
+                onClick={() => {
+                  if (!hasPremium) {
+                    showToast('Premium access required for certificates.', 'error');
+                    navigate('/dashboard/subscription');
+                    return;
+                  }
+                  navigate(`/dashboard/academy/certificate/${program.id}`);
+                }}
               >
-                {programCertificate ? 'View Certificate' : 'Processing Certificate'}
+                {!hasPremium ? 'Upgrade to Premium' : programCertificate ? 'View Certificate' : 'Processing Certificate'}
               </Button>
             </div>
            )}

@@ -28,33 +28,42 @@
 ## Project setup
 
 ```bash
-$ npm install
+pnpm install
 ```
+
+## Webhooks (Paystack/OPay)
+
+Webhook signature verification uses the raw request body. Ensure your server
+is not mutating the body before verification and that the following env vars
+are set:
+
+- `PAYSTACK_WEBHOOK_SECRET`
+- `OPAY_WEBHOOK_SECRET`
 
 ## Compile and run the project
 
 ```bash
 # development
-$ npm run start
+pnpm start
 
 # watch mode
-$ npm run start:dev
+pnpm start:dev
 
 # production mode
-$ npm run start:prod
+pnpm start:prod
 ```
 
 ## Run tests
 
 ```bash
 # unit tests
-$ npm run test
+pnpm test
 
 # e2e tests
-$ npm run test:e2e
+pnpm test:e2e
 
 # test coverage
-$ npm run test:cov
+pnpm test:cov
 ```
 
 ## Deployment
@@ -64,8 +73,8 @@ When you're ready to deploy your NestJS application to production, there are som
 If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+pnpm add -g @nestjs/mau
+mau deploy
 ```
 
 With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.

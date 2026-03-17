@@ -11,7 +11,14 @@ export default function Subscription() {
     message: '',
     type: 'success',
   });
+  const [subscription, setSubscription] = useState<any>(null);
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const subscriptionAmount = Number(import.meta.env.VITE_SUBSCRIPTION_AMOUNT_NGN || 5000);
+  const trialDays = Number(import.meta.env.VITE_TRIAL_DAYS || 14);
+  const authToken =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('access_token') ||
+    '';
 
   useEffect(() => {
     const reference = searchParams.get('reference') || searchParams.get('trxref') || searchParams.get('orderNo');
@@ -20,6 +27,22 @@ export default function Subscription() {
       verifyPayment(provider, reference);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user?.email || !authToken) return;
+    fetch(`${API_BASE}/users/${user.email}`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) {
+          setSubscription(data.subscription || null);
+          localStorage.setItem('user', JSON.stringify(data));
+        }
+      })
+      .catch(() => null);
+  }, [authToken]);
 
   const verifyPayment = async (provider: 'paystack' | 'opay', reference: string) => {
     setLoading(true);
@@ -42,13 +65,22 @@ export default function Subscription() {
     setLoading(true);
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user?.email) {
+        setToast({ show: true, message: 'Please log in to upgrade your plan.', type: 'error' });
+        setLoading(false);
+        return;
+      }
       const res = await fetch(`${API_BASE}/payments/initialize`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify({ 
           provider: selectedProvider,
           email: user.email, 
-          amount: 15000 
+          amount: subscriptionAmount,
+          userId: user.id,
         }),
       });
       const data = await res.json();
@@ -63,6 +95,44 @@ export default function Subscription() {
       setLoading(false);
     }
   };
+
+  const handleStartTrial = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/users/subscription/trial`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.message || 'Trial start failed.');
+      }
+      setToast({ show: true, message: `Trial started. You have ${trialDays} days of Premium.`, type: 'success' });
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user?.email) {
+        const refreshed = await fetch(`${API_BASE}/users/${user.email}`, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        const data = await refreshed.json();
+        setSubscription(data.subscription || null);
+        localStorage.setItem('user', JSON.stringify(data));
+      }
+    } catch (error: any) {
+      setToast({ show: true, message: error?.message || 'Unable to start trial.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
+  const hasPremium =
+    subscription?.plan === 'PREMIUM' &&
+    (!activeUntil || new Date(activeUntil) > new Date());
+  const trialActive =
+    subscription?.trialEndsAt && new Date(subscription.trialEndsAt) > new Date();
 
   return (
     <div className="min-h-screen bg-background-dark text-white px-6 md:px-10 py-8 pb-24">
@@ -88,8 +158,14 @@ export default function Subscription() {
                     <Info size={20} />
                 </div>
                 <div>
-                    <h4 className="font-bold text-sm">Your Current Plan: <span className="text-primary tracking-widest uppercase">Free Tier</span></h4>
-                    <p className="text-xs text-white/60">Limited access to deals and messages.</p>
+                    <h4 className="font-bold text-sm">Your Current Plan: <span className="text-primary tracking-widest uppercase">{hasPremium ? 'Premium' : 'Free Tier'}</span></h4>
+                    <p className="text-xs text-white/60">
+                      {trialActive
+                        ? `Trial active until ${new Date(subscription.trialEndsAt).toLocaleDateString('en-NG', { dateStyle: 'medium' })}`
+                        : hasPremium
+                        ? 'Full access to premium learning and mentor sessions.'
+                        : 'Limited access to deals and messages.'}
+                    </p>
                 </div>
             </div>
         </div>
@@ -109,7 +185,7 @@ export default function Subscription() {
                 </p>
                 
                 <ul className="space-y-4 mb-8">
-                    {['Create 1 active pitch', 'Browse public pitch feed', 'Send 5 connection requests/mo', 'Basic profile visibility'].map((feature, i) => (
+                    {['Create 1 active pitch', 'Browse public pitch feed', 'Send 5 connection requests/mo', 'Basic profile visibility', 'Free intro courses'].map((feature, i) => (
                         <li key={i} className="flex items-center gap-3 text-sm text-white/80">
                             <Check size={18} className="text-gray-500" /> {feature}
                         </li>
@@ -128,10 +204,13 @@ export default function Subscription() {
                 </div>
 
                 <h3 className="text-2xl font-bold text-primary mb-2">Premium Network</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-5xl font-black">NGN 15,000</span>
+                <div className="flex items-baseline gap-1 mb-2">
+                    <span className="text-5xl font-black">NGN {subscriptionAmount.toLocaleString()}</span>
                     <span className="text-white/50">/ month</span>
                 </div>
+                <p className="text-xs text-primary mb-4 font-bold uppercase tracking-widest">
+                  {trialDays}-day free trial
+                </p>
                 
                 <div className="mb-6 space-y-3">
                   <p className="text-xs font-bold text-white/50 uppercase tracking-widest">Select Payment Method</p>
@@ -152,20 +231,31 @@ export default function Subscription() {
                 </div>
 
                 <ul className="space-y-4 mb-8">
-                    {['Unlimited pitch creations', 'Advanced filtering & deal discovery', 'Unlimited messaging & connections', 'Priority placement in feeds', 'Export network data'].map((feature, i) => (
+                    {['Unlimited pitch creations', 'Advanced courses in Academy', 'Mentor booking & office hours', 'Certificates of completion', 'Unlimited messaging & connections'].map((feature, i) => (
                         <li key={i} className="flex items-center gap-3 text-sm text-white/90">
                             <Check size={18} className="text-primary" /> {feature}
                         </li>
                     ))}
                 </ul>
 
-                <button 
-                  onClick={handleUpgrade}
-                  disabled={loading}
-                  className="w-full py-3 rounded-lg bg-primary text-black font-bold hover:bg-primary/90 transition-colors flex justify-center items-center gap-2"
-                >
-                    {loading ? "Processing..." : <><Wallet size={18}/> Upgrade to Premium</>}
-                </button>
+                <div className="space-y-3">
+                  {!subscription?.trialUsed && !hasPremium && (
+                    <button 
+                      onClick={handleStartTrial}
+                      disabled={loading}
+                      className="w-full py-3 rounded-lg bg-white/10 text-white font-bold hover:bg-white/20 transition-colors flex justify-center items-center gap-2"
+                    >
+                        {loading ? "Processing..." : `Start ${trialDays}-Day Free Trial`}
+                    </button>
+                  )}
+                  <button 
+                    onClick={handleUpgrade}
+                    disabled={loading}
+                    className="w-full py-3 rounded-lg bg-primary text-black font-bold hover:bg-primary/90 transition-colors flex justify-center items-center gap-2"
+                  >
+                      {loading ? "Processing..." : <><Wallet size={18}/> Upgrade to Premium</>}
+                  </button>
+                </div>
             </div>
 
         </div>

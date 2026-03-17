@@ -7,6 +7,7 @@ import { showToast } from '../../lib/utils';
 const LearningCenter = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [joiningId, setJoiningId] = useState<string | null>(null);
+  const [subscription, setSubscription] = useState<any>(null);
   const navigate = useNavigate();
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
   const authToken =
@@ -24,10 +25,33 @@ const LearningCenter = () => {
       .catch(() => showToast('Failed to load academy programs.', 'error'));
   }, []);
 
-  const handleJoin = async (event: React.MouseEvent, programId: string) => {
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user?.email || !authToken) return;
+    fetch(`${API_BASE}/users/${user.email}`, { headers: authHeaders })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) {
+          setSubscription(data.subscription || null);
+          localStorage.setItem('user', JSON.stringify(data));
+        }
+      })
+      .catch(() => null);
+  }, []);
+
+  const handleJoin = async (event: React.MouseEvent, programId: string, isPremium: boolean) => {
     event.stopPropagation();
     if (!authToken) {
       showToast('Please log in to join this program.', 'error');
+      return;
+    }
+    const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
+    const hasPremium =
+      subscription?.plan === 'PREMIUM' &&
+      (!activeUntil || new Date(activeUntil) > new Date());
+    if (isPremium && !hasPremium) {
+      showToast('Premium subscription required for this program.', 'error');
+      navigate('/dashboard/subscription');
       return;
     }
     setJoiningId(programId);
@@ -137,7 +161,7 @@ const LearningCenter = () => {
                   </div>
 
                   <Button
-                    onClick={(event) => handleJoin(event, course.id)}
+                    onClick={(event) => handleJoin(event, course.id, Boolean(course.isPremium))}
                     className={`mt-4 w-full font-bold ${
                       isEnrolled ? 'bg-white/10 text-white' : 'bg-primary text-neutral-dark'
                     }`}
@@ -151,6 +175,8 @@ const LearningCenter = () => {
                       ? 'Pending Approval'
                       : isRejected
                       ? 'Reapply'
+                      : course.isPremium
+                      ? 'Upgrade to Access'
                       : 'Join Program'}
                   </Button>
               </div>

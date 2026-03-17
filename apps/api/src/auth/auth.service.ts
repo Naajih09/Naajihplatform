@@ -24,6 +24,13 @@ export class AuthService {
     }
 
     if (
+      process.env.REQUIRE_EMAIL_VERIFICATION === 'true' &&
+      !user.emailVerified
+    ) {
+      throw new UnauthorizedException('Email not verified');
+    }
+
+    if (
       (!(await bcrypt.compare(pass, user.password).catch(() => false)) &&
         user.password !== pass)
     ) {

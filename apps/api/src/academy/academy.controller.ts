@@ -146,7 +146,7 @@ export class AcademyController {
   @Roles(UserRole.ADMIN)
   adminCreateProgram(
     @Body()
-    body: { title: string; description?: string; cohort?: string },
+    body: { title: string; description?: string; cohort?: string; isPremium?: boolean },
   ) {
     return this.academyService.adminCreateProgram(body);
   }
@@ -170,7 +170,7 @@ export class AcademyController {
   adminUpdateProgram(
     @Param('id') id: string,
     @Body()
-    body: { title?: string; description?: string; cohort?: string },
+    body: { title?: string; description?: string; cohort?: string; isPremium?: boolean },
   ) {
     return this.academyService.adminUpdateProgram(id, body);
   }

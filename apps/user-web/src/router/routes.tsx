@@ -23,6 +23,8 @@ const LearningCenter = lazy(() => import('../pages/dashboard/LearningCenter'));
 const CourseViewer = lazy(() => import('../pages/dashboard/CourseViewer'));
 const AcademyDashboard = lazy(() => import('../pages/dashboard/AcademyDashboard'));
 const Certificate = lazy(() => import('../pages/dashboard/Certificate'));
+const Community = lazy(() => import('../pages/dashboard/Community'));
+const MentorBooking = lazy(() => import('../pages/dashboard/MentorBooking'));
 
 const routes = [
   // --- Public Routes ---
@@ -56,6 +58,16 @@ const routes = [
   {
     path: 'dashboard/learning-center',
     element: <LearningCenter />,
+    layout: 'dashboard',
+  },
+  {
+    path: 'dashboard/community',
+    element: <Community />,
+    layout: 'dashboard',
+  },
+  {
+    path: 'dashboard/mentors',
+    element: <MentorBooking />,
     layout: 'dashboard',
   },
   {

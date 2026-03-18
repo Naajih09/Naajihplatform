@@ -400,7 +400,7 @@ const AcademyProgramDetail = () => {
   };
 
   if (loading) {
-    return <div className="text-gray-400">Loading program...</div>;
+    return <div className="text-slate-500 dark:text-gray-400">Loading program...</div>;
   }
 
   if (!program) {
@@ -411,11 +411,11 @@ const AcademyProgramDetail = () => {
     <div className="space-y-8">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black flex items-center gap-2">
+          <h1 className="text-2xl font-black flex items-center gap-2 text-slate-900 dark:text-white">
             <BookOpen size={20} className="text-primary" />
             {program.title}
           </h1>
-          <p className="text-gray-400 text-sm">{program.cohort || 'No cohort set'}</p>
+          <p className="text-slate-500 dark:text-gray-400 text-sm">{program.cohort || 'No cohort set'}</p>
         </div>
         <button
           onClick={handleProgramUpdate}
@@ -426,7 +426,7 @@ const AcademyProgramDetail = () => {
         </button>
       </div>
 
-      <div className="bg-[#1d1d20] border border-gray-800 rounded-2xl p-6 space-y-4">
+      <div className="admin-surface rounded-2xl p-6 space-y-4">
         <h2 className="text-lg font-bold">Program Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input
@@ -434,7 +434,8 @@ const AcademyProgramDetail = () => {
             onChange={(event) =>
               setProgram((prev: any) => ({ ...prev, title: event.target.value }))
             }
-            className="bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+            aria-label="Program title"
+            className="admin-input px-3 py-2 text-sm"
             placeholder="Program title"
           />
           <input
@@ -442,7 +443,8 @@ const AcademyProgramDetail = () => {
             onChange={(event) =>
               setProgram((prev: any) => ({ ...prev, cohort: event.target.value }))
             }
-            className="bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+            aria-label="Program cohort"
+            className="admin-input px-3 py-2 text-sm"
             placeholder="Cohort"
           />
           <input
@@ -450,16 +452,18 @@ const AcademyProgramDetail = () => {
             onChange={(event) =>
               setProgram((prev: any) => ({ ...prev, description: event.target.value }))
             }
-            className="bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+            aria-label="Program description"
+            className="admin-input px-3 py-2 text-sm"
             placeholder="Short description"
           />
-          <label className="flex items-center gap-2 text-sm text-gray-300">
+          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-gray-300">
             <input
               type="checkbox"
               checked={Boolean(program.isPremium)}
               onChange={(event) =>
                 setProgram((prev: any) => ({ ...prev, isPremium: event.target.checked }))
               }
+              aria-label="Premium program"
               className="accent-primary"
             />
             Premium program
@@ -467,7 +471,7 @@ const AcademyProgramDetail = () => {
         </div>
       </div>
 
-      <div className="bg-[#1d1d20] border border-gray-800 rounded-2xl p-6 space-y-4">
+      <div className="admin-surface rounded-2xl p-6 space-y-4">
         <h2 className="text-lg font-bold flex items-center gap-2">
           <PlusCircle size={18} className="text-primary" /> Add Module
         </h2>
@@ -475,7 +479,8 @@ const AcademyProgramDetail = () => {
           <input
             value={moduleForm.title}
             onChange={(event) => setModuleForm((prev) => ({ ...prev, title: event.target.value }))}
-            className="bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+            aria-label="New module title"
+            className="admin-input px-3 py-2 text-sm"
             placeholder="Module title"
           />
           <input
@@ -484,7 +489,8 @@ const AcademyProgramDetail = () => {
             onChange={(event) =>
               setModuleForm((prev) => ({ ...prev, order: Number(event.target.value) }))
             }
-            className="bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+            aria-label="New module order"
+            className="admin-input px-3 py-2 text-sm"
             placeholder="Order"
           />
           <input
@@ -493,7 +499,8 @@ const AcademyProgramDetail = () => {
             onChange={(event) =>
               setModuleForm((prev) => ({ ...prev, unlockDate: event.target.value }))
             }
-            className="bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+            aria-label="New module unlock date"
+            className="admin-input px-3 py-2 text-sm"
           />
         </div>
         <button
@@ -504,7 +511,7 @@ const AcademyProgramDetail = () => {
         </button>
       </div>
 
-      <div className="bg-[#1d1d20] border border-gray-800 rounded-2xl p-6 space-y-4">
+      <div className="admin-surface rounded-2xl p-6 space-y-4">
         <h2 className="text-lg font-bold flex items-center gap-2">
           <Upload size={18} className="text-primary" /> Bulk Import Modules (CSV)
         </h2>
@@ -513,7 +520,8 @@ const AcademyProgramDetail = () => {
             type="file"
             accept=".csv"
             onChange={(event) => handleModuleFileChange(event.target.files?.[0])}
-            className="text-sm text-gray-400"
+            aria-label="Module CSV file"
+            className="text-sm text-slate-500 dark:text-gray-400"
           />
           <button
             onClick={handleImportModules}
@@ -523,7 +531,7 @@ const AcademyProgramDetail = () => {
           </button>
           <button
             onClick={downloadModuleTemplate}
-            className="border border-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm"
+            className="admin-button-secondary px-4 py-2 rounded-lg text-sm"
           >
             Download Template
           </button>
@@ -536,14 +544,14 @@ const AcademyProgramDetail = () => {
           </div>
         )}
         {modulePreviewHeaders.length > 0 && (
-          <div className="bg-black/30 border border-gray-800 rounded-lg p-3 text-xs text-gray-300">
-            <div className="font-bold text-gray-400 mb-2">Preview</div>
+          <div className="admin-surface-muted rounded-lg p-3 text-xs text-slate-700 dark:text-gray-300">
+            <div className="font-bold text-slate-500 dark:text-gray-400 mb-2">Preview</div>
             <div className="overflow-x-auto">
               <table className="min-w-full text-xs">
                 <thead>
                   <tr>
                     {modulePreviewHeaders.map((header) => (
-                      <th key={header} className="text-left px-2 py-1 text-gray-400">
+                      <th key={header} className="text-left px-2 py-1 text-slate-500 dark:text-gray-400">
                         {header}
                       </th>
                     ))}
@@ -568,19 +576,19 @@ const AcademyProgramDetail = () => {
 
       <div className="space-y-6">
         {program.modules?.map((module: any) => (
-          <div key={module.id} className="bg-[#151518] border border-gray-800 rounded-2xl p-6 space-y-6">
+          <div key={module.id} className="admin-surface-muted rounded-2xl p-6 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               <div>
                 <h3 className="text-lg font-bold">{module.title}</h3>
-                <p className="text-xs text-gray-500 flex items-center gap-1">
+                <p className="text-xs text-slate-500 dark:text-gray-500 flex items-center gap-1">
                   <CalendarDays size={14} />
                   Unlocks {module.unlockDate ? new Date(module.unlockDate).toLocaleDateString('en-NG') : 'Anytime'}
                 </p>
               </div>
             </div>
 
-            <div className="bg-black/20 border border-gray-800 rounded-xl p-4 space-y-3">
-              <h4 className="text-xs font-bold text-gray-400 uppercase">Edit Module</h4>
+            <div className="admin-surface rounded-xl p-4 space-y-3">
+              <h4 className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase">Edit Module</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <input
                   value={moduleEdits[module.id]?.title ?? module.title}
@@ -590,7 +598,8 @@ const AcademyProgramDetail = () => {
                       [module.id]: { ...prev[module.id], title: event.target.value },
                     }))
                   }
-                  className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white"
+                  aria-label={`Module title for ${module.title}`}
+                  className="admin-input px-3 py-2 text-xs"
                   placeholder="Module title"
                 />
                 <input
@@ -602,7 +611,8 @@ const AcademyProgramDetail = () => {
                       [module.id]: { ...prev[module.id], order: event.target.value },
                     }))
                   }
-                  className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white"
+                  aria-label={`Module order for ${module.title}`}
+                  className="admin-input px-3 py-2 text-xs"
                   placeholder="Order"
                 />
                 <input
@@ -617,7 +627,8 @@ const AcademyProgramDetail = () => {
                       [module.id]: { ...prev[module.id], unlockDate: event.target.value },
                     }))
                   }
-                  className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white"
+                  aria-label={`Module unlock date for ${module.title}`}
+                  className="admin-input px-3 py-2 text-xs"
                 />
               </div>
               <button
@@ -633,7 +644,7 @@ const AcademyProgramDetail = () => {
                 <h4 className="text-sm font-bold text-primary">Lessons</h4>
                 {module.lessons?.length ? (
                   module.lessons.map((lesson: any) => (
-                    <div key={lesson.id} className="bg-black/20 border border-gray-800 rounded-lg p-3">
+                    <div key={lesson.id} className="admin-surface rounded-lg p-3">
                       <div className="space-y-2">
                         <input
                           value={lessonEdits[lesson.id]?.title ?? lesson.title}
@@ -643,7 +654,8 @@ const AcademyProgramDetail = () => {
                               [lesson.id]: { ...prev[lesson.id], title: event.target.value },
                             }))
                           }
-                          className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white w-full"
+                          aria-label={`Lesson title for ${lesson.title}`}
+                          className="admin-input px-3 py-2 text-xs w-full"
                         />
                         <div className="grid grid-cols-2 gap-2">
                           <input
@@ -654,7 +666,8 @@ const AcademyProgramDetail = () => {
                                 [lesson.id]: { ...prev[lesson.id], contentType: event.target.value },
                               }))
                             }
-                            className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white"
+                            aria-label={`Content type for ${lesson.title}`}
+                            className="admin-input px-3 py-2 text-xs"
                           />
                           <input
                             type="number"
@@ -665,7 +678,8 @@ const AcademyProgramDetail = () => {
                                 [lesson.id]: { ...prev[lesson.id], duration: event.target.value },
                               }))
                             }
-                            className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white"
+                            aria-label={`Duration for ${lesson.title}`}
+                            className="admin-input px-3 py-2 text-xs"
                           />
                         </div>
                         <input
@@ -676,7 +690,8 @@ const AcademyProgramDetail = () => {
                               [lesson.id]: { ...prev[lesson.id], videoUrl: event.target.value },
                             }))
                           }
-                          className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white w-full"
+                          aria-label={`Video URL for ${lesson.title}`}
+                          className="admin-input px-3 py-2 text-xs w-full"
                           placeholder="Video URL"
                         />
                         <input
@@ -688,10 +703,11 @@ const AcademyProgramDetail = () => {
                               handleUploadLessonVideo(file, module.id, lesson.id);
                             }
                           }}
-                          className="text-xs text-gray-400"
+                          aria-label={`Upload video for ${lesson.title}`}
+                          className="text-xs text-slate-500 dark:text-gray-400"
                         />
                         {uploadingLessonId === lesson.id && (
-                          <p className="text-xs text-gray-500">Uploading video...</p>
+                          <p className="text-xs text-slate-500 dark:text-gray-500">Uploading video...</p>
                         )}
                         <textarea
                           value={lessonEdits[lesson.id]?.content ?? lesson.content ?? ''}
@@ -701,7 +717,8 @@ const AcademyProgramDetail = () => {
                               [lesson.id]: { ...prev[lesson.id], content: event.target.value },
                             }))
                           }
-                          className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white w-full min-h-[70px]"
+                          aria-label={`Lesson content for ${lesson.title}`}
+                          className="admin-input px-3 py-2 text-xs w-full min-h-[70px]"
                         />
                         <button
                           onClick={() => handleUpdateLesson(lesson.id)}
@@ -713,10 +730,10 @@ const AcademyProgramDetail = () => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-gray-500">No lessons yet.</p>
+                  <p className="text-xs text-slate-500 dark:text-gray-500">No lessons yet.</p>
                 )}
-                <div className="bg-black/30 border border-gray-800 rounded-lg p-3 space-y-2">
-                  <h5 className="text-xs font-bold text-gray-400">Bulk Import Lessons (CSV)</h5>
+                <div className="admin-surface-muted rounded-lg p-3 space-y-2">
+                  <h5 className="text-xs font-bold text-slate-500 dark:text-gray-400">Bulk Import Lessons (CSV)</h5>
                   <div className="flex flex-col md:flex-row md:items-center gap-3">
                     <input
                       type="file"
@@ -724,7 +741,8 @@ const AcademyProgramDetail = () => {
                       onChange={(event) =>
                         handleLessonFileChange(module.id, event.target.files?.[0])
                       }
-                      className="text-xs text-gray-400"
+                      aria-label={`Lesson CSV file for ${module.title}`}
+                      className="text-xs text-slate-500 dark:text-gray-400"
                     />
                     <button
                       onClick={() => handleImportLessons(module.id)}
@@ -734,7 +752,7 @@ const AcademyProgramDetail = () => {
                     </button>
                     <button
                       onClick={downloadLessonTemplate}
-                      className="border border-gray-700 text-gray-300 px-3 py-2 rounded-lg text-xs"
+                      className="admin-button-secondary px-3 py-2 rounded-lg text-xs"
                     >
                       Download Template
                     </button>
@@ -747,14 +765,14 @@ const AcademyProgramDetail = () => {
                     </div>
                   )}
                   {lessonPreviewHeaders[module.id]?.length > 0 && (
-                    <div className="bg-black/40 border border-gray-800 rounded-lg p-2 text-[10px] text-gray-300">
-                      <div className="font-bold text-gray-400 mb-1">Preview</div>
+                    <div className="admin-surface rounded-lg p-2 text-[10px] text-slate-700 dark:text-gray-300">
+                      <div className="font-bold text-slate-500 dark:text-gray-400 mb-1">Preview</div>
                       <div className="overflow-x-auto">
                         <table className="min-w-full text-[10px]">
                           <thead>
                             <tr>
                               {lessonPreviewHeaders[module.id].map((header) => (
-                                <th key={header} className="text-left px-2 py-1 text-gray-400">
+                                <th key={header} className="text-left px-2 py-1 text-slate-500 dark:text-gray-400">
                                   {header}
                                 </th>
                               ))}
@@ -776,8 +794,8 @@ const AcademyProgramDetail = () => {
                     </div>
                   )}
                 </div>
-                <div className="bg-black/30 border border-gray-800 rounded-lg p-3 space-y-2">
-                  <h5 className="text-xs font-bold text-gray-400">Add Lesson</h5>
+                <div className="admin-surface-muted rounded-lg p-3 space-y-2">
+                  <h5 className="text-xs font-bold text-slate-500 dark:text-gray-400">Add Lesson</h5>
                   <input
                     placeholder="Lesson title"
                     value={lessonForms[module.id]?.title || ''}
@@ -787,7 +805,8 @@ const AcademyProgramDetail = () => {
                         [module.id]: { ...prev[module.id], title: event.target.value },
                       }))
                     }
-                    className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white w-full"
+                    aria-label={`New lesson title for ${module.title}`}
+                    className="admin-input px-3 py-2 text-xs w-full"
                   />
                   <div className="grid grid-cols-2 gap-2">
                     <input
@@ -799,7 +818,8 @@ const AcademyProgramDetail = () => {
                           [module.id]: { ...prev[module.id], contentType: event.target.value },
                         }))
                       }
-                      className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white"
+                      aria-label={`New lesson content type for ${module.title}`}
+                      className="admin-input px-3 py-2 text-xs"
                     />
                     <input
                       type="number"
@@ -811,7 +831,8 @@ const AcademyProgramDetail = () => {
                           [module.id]: { ...prev[module.id], duration: event.target.value },
                         }))
                       }
-                      className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white"
+                      aria-label={`New lesson duration for ${module.title}`}
+                      className="admin-input px-3 py-2 text-xs"
                     />
                   </div>
                   <input
@@ -823,7 +844,8 @@ const AcademyProgramDetail = () => {
                         [module.id]: { ...prev[module.id], videoUrl: event.target.value },
                       }))
                     }
-                    className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white w-full"
+                    aria-label={`New lesson video URL for ${module.title}`}
+                    className="admin-input px-3 py-2 text-xs w-full"
                   />
                   <input
                     type="file"
@@ -834,10 +856,11 @@ const AcademyProgramDetail = () => {
                         handleUploadLessonVideo(file, module.id);
                       }
                     }}
-                    className="text-xs text-gray-400"
+                    aria-label={`Upload new lesson video for ${module.title}`}
+                    className="text-xs text-slate-500 dark:text-gray-400"
                   />
                   {uploadingModuleId === module.id && (
-                    <p className="text-xs text-gray-500">Uploading video...</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-500">Uploading video...</p>
                   )}
                   <textarea
                     placeholder="Lesson content (HTML allowed)"
@@ -848,7 +871,8 @@ const AcademyProgramDetail = () => {
                         [module.id]: { ...prev[module.id], content: event.target.value },
                       }))
                     }
-                    className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white w-full min-h-[80px]"
+                    aria-label={`New lesson content for ${module.title}`}
+                    className="admin-input px-3 py-2 text-xs w-full min-h-[80px]"
                   />
                   <button
                     onClick={() => handleCreateLesson(module.id)}
@@ -863,7 +887,7 @@ const AcademyProgramDetail = () => {
                 <h4 className="text-sm font-bold text-primary">Tasks</h4>
                 {module.tasks?.length ? (
                   module.tasks.map((task: any) => (
-                    <div key={task.id} className="bg-black/20 border border-gray-800 rounded-lg p-3">
+                    <div key={task.id} className="admin-surface rounded-lg p-3">
                       <div className="space-y-2">
                         <input
                           value={taskEdits[task.id]?.title ?? task.title}
@@ -873,7 +897,8 @@ const AcademyProgramDetail = () => {
                               [task.id]: { ...prev[task.id], title: event.target.value },
                             }))
                           }
-                          className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white w-full"
+                          aria-label={`Task title for ${task.title}`}
+                          className="admin-input px-3 py-2 text-xs w-full"
                         />
                         <textarea
                           value={taskEdits[task.id]?.description ?? task.description ?? ''}
@@ -883,7 +908,8 @@ const AcademyProgramDetail = () => {
                               [task.id]: { ...prev[task.id], description: event.target.value },
                             }))
                           }
-                          className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white w-full min-h-[60px]"
+                          aria-label={`Task description for ${task.title}`}
+                          className="admin-input px-3 py-2 text-xs w-full min-h-[60px]"
                         />
                         <input
                           type="date"
@@ -897,7 +923,8 @@ const AcademyProgramDetail = () => {
                               [task.id]: { ...prev[task.id], dueDate: event.target.value },
                             }))
                           }
-                          className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white w-full"
+                          aria-label={`Task due date for ${task.title}`}
+                          className="admin-input px-3 py-2 text-xs w-full"
                         />
                         <button
                           onClick={() => handleUpdateTask(task.id)}
@@ -909,10 +936,10 @@ const AcademyProgramDetail = () => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-gray-500">No tasks yet.</p>
+                  <p className="text-xs text-slate-500 dark:text-gray-500">No tasks yet.</p>
                 )}
-                <div className="bg-black/30 border border-gray-800 rounded-lg p-3 space-y-2">
-                  <h5 className="text-xs font-bold text-gray-400">Bulk Import Tasks (CSV)</h5>
+                <div className="admin-surface-muted rounded-lg p-3 space-y-2">
+                  <h5 className="text-xs font-bold text-slate-500 dark:text-gray-400">Bulk Import Tasks (CSV)</h5>
                   <div className="flex flex-col md:flex-row md:items-center gap-3">
                     <input
                       type="file"
@@ -920,7 +947,8 @@ const AcademyProgramDetail = () => {
                       onChange={(event) =>
                         handleTaskFileChange(module.id, event.target.files?.[0])
                       }
-                      className="text-xs text-gray-400"
+                      aria-label={`Task CSV file for ${module.title}`}
+                      className="text-xs text-slate-500 dark:text-gray-400"
                     />
                     <button
                       onClick={() => handleImportTasks(module.id)}
@@ -930,7 +958,7 @@ const AcademyProgramDetail = () => {
                     </button>
                     <button
                       onClick={downloadTaskTemplate}
-                      className="border border-gray-700 text-gray-300 px-3 py-2 rounded-lg text-xs"
+                      className="admin-button-secondary px-3 py-2 rounded-lg text-xs"
                     >
                       Download Template
                     </button>
@@ -943,14 +971,14 @@ const AcademyProgramDetail = () => {
                     </div>
                   )}
                   {taskPreviewHeaders[module.id]?.length > 0 && (
-                    <div className="bg-black/40 border border-gray-800 rounded-lg p-2 text-[10px] text-gray-300">
-                      <div className="font-bold text-gray-400 mb-1">Preview</div>
+                    <div className="admin-surface rounded-lg p-2 text-[10px] text-slate-700 dark:text-gray-300">
+                      <div className="font-bold text-slate-500 dark:text-gray-400 mb-1">Preview</div>
                       <div className="overflow-x-auto">
                         <table className="min-w-full text-[10px]">
                           <thead>
                             <tr>
                               {taskPreviewHeaders[module.id].map((header) => (
-                                <th key={header} className="text-left px-2 py-1 text-gray-400">
+                                <th key={header} className="text-left px-2 py-1 text-slate-500 dark:text-gray-400">
                                   {header}
                                 </th>
                               ))}
@@ -972,8 +1000,8 @@ const AcademyProgramDetail = () => {
                     </div>
                   )}
                 </div>
-                <div className="bg-black/30 border border-gray-800 rounded-lg p-3 space-y-2">
-                  <h5 className="text-xs font-bold text-gray-400">Add Task</h5>
+                <div className="admin-surface-muted rounded-lg p-3 space-y-2">
+                  <h5 className="text-xs font-bold text-slate-500 dark:text-gray-400">Add Task</h5>
                   <input
                     placeholder="Task title"
                     value={taskForms[module.id]?.title || ''}
@@ -983,7 +1011,8 @@ const AcademyProgramDetail = () => {
                         [module.id]: { ...prev[module.id], title: event.target.value },
                       }))
                     }
-                    className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white w-full"
+                    aria-label={`New task title for ${module.title}`}
+                    className="admin-input px-3 py-2 text-xs w-full"
                   />
                   <textarea
                     placeholder="Task description"
@@ -994,7 +1023,8 @@ const AcademyProgramDetail = () => {
                         [module.id]: { ...prev[module.id], description: event.target.value },
                       }))
                     }
-                    className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white w-full min-h-[60px]"
+                    aria-label={`New task description for ${module.title}`}
+                    className="admin-input px-3 py-2 text-xs w-full min-h-[60px]"
                   />
                   <input
                     type="date"
@@ -1005,7 +1035,8 @@ const AcademyProgramDetail = () => {
                         [module.id]: { ...prev[module.id], dueDate: event.target.value },
                       }))
                     }
-                    className="bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white w-full"
+                    aria-label={`New task due date for ${module.title}`}
+                    className="admin-input px-3 py-2 text-xs w-full"
                   />
                   <button
                     onClick={() => handleCreateTask(module.id)}
@@ -1035,3 +1066,4 @@ const AcademyProgramDetail = () => {
 };
 
 export default AcademyProgramDetail;
+

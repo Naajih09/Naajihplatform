@@ -124,20 +124,20 @@ const AcademyEnrollments = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black flex items-center gap-2">
+          <h1 className="text-2xl font-black flex items-center gap-2 text-slate-900 dark:text-white">
             <Users size={20} className="text-primary" />
             Enrollment Requests
           </h1>
-          <p className="text-gray-400 text-sm">
+          <p className="text-slate-500 dark:text-gray-400 text-sm">
             Approve or reject cohort enrollment requests.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Filter size={16} className="text-gray-400" />
+          <Filter size={16} className="text-slate-500 dark:text-gray-400" />
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
-            className="bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+            className="admin-input px-3 py-2 text-sm"
           >
             {statusOptions.map((status) => (
               <option key={status} value={status}>
@@ -148,7 +148,7 @@ const AcademyEnrollments = () => {
         </div>
       </div>
 
-      <div className="bg-[#1d1d20] border border-gray-800 rounded-2xl p-6 space-y-3">
+      <div className="admin-surface rounded-2xl p-6 space-y-3">
         <h2 className="text-lg font-bold flex items-center gap-2">
           <Upload size={18} className="text-primary" /> Bulk Import Enrollments (CSV)
         </h2>
@@ -157,7 +157,7 @@ const AcademyEnrollments = () => {
             type="file"
             accept=".csv"
             onChange={(event) => handleFileChange(event.target.files?.[0])}
-            className="text-sm text-gray-400"
+            className="text-sm text-slate-500 dark:text-gray-400"
           />
           <button
             onClick={handleImportEnrollments}
@@ -167,20 +167,20 @@ const AcademyEnrollments = () => {
           </button>
           <button
             onClick={downloadEnrollmentTemplate}
-            className="border border-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm"
+            className="admin-button-secondary px-4 py-2 rounded-lg text-sm"
           >
             Download Template
           </button>
         </div>
         {previewHeaders.length > 0 && (
-          <div className="bg-black/30 border border-gray-800 rounded-lg p-3 text-xs text-gray-300">
-            <div className="font-bold text-gray-400 mb-2">Preview</div>
+          <div className="admin-surface-muted rounded-lg p-3 text-xs text-slate-700 dark:text-gray-300">
+            <div className="font-bold text-slate-500 dark:text-gray-400 mb-2">Preview</div>
             <div className="overflow-x-auto">
               <table className="min-w-full text-xs">
                 <thead>
                   <tr>
                     {previewHeaders.map((header) => (
-                      <th key={header} className="text-left px-2 py-1 text-gray-400">
+                      <th key={header} className="text-left px-2 py-1 text-slate-500 dark:text-gray-400">
                         {header}
                       </th>
                     ))}
@@ -211,9 +211,9 @@ const AcademyEnrollments = () => {
       </div>
 
       {loading ? (
-        <div className="text-gray-400">Loading enrollments...</div>
+        <div className="text-slate-500 dark:text-gray-400">Loading enrollments...</div>
       ) : enrollments.length === 0 ? (
-        <div className="bg-[#1d1d20] border border-gray-800 rounded-2xl p-6 text-gray-400">
+        <div className="admin-surface rounded-2xl p-6 text-slate-500 dark:text-gray-400">
           No enrollment requests found.
         </div>
       ) : (
@@ -227,20 +227,20 @@ const AcademyEnrollments = () => {
             return (
               <div
                 key={enrollment.id}
-                className="bg-[#151518] border border-gray-800 rounded-2xl p-6 space-y-3"
+                className="admin-surface-muted rounded-2xl p-6 space-y-3"
               >
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                   <div>
-                    <p className="text-sm font-bold text-white">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
                       {enrollment.program?.title}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-slate-500 dark:text-gray-400">
                       {enrollment.program?.cohort || 'No cohort set'}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-slate-500 dark:text-gray-400">
                       Requested by {userName || enrollment.user?.email}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-slate-500 dark:text-gray-500">
                       {new Date(enrollment.enrolledAt).toLocaleString('en-NG')}
                     </p>
                   </div>

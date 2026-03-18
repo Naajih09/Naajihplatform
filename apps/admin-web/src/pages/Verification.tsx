@@ -101,23 +101,23 @@ const Verification = () => {
     <div className="max-w-6xl mx-auto pb-20 relative">
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-black text-white">KYC Verification Queue</h1>
-          <p className="text-sm text-gray-500 mt-1">Review pending, approved, and rejected verification requests.</p>
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white">KYC Verification Queue</h1>
+          <p className="text-sm text-slate-500 mt-1 dark:text-gray-500">Review pending, approved, and rejected verification requests.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500" size={16} />
             <input
               value={searchQuery}
               onChange={(e) => { setCurrentPage(1); setSearchQuery(e.target.value); }}
               placeholder="Search email or name"
-              className="w-full md:w-64 pl-9 pr-4 py-2 bg-[#1d1d20] border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-primary"
+              className="admin-input w-full md:w-64 pl-9 pr-4 py-2 text-sm"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => { setCurrentPage(1); setStatusFilter(e.target.value); }}
-            className="bg-[#1d1d20] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none"
+            className="admin-input px-3 py-2 text-sm"
             aria-label="Filter by status"
             title="Filter by status"
           >
@@ -128,7 +128,7 @@ const Verification = () => {
           <button
             type="button"
             onClick={() => exportCsv(requests)}
-            className="px-3 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-medium transition-colors"
+            className="px-3 py-2 admin-button-secondary rounded-lg text-sm font-medium transition-colors"
           >
             Export CSV
           </button>
@@ -144,15 +144,15 @@ const Verification = () => {
       )}
 
       {loading ? (
-        <div className="text-white text-center py-20"><Loader2 className="animate-spin inline mr-2"/> Loading queue...</div>
+        <div className="text-slate-500 dark:text-gray-400 text-center py-20"><Loader2 className="animate-spin inline mr-2"/> Loading queue...</div>
       ) : requests.length === 0 ? (
-        <div className="p-10 bg-[#1d1d20] rounded-xl border border-white/5 text-center text-gray-500">
+        <div className="p-10 admin-surface text-center text-slate-500 dark:text-gray-500">
            No pending verifications. Good job!
         </div>
       ) : (
-        <div className="bg-[#1d1d20] border border-white/5 rounded-xl overflow-hidden flex flex-col min-h-[500px]">
+        <div className="admin-surface overflow-hidden flex flex-col min-h-[500px]">
           <table className="w-full text-left flex-grow">
-            <thead className="bg-white/5 text-gray-400 text-xs uppercase font-bold">
+            <thead className="bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-gray-400 text-xs uppercase font-bold">
               <tr>
                 <th className="px-6 py-4">User</th>
                 <th className="px-6 py-4">Role</th>
@@ -160,16 +160,16 @@ const Verification = () => {
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-gray-300 text-sm">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-700 dark:text-gray-300 text-sm">
               {requests.map((req) => {
                 const profile = req.user?.entrepreneurProfile || req.user?.investorProfile || {};
                 const fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || req.user?.email;
 
                 return (
-                  <tr key={req.id} className="hover:bg-white/5 transition-colors">
+                  <tr key={req.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="font-bold text-white">{fullName}</div>
-                      <div className="text-xs text-gray-500">{req.user?.email}</div>
+                      <div className="font-bold text-slate-900 dark:text-white">{fullName}</div>
+                      <div className="text-xs text-slate-500 dark:text-gray-500">{req.user?.email}</div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="px-2 py-1 bg-blue-500/10 text-blue-400 text-xs rounded font-bold">{req.user?.role}</span>
@@ -198,7 +198,7 @@ const Verification = () => {
 
           {/* Pagination */}
           {totalItems > 0 && (
-            <div className="p-4 border-t border-white/5 flex items-center justify-between text-sm text-gray-400">
+            <div className="p-4 border-t border-slate-200 dark:border-white/5 flex items-center justify-between text-sm text-slate-500 dark:text-gray-400">
               <span>
                 Showing {(safePage - 1) * pageSize + 1}-{Math.min(safePage * pageSize, totalItems)} of {totalItems}
               </span>
@@ -206,7 +206,7 @@ const Verification = () => {
                 <select
                   value={pageSize}
                   onChange={(e) => { setCurrentPage(1); setPageSize(Number(e.target.value)); }}
-                  className="bg-[#111113] border border-white/10 rounded px-2 py-1 text-xs text-white"
+                  className="admin-input px-2 py-1 text-xs"
                   aria-label="Items per page"
                   title="Items per page"
                 >
@@ -218,7 +218,7 @@ const Verification = () => {
                   type="button"
                   disabled={safePage === 1} 
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  className="p-1 rounded hover:bg-white/10 disabled:opacity-30"
+                  className="p-1 rounded hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-30"
                   title="Previous page"
                   aria-label="Previous page"
                 >
@@ -229,7 +229,7 @@ const Verification = () => {
                   type="button"
                   disabled={safePage === totalPages} 
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  className="p-1 rounded hover:bg-white/10 disabled:opacity-30"
+                  className="p-1 rounded hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-30"
                   title="Next page"
                   aria-label="Next page"
                 >
@@ -247,11 +247,11 @@ const Verification = () => {
       {/* Rejection Modal */}
       {rejectModal.show && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1d1d20] border border-white/10 rounded-xl w-full max-w-md p-6">
-            <h3 className="text-xl font-bold text-white mb-4">Reject Verification</h3>
-            <p className="text-sm text-gray-400 mb-4">Please provide a reason for rejection. This will be sent to the user.</p>
+          <div className="bg-white border border-slate-200 rounded-xl w-full max-w-md p-6 dark:bg-[#1d1d20] dark:border-white/10">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Reject Verification</h3>
+            <p className="text-sm text-slate-500 dark:text-gray-400 mb-4">Please provide a reason for rejection. This will be sent to the user.</p>
             <textarea
-              className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-primary resize-none"
+              className="admin-input w-full p-3 resize-none"
               rows={4}
               placeholder="e.g., ID document is blurry, mismatch in name..."
               value={rejectionReason}
@@ -260,7 +260,7 @@ const Verification = () => {
             <div className="flex justify-end gap-3 mt-6">
               <button 
                 onClick={() => { setRejectModal({ show: false, id: null }); setRejectionReason(""); }}
-                className="px-4 py-2 rounded text-gray-400 hover:bg-white/5"
+                className="px-4 py-2 rounded text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5"
               >
                 Cancel
               </button>

@@ -69,7 +69,7 @@ const CourseViewer = () => {
     }
   };
 
-  if (loading) return <div className="text-center py-20 text-gray-500">Loading lesson...</div>;
+  if (loading) return <div className="text-center py-20 text-slate-500 dark:text-gray-500">Loading lesson...</div>;
   if (!lesson) return <div className="text-center py-20 text-red-500">Lesson not found</div>;
 
   const isLockedContent = !lesson.videoUrl && !lesson.content;
@@ -80,10 +80,10 @@ const CourseViewer = () => {
             <ChevronLeft size={16}/> Back to Curriculum
         </button>
 
-        <div className="bg-[#1d1d20] border border-gray-800 rounded-3xl overflow-hidden shadow-2xl">
+        <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-2xl">
             {/* Media Area */}
             {String(lesson.contentType || '').toUpperCase() === 'VIDEO' ? (
-                <div className="aspect-video bg-black relative flex items-center justify-center">
+                <div className="aspect-video bg-slate-950 relative flex items-center justify-center">
                     {lesson.videoUrl ? (
                          <iframe 
                          src={lesson.videoUrl} 
@@ -93,13 +93,13 @@ const CourseViewer = () => {
                        ></iframe>
                     ) : (
                         <div className="text-center">
-                            <PlayCircle size={64} className="text-gray-800 mb-4 mx-auto"/>
-                            <p className="text-gray-500">Video content is restricted to enrollees.</p>
+                            <PlayCircle size={64} className="text-slate-700 dark:text-gray-800 mb-4 mx-auto"/>
+                            <p className="text-slate-500 dark:text-gray-500">Video content is restricted to enrollees.</p>
                         </div>
                     )}
                 </div>
             ) : (
-                <div className="p-12 border-b border-gray-800 bg-black/20 flex items-center justify-center">
+                <div className="p-12 border-b border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-black/20 flex items-center justify-center">
                     <FileText size={80} className="text-primary opacity-20"/>
                 </div>
             )}
@@ -111,12 +111,12 @@ const CourseViewer = () => {
                             <span className="bg-primary/20 text-primary text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-widest">
                                 {String(lesson.contentType || 'Lesson').toUpperCase()}
                             </span>
-                            <span className="text-slate-500 text-xs flex items-center gap-1 font-bold">
+                            <span className="text-slate-500 dark:text-gray-500 text-xs flex items-center gap-1 font-bold">
                                 <Clock size={12}/> {lesson.duration || 5} Mins
                             </span>
                         </div>
-                        <h1 className="text-3xl font-black text-white">{lesson.title}</h1>
-                        <div className="mt-8 prose prose-invert max-w-none text-gray-400 leading-relaxed" 
+                        <h1 className="text-3xl font-black text-slate-900 dark:text-white">{lesson.title}</h1>
+                        <div className="mt-8 prose dark:prose-invert max-w-none text-slate-600 dark:text-gray-400 leading-relaxed" 
                              dangerouslySetInnerHTML={{
                                __html: isLockedContent
                                  ? 'This lesson is locked. Join the program to access the content.'

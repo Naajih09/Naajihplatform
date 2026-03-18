@@ -2,6 +2,7 @@ import { MessageSquare, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Button from '../../components/Button';
 import { showToast } from '../../lib/utils';
+import { Navigate } from 'react-router-dom';
 
 const Community = () => {
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
@@ -15,6 +16,7 @@ const Community = () => {
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = user?.role === 'ADMIN';
+  const isAspirant = user?.role === 'ASPIRING_BUSINESS_OWNER';
 
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -330,6 +332,10 @@ const Community = () => {
       showToast('Unable to resolve report.', 'error');
     }
   };
+
+  if (!isAspirant && !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-20">

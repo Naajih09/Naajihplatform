@@ -63,20 +63,21 @@ const AcademySubmissions = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black flex items-center gap-2">
+          <h1 className="text-2xl font-black flex items-center gap-2 text-slate-900 dark:text-white">
             <ClipboardCheck size={20} className="text-primary" />
             Assignment Review
           </h1>
-          <p className="text-gray-400 text-sm">
+          <p className="text-slate-500 dark:text-gray-400 text-sm">
             Review and approve learner submissions.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Filter size={16} className="text-gray-400" />
+          <Filter size={16} className="text-slate-500 dark:text-gray-400" />
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
-            className="bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+            aria-label="Filter submissions by status"
+            className="admin-input px-3 py-2 text-sm"
           >
             {statusOptions.map((status) => (
               <option key={status} value={status}>
@@ -88,9 +89,9 @@ const AcademySubmissions = () => {
       </div>
 
       {loading ? (
-        <div className="text-gray-400">Loading submissions...</div>
+        <div className="text-slate-500 dark:text-gray-400">Loading submissions...</div>
       ) : submissions.length === 0 ? (
-        <div className="bg-[#1d1d20] border border-gray-800 rounded-2xl p-6 text-gray-400">
+        <div className="admin-surface rounded-2xl p-6 text-slate-500 dark:text-gray-400">
           No submissions found.
         </div>
       ) : (
@@ -107,20 +108,20 @@ const AcademySubmissions = () => {
             return (
               <div
                 key={submission.id}
-                className="bg-[#151518] border border-gray-800 rounded-2xl p-6 space-y-4"
+                className="admin-surface-muted rounded-2xl p-6 space-y-4"
               >
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                   <div className="space-y-2">
-                    <p className="text-sm font-bold text-white">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
                       {submission.task?.title}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-slate-500 dark:text-gray-400">
                       {programTitle} · {moduleTitle}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-slate-500 dark:text-gray-400">
                       Submitted by {userName || submission.user?.email}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-slate-500 dark:text-gray-500">
                       {new Date(submission.submittedAt).toLocaleString('en-NG')}
                     </p>
                   </div>
@@ -132,7 +133,7 @@ const AcademySubmissions = () => {
                         ? 'bg-red-500/20 text-red-400'
                         : submission.status === 'SUBMITTED'
                         ? 'bg-yellow-500/20 text-yellow-400'
-                        : 'bg-white/10 text-gray-400'
+                        : 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-gray-400'
                     }`}
                   >
                     {submission.status}
@@ -159,7 +160,8 @@ const AcademySubmissions = () => {
                       [submission.id]: event.target.value,
                     }))
                   }
-                  className="bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white w-full min-h-[80px]"
+                  aria-label={`Feedback for ${submission.task?.title || 'submission'}`}
+                  className="admin-input px-3 py-2 text-xs w-full min-h-[80px]"
                 />
 
                 <div className="flex flex-wrap gap-3">

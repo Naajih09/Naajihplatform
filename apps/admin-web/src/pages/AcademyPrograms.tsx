@@ -123,14 +123,14 @@ const AcademyPrograms = () => {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black">Academy Programs</h1>
-          <p className="text-gray-400">
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white">Academy Programs</h1>
+          <p className="text-slate-500 dark:text-gray-400">
             Create and manage ALX-style learning programs.
           </p>
         </div>
       </div>
 
-      <div className="bg-[#1d1d20] border border-gray-800 rounded-2xl p-6 space-y-4">
+      <div className="admin-surface rounded-2xl p-6 space-y-4">
         <h2 className="text-lg font-bold flex items-center gap-2">
           <PlusCircle size={18} className="text-primary" /> Create Program
         </h2>
@@ -140,26 +140,29 @@ const AcademyPrograms = () => {
             onChange={(event) =>
               setForm((prev) => ({ ...prev, title: event.target.value }))
             }
+            aria-label="Program title"
             placeholder="Program title"
-            className="bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+            className="admin-input px-3 py-2 text-sm"
           />
           <input
             value={form.cohort}
             onChange={(event) =>
               setForm((prev) => ({ ...prev, cohort: event.target.value }))
             }
+            aria-label="Program cohort"
             placeholder="Cohort (e.g. Cohort 2 - Apr 2026)"
-            className="bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+            className="admin-input px-3 py-2 text-sm"
           />
           <input
             value={form.description}
             onChange={(event) =>
               setForm((prev) => ({ ...prev, description: event.target.value }))
             }
+            aria-label="Program description"
             placeholder="Short description"
-            className="bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+            className="admin-input px-3 py-2 text-sm"
           />
-          <label className="flex items-center gap-2 text-sm text-gray-300">
+          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-gray-300">
             <input
               type="checkbox"
               checked={form.isPremium}
@@ -179,7 +182,7 @@ const AcademyPrograms = () => {
         </button>
       </div>
 
-      <div className="bg-[#1d1d20] border border-gray-800 rounded-2xl p-6 space-y-4">
+      <div className="admin-surface rounded-2xl p-6 space-y-4">
         <h2 className="text-lg font-bold flex items-center gap-2">
           <Upload size={18} className="text-primary" /> Bulk Import Programs (CSV)
         </h2>
@@ -188,7 +191,8 @@ const AcademyPrograms = () => {
             type="file"
             accept=".csv"
             onChange={(event) => handleProgramFileChange(event.target.files?.[0])}
-            className="text-sm text-gray-400"
+            aria-label="Program CSV file"
+            className="text-sm text-slate-500 dark:text-gray-400"
           />
           <button
             onClick={handleImportPrograms}
@@ -198,7 +202,7 @@ const AcademyPrograms = () => {
           </button>
           <button
             onClick={downloadProgramTemplate}
-            className="border border-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm"
+            className="admin-button-secondary px-4 py-2 rounded-lg text-sm"
           >
             Download Template
           </button>
@@ -211,14 +215,14 @@ const AcademyPrograms = () => {
           </div>
         )}
         {programPreviewHeaders.length > 0 && (
-          <div className="bg-black/30 border border-gray-800 rounded-lg p-3 text-xs text-gray-300">
-            <div className="font-bold text-gray-400 mb-2">Preview</div>
+          <div className="admin-surface-muted rounded-lg p-3 text-xs text-slate-700 dark:text-gray-300">
+            <div className="font-bold text-slate-500 dark:text-gray-400 mb-2">Preview</div>
             <div className="overflow-x-auto">
               <table className="min-w-full text-xs">
                 <thead>
                   <tr>
                     {programPreviewHeaders.map((header) => (
-                      <th key={header} className="text-left px-2 py-1 text-gray-400">
+                      <th key={header} className="text-left px-2 py-1 text-slate-500 dark:text-gray-400">
                         {header}
                       </th>
                     ))}
@@ -242,13 +246,13 @@ const AcademyPrograms = () => {
       </div>
 
       {loading ? (
-        <div className="text-gray-400">Loading programs...</div>
+        <div className="text-slate-500 dark:text-gray-400">Loading programs...</div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {programs.map((program) => (
             <div
               key={program.id}
-              className="bg-[#151518] border border-gray-800 rounded-2xl p-6 space-y-4"
+              className="admin-surface-muted rounded-2xl p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -256,11 +260,11 @@ const AcademyPrograms = () => {
                     <BookOpen size={18} className="text-primary" /> {program.title}
                   </h3>
                   <div className="mt-2">
-                    <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${program.isPremium ? 'bg-primary/20 text-primary' : 'bg-white/5 text-gray-300'}`}>
+                    <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${program.isPremium ? 'bg-primary/20 text-primary' : 'bg-slate-200 text-slate-700 dark:bg-white/5 dark:text-gray-300'}`}>
                       {program.isPremium ? 'Premium' : 'Free'}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
                     {program.cohort || 'No cohort set'}
                   </p>
                 </div>
@@ -271,19 +275,19 @@ const AcademyPrograms = () => {
                   Manage
                 </Link>
               </div>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-slate-500 dark:text-gray-400">
                 {program.description || 'No description yet.'}
               </p>
-              <div className="grid grid-cols-3 gap-4 text-xs text-gray-400">
+              <div className="grid grid-cols-3 gap-4 text-xs text-slate-500 dark:text-gray-400">
                 <div>
                   <p className="uppercase">Modules</p>
-                  <p className="text-lg text-white font-bold">
+                  <p className="text-lg text-slate-900 dark:text-white font-bold">
                     {program._count?.modules || 0}
                   </p>
                 </div>
                 <div>
                   <p className="uppercase">Lessons</p>
-                  <p className="text-lg text-white font-bold">
+                  <p className="text-lg text-slate-900 dark:text-white font-bold">
                     {program.modules?.reduce(
                       (total: number, mod: any) =>
                         total + (mod._count?.lessons || 0),
@@ -293,7 +297,7 @@ const AcademyPrograms = () => {
                 </div>
                 <div>
                   <p className="uppercase">Tasks</p>
-                  <p className="text-lg text-white font-bold">
+                  <p className="text-lg text-slate-900 dark:text-white font-bold">
                     {program.modules?.reduce(
                       (total: number, mod: any) => total + (mod._count?.tasks || 0),
                       0,

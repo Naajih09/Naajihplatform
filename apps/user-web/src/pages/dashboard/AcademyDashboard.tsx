@@ -88,7 +88,7 @@ const AcademyDashboard = () => {
       .catch(() => null);
   }, [authToken, user?.email]);
 
-  if (loading) return <div className="text-center py-20 text-gray-500">Loading your curriculum...</div>;
+  if (loading) return <div className="text-center py-20 text-slate-500 dark:text-gray-500">Loading your curriculum...</div>;
   if (!program) return <div className="text-center py-20 text-red-500">Program not found</div>;
 
   const enrollment = program.enrollments?.[0];
@@ -201,10 +201,10 @@ const AcademyDashboard = () => {
   const progressPercent = allLessons.length > 0 ? Math.round((completedLessons.length / allLessons.length) * 100) : 0;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-20 font-sans text-white">
+    <div className="max-w-7xl mx-auto space-y-8 pb-20 font-sans text-slate-900 dark:text-white">
       
       {/* --- TOP: PROGRAM HEADER --- */}
-      <div className="bg-[#1d1d20] border border-gray-800 rounded-2xl p-8 relative overflow-hidden">
+      <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-2xl p-8 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
         
         <div className="relative z-10 flex flex-col md:flex-row justify-between md:items-end gap-6">
@@ -229,34 +229,34 @@ const AcademyDashboard = () => {
                    {enrollmentStatus}
                  </span>
                )}
-               <span className="text-gray-400 text-sm flex items-center gap-1">
+               <span className="text-slate-500 dark:text-gray-400 text-sm flex items-center gap-1">
                  <Clock size={14}/> Ongoing Learning
                </span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black">{program.title}</h1>
-            <p className="text-gray-400 mt-2">{program.description}</p>
+            <p className="text-slate-500 dark:text-gray-400 mt-2">{program.description}</p>
           </div>
 
           <div className="w-full md:w-64">
-            <div className="flex justify-between text-xs font-bold mb-2 uppercase text-gray-500">
+            <div className="flex justify-between text-xs font-bold mb-2 uppercase text-slate-500 dark:text-gray-500">
               <span>Program Progress</span>
               <span className="text-primary">{progressPercent}%</span>
             </div>
-            <div className="h-3 w-full bg-gray-800 rounded-full overflow-hidden">
+            <div className="h-3 w-full bg-slate-200 dark:bg-gray-800 rounded-full overflow-hidden">
               <div className="h-full bg-primary" style={{ width: `${progressPercent}%` }}></div>
             </div>
             <div className="flex justify-between mt-4">
                <div className="text-center">
                   <p className="text-2xl font-bold">{allLessons.length}</p>
-                  <p className="text-[10px] text-gray-500 uppercase">Lessons</p>
+                  <p className="text-[10px] text-slate-500 dark:text-gray-500 uppercase">Lessons</p>
                </div>
                <div className="text-center">
                   <p className="text-2xl font-bold">{completedLessons.length}</p>
-                  <p className="text-[10px] text-gray-500 uppercase">Completed</p>
+                  <p className="text-[10px] text-slate-500 dark:text-gray-500 uppercase">Completed</p>
                </div>
                <div className="text-center">
                   <p className="text-2xl font-bold">{progressPercent === 100 ? 1 : 0}</p>
-                  <p className="text-[10px] text-gray-500 uppercase">Certs</p>
+                  <p className="text-[10px] text-slate-500 dark:text-gray-500 uppercase">Certs</p>
                </div>
             </div>
           </div>
@@ -264,9 +264,9 @@ const AcademyDashboard = () => {
       </div>
 
       {!isEnrolled && (
-        <div className="bg-[#151518] border border-gray-800 rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="bg-slate-50 dark:bg-[#151518] border border-slate-200 dark:border-gray-800 rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h3 className="text-lg font-bold text-white">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
               {isPending
                 ? 'Enrollment pending approval.'
                 : isRejected
@@ -275,7 +275,7 @@ const AcademyDashboard = () => {
                 ? 'Premium subscription required to enroll.'
                 : 'Join this cohort to unlock the lessons.'}
             </h3>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
               {isPending
                 ? 'An admin will review your request shortly.'
                 : isRejected
@@ -321,7 +321,7 @@ const AcademyDashboard = () => {
                  : null;
 
                return (
-               <div key={mod.id} className={`border rounded-xl overflow-hidden transition-all ${mod.id === activeModule ? 'bg-[#151518] border-primary/50' : 'bg-[#1d1d20] border-gray-800'}`}>
+               <div key={mod.id} className={`border rounded-xl overflow-hidden transition-all ${mod.id === activeModule ? 'bg-slate-50 dark:bg-[#151518] border-primary/50' : 'bg-white dark:bg-[#1d1d20] border-slate-200 dark:border-gray-800'}`}>
                   
                   {/* Module Header */}
                   <div
@@ -338,33 +338,33 @@ const AcademyDashboard = () => {
                     }}
                   >
                     <div className="flex items-center gap-4">
-                       <div className={`size-10 rounded-full flex items-center justify-center font-bold text-sm ${mod.id === activeModule ? 'bg-primary text-black' : 'bg-gray-800 text-gray-500'}`}>
+                       <div className={`size-10 rounded-full flex items-center justify-center font-bold text-sm ${mod.id === activeModule ? 'bg-primary text-black' : 'bg-slate-200 dark:bg-gray-800 text-slate-500 dark:text-gray-500'}`}>
                           {mod.order}
                        </div>
                        <div>
-                          <h3 className={`font-bold ${mod.id === activeModule ? 'text-white' : 'text-gray-400'}`}>{mod.title}</h3>
-                          <p className="text-xs text-gray-500">{mod.lessons?.length || 0} Lessons</p>
+                          <h3 className={`font-bold ${mod.id === activeModule ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-gray-400'}`}>{mod.title}</h3>
+                          <p className="text-xs text-slate-500 dark:text-gray-500">{mod.lessons?.length || 0} Lessons</p>
                        </div>
                     </div>
                     {isLocked ? (
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-gray-500">
                         <Lock size={14} />
                         <span>Locked</span>
                       </div>
                     ) : (
-                    <ChevronRight size={20} className={`transform transition-transform ${mod.id === activeModule ? 'rotate-90' : ''} text-gray-500`}/>
+                    <ChevronRight size={20} className={`transform transition-transform ${mod.id === activeModule ? 'rotate-90' : ''} text-slate-500 dark:text-gray-500`}/>
                     )}
                   </div>
 
                   {/* Lessons List (Only if Active) */}
                   {mod.id === activeModule && (
-                    <div className="border-t border-gray-800 bg-black/20">
+                    <div className="border-t border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-black/20">
                        {mod.lessons.map((lesson: any) => {
                          const contentLabel = String(lesson.contentType || '').toUpperCase();
                          return (
                          <div
                            key={lesson.id}
-                           className="p-4 flex items-center justify-between hover:bg-white/5 cursor-pointer transition-colors group"
+                           className="p-4 flex items-center justify-between hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer transition-colors group"
                            onClick={() => {
                              if (!isEnrolled) {
                                showToast('Join the program to access lessons.', 'error');
@@ -384,11 +384,11 @@ const AcademyDashboard = () => {
                                {lesson.progress && lesson.progress.length > 0 ? (
                                  <CheckCircle size={18} className="text-green-500" />
                                ) : (
-                                 <div className="size-4.5 rounded-full border-2 border-gray-600 group-hover:border-primary"></div>
+                                 <div className="size-4.5 rounded-full border-2 border-slate-400 dark:border-gray-600 group-hover:border-primary"></div>
                                )}
-                               <span className={`text-sm ${lesson.progress?.length > 0 ? 'text-gray-500 line-through' : 'text-white font-medium'}`}>{lesson.title}</span>
+                               <span className={`text-sm ${lesson.progress?.length > 0 ? 'text-slate-500 dark:text-gray-500 line-through' : 'text-slate-900 dark:text-white font-medium'}`}>{lesson.title}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">
+                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-gray-500 bg-slate-100 dark:bg-gray-800 px-2 py-1 rounded">
                                {contentLabel === 'VIDEO' ? <PlayCircle size={12}/> : <FileText size={12}/>}
                                {contentLabel || 'LESSON'}
                             </div>
@@ -407,7 +407,7 @@ const AcademyDashboard = () => {
         <div className="space-y-8">
            
            {/* Weekly Tasks */}
-           <div className="bg-[#1d1d20] border border-gray-800 rounded-xl p-6">
+           <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <AlertCircle className="text-yellow-500" size={20}/> Program Tasks
               </h3>
@@ -421,13 +421,13 @@ const AcademyDashboard = () => {
                       : null;
 
                     return (
-                      <div key={task.id} className="bg-black/20 border border-gray-800 rounded-xl p-4 space-y-3">
+                      <div key={task.id} className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-gray-800 rounded-xl p-4 space-y-3">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <h4 className="font-bold text-white text-sm">{task.title}</h4>
-                            <p className="text-xs text-gray-400 mt-1">{task.description}</p>
+                            <h4 className="font-bold text-slate-900 dark:text-white text-sm">{task.title}</h4>
+                            <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">{task.description}</p>
                             {dueLabel && (
-                              <p className="text-[10px] uppercase text-gray-500 mt-2">Due {dueLabel}</p>
+                              <p className="text-[10px] uppercase text-slate-500 dark:text-gray-500 mt-2">Due {dueLabel}</p>
                             )}
                           </div>
                           <span
@@ -438,7 +438,7 @@ const AcademyDashboard = () => {
                                 ? 'bg-red-500/20 text-red-400'
                                 : status === 'SUBMITTED'
                                 ? 'bg-yellow-500/20 text-yellow-400'
-                                : 'bg-white/10 text-gray-400'
+                                : 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-gray-400'
                             }`}
                           >
                             {status}
@@ -452,7 +452,7 @@ const AcademyDashboard = () => {
                             onChange={(event) =>
                               setSubmissionUrls((prev) => ({ ...prev, [task.id]: event.target.value }))
                             }
-                            className="flex-1 bg-black/30 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-primary"
+                            className="flex-1 bg-white dark:bg-black/30 border border-slate-300 dark:border-gray-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-primary"
                           />
                           <Button
                             onClick={() => handleSubmitTask(task.id)}
@@ -463,13 +463,13 @@ const AcademyDashboard = () => {
                           </Button>
                         </div>
                         {latestSubmission?.feedback && (
-                          <p className="text-xs text-gray-400">Feedback: {latestSubmission.feedback}</p>
+                          <p className="text-xs text-slate-500 dark:text-gray-400">Feedback: {latestSubmission.feedback}</p>
                         )}
                       </div>
                     );
                   })
                 ) : (
-                  <div className="p-8 text-center text-xs text-gray-500">
+                  <div className="p-8 text-center text-xs text-slate-500 dark:text-gray-500">
                     Select a module to view assignments.
                   </div>
                 )}
@@ -477,23 +477,23 @@ const AcademyDashboard = () => {
            </div>
 
            {/* Milestones */}
-           <div className="bg-[#1d1d20] border border-gray-800 rounded-xl p-6">
+           <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <Award className="text-primary" size={20}/> Milestones
               </h3>
               {milestones.length ? (
                 <div className="space-y-2">
                   {milestones.map((entry: any) => (
-                    <div key={entry.id} className="bg-black/20 border border-gray-800 rounded-lg p-3">
-                      <p className="text-xs font-bold text-white">{entry.milestone?.title}</p>
-                      <p className="text-[10px] text-gray-500 mt-1">
+                    <div key={entry.id} className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-gray-800 rounded-lg p-3">
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">{entry.milestone?.title}</p>
+                      <p className="text-[10px] text-slate-500 dark:text-gray-500 mt-1">
                         Achieved {new Date(entry.achievedAt).toLocaleDateString('en-NG', { dateStyle: 'medium' })}
                       </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-[10px] text-gray-500 uppercase font-bold">
+                <div className="text-[10px] text-slate-500 dark:text-gray-500 uppercase font-bold">
                   No milestones achieved yet.
                 </div>
               )}
@@ -501,8 +501,8 @@ const AcademyDashboard = () => {
 
            {progressPercent === 100 && isEnrolled && (
             <div className="bg-primary/10 border border-primary/40 rounded-xl p-6">
-              <h3 className="text-lg font-bold mb-2 text-white">Certificate Unlocked</h3>
-              <p className="text-xs text-gray-300 mb-4">
+              <h3 className="text-lg font-bold mb-2 text-slate-900 dark:text-white">Certificate Unlocked</h3>
+              <p className="text-xs text-slate-600 dark:text-gray-300 mb-4">
                 {hasPremium
                   ? 'You completed the full curriculum. Download your certificate.'
                   : 'Certificates are available on Premium plans.'}

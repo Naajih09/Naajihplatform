@@ -146,7 +146,7 @@ const Opportunities = () => {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
                 activeCategory === cat 
                 ? 'bg-primary text-neutral-dark font-bold border-primary' 
-                : 'bg-slate-200 dark:bg-[#1d1f23] text-slate-700 dark:text-slate-300 border-transparent hover:border-primary/50'
+                : 'bg-slate-200 dark:bg-[#151518] text-slate-700 dark:text-slate-300 border-transparent hover:border-primary/50'
                 }`}
             >
                 {cat}
@@ -160,7 +160,7 @@ const Opportunities = () => {
                 <select 
                     value={filters.stage} 
                     onChange={(e) => setFilters({...filters, stage: e.target.value})}
-                    className="bg-slate-200 dark:bg-[#1d1f23] border-none rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none"
+                    className="bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none"
                 >
                     <option value="All">All Stages</option>
                     <option value="Idea">Idea</option>
@@ -175,7 +175,7 @@ const Opportunities = () => {
                 <input 
                     type="number" 
                     placeholder="Min" 
-                    className="w-24 bg-slate-200 dark:bg-[#1d1f23] border-none rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
+                    className="w-24 bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
                     value={filters.minTicket}
                     onChange={(e) => setFilters({...filters, minTicket: e.target.value})}
                 />
@@ -183,7 +183,7 @@ const Opportunities = () => {
                 <input 
                     type="number" 
                     placeholder="Max" 
-                    className="w-24 bg-slate-200 dark:bg-[#1d1f23] border-none rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
+                    className="w-24 bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
                     value={filters.maxTicket}
                     onChange={(e) => setFilters({...filters, maxTicket: e.target.value})}
                 />
@@ -200,17 +200,17 @@ const Opportunities = () => {
       {loading ? (
          <div className="text-center py-20 text-slate-500 animate-pulse">Loading opportunities...</div>
       ) : pitches.length === 0 ? (
-        <div className="text-center p-10 bg-slate-100 dark:bg-[#1d1f23] rounded-xl border border-dashed border-slate-300 dark:border-white/10">
+        <div className="text-center p-10 bg-slate-100 dark:bg-[#151518] rounded-xl border border-dashed border-slate-300 dark:border-white/10">
           <p className="text-slate-500">No opportunities found matching your criteria.</p>
           <button onClick={() => { setSearchTerm(''); setActiveCategory('All'); }} className="text-primary text-sm font-bold mt-2 hover:underline">Clear Filters</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pitches.map((pitch) => (
-            <div key={pitch.id} className="group bg-white dark:bg-[#1d1f23] border border-slate-200 dark:border-white/5 rounded-xl p-5 flex flex-col hover:shadow-lg transition-all duration-300">
+            <div key={pitch.id} className="group bg-white dark:bg-[#151518] border border-slate-200 dark:border-white/5 rounded-xl p-5 flex flex-col hover:shadow-lg transition-all duration-300">
               
               <div className="flex items-start justify-between mb-6">
-                <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-[#2d2f34] flex items-center justify-center text-2xl font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/5">
+                <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-[#1d1d20] flex items-center justify-center text-2xl font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/5">
                   {pitch.title.charAt(0)}
                 </div>
                 <div className="flex flex-col items-end gap-2">

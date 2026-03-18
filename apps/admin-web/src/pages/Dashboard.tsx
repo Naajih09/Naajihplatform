@@ -133,8 +133,8 @@ const Dashboard = () => {
 
       {/* Header */}
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-white">Platform Command Center</h2>
-        <p className="text-gray-500 mt-1 italic">Real-time management of Sharia-compliant investment flows.</p>
+        <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Platform Command Center</h2>
+        <p className="text-slate-500 mt-1 italic dark:text-gray-500">Real-time management of Sharia-compliant investment flows.</p>
       </div>
 
       {/* Stats Overview */}
@@ -153,9 +153,9 @@ const Dashboard = () => {
           icon={Rocket} 
         />
         
-        <div className="p-6 rounded-xl bg-gradient-to-br from-[#262626] to-[#1a1a1a] border border-primary/30 flex flex-col justify-between min-h-[140px]">
+        <div className="p-6 rounded-xl bg-gradient-to-br from-primary/10 to-white border border-primary/30 flex flex-col justify-between min-h-[140px] dark:from-[#262626] dark:to-[#1a1a1a]">
           <div className="flex items-center justify-between">
-            <span className="text-gray-400 text-sm font-medium">Total Funding Volume</span>
+            <span className="text-slate-500 dark:text-gray-400 text-sm font-medium">Total Funding Volume</span>
             <Wallet className="text-primary" size={24} />
           </div>
           <div className="mt-4">
@@ -217,15 +217,15 @@ const Dashboard = () => {
       </div>
 
       {/* Table Section */}
-      <div className="bg-[#1d1d20] rounded-xl border border-white/5 overflow-hidden">
-        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+      <div className="admin-surface overflow-hidden">
+        <div className="p-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold text-white">Pending Verification Requests</h3>
-            <p className="text-sm text-gray-500">Entrepreneurs awaiting Sharia-compliance approval</p>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Pending Verification Requests</h3>
+            <p className="text-sm text-slate-500 dark:text-gray-500">Entrepreneurs awaiting Sharia-compliance approval</p>
           </div>
           <button 
             onClick={() => navigate('/admin/verification')} 
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-medium transition-colors"
+            className="px-4 py-2 admin-button-secondary rounded-lg text-sm font-medium transition-colors"
           >
              View All
           </button>
@@ -234,7 +234,7 @@ const Dashboard = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-white/[0.02] text-gray-500 text-xs font-bold uppercase tracking-widest">
+              <tr className="bg-slate-50 dark:bg-white/[0.02] text-slate-500 dark:text-gray-500 text-xs font-bold uppercase tracking-widest">
                 <th className="px-6 py-4">User</th>
                 <th className="px-6 py-4">Role</th>
                 <th className="px-6 py-4">Documents</th>
@@ -242,7 +242,7 @@ const Dashboard = () => {
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-sm text-gray-300">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-sm text-slate-700 dark:text-gray-300">
               {loading ? (
                 <tr>
                   <td colSpan={5} className="py-8 text-center text-gray-500">
@@ -263,16 +263,16 @@ const Dashboard = () => {
                   return (
                     <tr key={req.id} className="hover:bg-white/[0.02] transition-colors">
                       <td className="px-6 py-4 flex items-center gap-3">
-                          <div className="size-9 rounded bg-white/5 flex items-center justify-center text-lg font-bold text-white uppercase">
+                          <div className="size-9 rounded bg-slate-100 dark:bg-white/5 flex items-center justify-center text-lg font-bold text-slate-900 dark:text-white uppercase">
                             {fullName[0]}
                           </div>
                           <div>
-                            <span className="font-bold text-white block">{fullName}</span>
-                            <span className="text-xs text-gray-500">{req.user?.email}</span>
+                            <span className="font-bold text-slate-900 dark:text-white block">{fullName}</span>
+                            <span className="text-xs text-slate-500 dark:text-gray-500">{req.user?.email}</span>
                           </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="bg-white/10 px-2 py-1 rounded text-[10px] font-bold uppercase">{req.user?.role}</span>
+                        <span className="bg-slate-100 dark:bg-white/10 px-2 py-1 rounded text-[10px] font-bold uppercase">{req.user?.role}</span>
                       </td>
                       <td className="px-6 py-4">
                         <a href={req.documentUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
@@ -308,7 +308,7 @@ const Dashboard = () => {
       {/* Secondary Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-lg font-bold flex items-center gap-2 text-white">
+            <h3 className="text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-white">
                 <Activity className="text-primary" size={20} /> Recent Audit Log
             </h3>
             <div className="space-y-4">
@@ -336,7 +336,7 @@ const Dashboard = () => {
         </div>
 
         {/* Investment Distribution */}
-        <div className="bg-primary/5 rounded-xl border border-primary/20 p-6">
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-6">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-4">Investment Types</h3>
             <div className="space-y-4">
                 {loading ? (
@@ -358,10 +358,10 @@ const Dashboard = () => {
       </div>
 
       {/* Insights */}
-      <div className="bg-[#1d1d20] rounded-xl border border-white/5 overflow-hidden">
-        <div className="p-6 border-b border-white/5">
-          <h3 className="text-lg font-bold text-white">Last 7 Days Activity</h3>
-          <p className="text-sm text-gray-500">Daily new users, pitches, and connections</p>
+      <div className="admin-surface overflow-hidden">
+        <div className="p-6 border-b border-slate-200 dark:border-white/5">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Last 7 Days Activity</h3>
+          <p className="text-sm text-slate-500 dark:text-gray-500">Daily new users, pitches, and connections</p>
         </div>
         <div className="p-6">
           {loading ? (
@@ -438,27 +438,27 @@ const formatAuditMeta = (log: any) => {
 
 // --- HELPER COMPONENTS ---
 const MetricCard = ({ label, value, trend, subLabel = 'Vs last month', icon: Icon }: any) => (
-  <div className="p-6 rounded-xl border border-white/5 bg-gradient-to-br from-[#262626] to-[#1a1a1a] flex flex-col justify-between min-h-[140px]">
+  <div className="p-6 rounded-xl border border-slate-200 bg-white flex flex-col justify-between min-h-[140px] shadow-sm dark:border-white/5 dark:bg-gradient-to-br dark:from-[#262626] dark:to-[#1a1a1a]">
     <div className="flex items-center justify-between">
-      <span className="text-gray-400 text-sm font-medium">{label}</span>
+      <span className="text-slate-500 dark:text-gray-400 text-sm font-medium">{label}</span>
       <Icon className="text-primary/50" size={24} />
     </div>
     <div className="mt-4">
-      <h3 className="text-3xl font-bold tracking-tight text-white">{value}</h3>
+      <h3 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{value}</h3>
       <div className="flex items-center gap-1 mt-1">
         <span className="text-primary text-xs font-bold">{trend}</span>
-        <span className="text-gray-500 text-[10px] uppercase">{subLabel}</span>
+        <span className="text-slate-500 dark:text-gray-500 text-[10px] uppercase">{subLabel}</span>
       </div>
     </div>
   </div>
 );
 
 const AuditItem = ({ title, meta, icon: Icon }: any) => (
-    <div className="flex gap-4 p-4 rounded-lg bg-white/5 border border-transparent hover:border-primary/20 transition-all">
+    <div className="flex gap-4 p-4 rounded-lg bg-white border border-slate-200 hover:border-primary/20 transition-all dark:bg-white/5 dark:border-transparent">
         <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary"><Icon size={20} /></div>
         <div>
-            <p className="text-sm font-bold text-white">{title}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{meta}</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">{title}</p>
+            <p className="text-xs text-slate-500 dark:text-gray-500 mt-0.5">{meta}</p>
         </div>
     </div>
 );
@@ -466,10 +466,10 @@ const AuditItem = ({ title, meta, icon: Icon }: any) => (
 const ProgressBar = ({ label, value, color }: any) => (
     <div>
         <div className="flex justify-between text-xs mb-1">
-            <span className="text-gray-400">{label}</span>
+            <span className="text-slate-500 dark:text-gray-400">{label}</span>
             <span className="text-primary font-bold">{value}%</span>
         </div>
-        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+        <div className="h-1.5 w-full bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
             <div className={`h-full ${color} progress-bar-width-${value}`}></div>
         </div>
     </div>

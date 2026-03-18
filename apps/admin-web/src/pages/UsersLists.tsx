@@ -170,28 +170,28 @@ const UsersList = () => {
     <div className="max-w-6xl mx-auto space-y-6 pb-20 relative">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-white">User Management</h1>
-          <p className="text-gray-500 mt-1">Manage, verify, and monitor platform accounts.</p>
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">User Management</h1>
+          <p className="text-slate-500 mt-1 dark:text-gray-500">Manage, verify, and monitor platform accounts.</p>
         </div>
         
         {/* Controls */}
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <div className="relative flex-grow md:flex-grow-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500" size={16} />
             <input 
               type="text" 
               placeholder="Search users..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full md:w-64 pl-9 pr-4 py-2 bg-[#1d1d20] border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-primary"
+              className="admin-input w-full md:w-64 pl-9 pr-4 py-2 text-sm"
             />
           </div>
-          <div className="flex items-center gap-2 bg-[#1d1d20] border border-white/10 rounded-lg px-3 py-2">
-            <Filter size={16} className="text-gray-500" />
+          <div className="flex items-center gap-2 admin-input px-3 py-2">
+            <Filter size={16} className="text-slate-500 dark:text-gray-500" />
             <select 
               value={roleFilter} 
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="bg-transparent text-sm text-white focus:outline-none"
+              className="bg-transparent text-sm text-slate-900 focus:outline-none dark:text-white"
               title="Filter by user role"
               aria-label="Filter by user role"
             >
@@ -204,7 +204,7 @@ const UsersList = () => {
           <select 
             value={sortBy} 
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="bg-[#1d1d20] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none"
+            className="admin-input px-3 py-2 text-sm"
             title="Sort users"
             aria-label="Sort users"
           >
@@ -214,7 +214,7 @@ const UsersList = () => {
           <select
             value={pageSize}
             onChange={(e) => setPageSize(Number(e.target.value))}
-            className="bg-[#1d1d20] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none"
+            className="admin-input px-3 py-2 text-sm"
             title="Items per page"
             aria-label="Items per page"
           >
@@ -233,13 +233,13 @@ const UsersList = () => {
       )}
 
       {loading ? (
-        <div className="text-center py-20 text-white"><Loader2 className="animate-spin inline mr-2"/> Loading Database...</div>
+        <div className="text-center py-20 text-slate-500 dark:text-gray-400"><Loader2 className="animate-spin inline mr-2"/> Loading Database...</div>
       ) : (
-        <div className="bg-[#1d1d20] border border-white/5 rounded-xl overflow-hidden">
+        <div className="admin-surface overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
-                <tr className="bg-white/[0.02] text-gray-500 text-xs font-bold uppercase tracking-widest">
+                <tr className="bg-slate-50 dark:bg-white/[0.02] text-slate-500 dark:text-gray-500 text-xs font-bold uppercase tracking-widest">
                   <th className="px-6 py-4">User</th>
                   <th className="px-6 py-4">Role</th>
                   <th className="px-6 py-4">Joined</th>
@@ -247,23 +247,23 @@ const UsersList = () => {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 text-sm text-gray-300">
+              <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-sm text-slate-700 dark:text-gray-300">
                 {users.length === 0 ? (
-                  <tr><td colSpan={5} className="py-10 text-center text-gray-500">No users found matching your criteria.</td></tr>
+                  <tr><td colSpan={5} className="py-10 text-center text-slate-500 dark:text-gray-500">No users found matching your criteria.</td></tr>
                 ) : (
                   users.map((user) => {
                     const profile = user.entrepreneurProfile || user.investorProfile || {};
                     const isInvestor = user.role === 'INVESTOR';
                     return (
-                      <tr key={user.id} className="hover:bg-white/5 transition-colors">
+                      <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className={`size-9 rounded-full flex items-center justify-center font-bold text-white ${isInvestor ? 'bg-purple-600' : 'bg-blue-600'}`}>
+                            <div className={`size-9 rounded-full flex items-center justify-center font-bold text-white ${isInvestor ? 'bg-secondary' : 'bg-primary text-black'}`}>
                                 {(profile.firstName || user.email)[0].toUpperCase()}
                             </div>
                             <div>
-                                <p className="font-bold text-white">{profile.firstName} {profile.lastName}</p>
-                                <p className="text-xs text-gray-500">{user.email}</p>
+                                <p className="font-bold text-slate-900 dark:text-white">{profile.firstName} {profile.lastName}</p>
+                                <p className="text-xs text-slate-500 dark:text-gray-500">{user.email}</p>
                             </div>
                           </div>
                         </td>
@@ -272,11 +272,11 @@ const UsersList = () => {
                             {user.role}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-gray-500">{new Date(user.createdAt).toLocaleDateString()}</td>
+                        <td className="px-6 py-4 text-slate-500 dark:text-gray-500">{new Date(user.createdAt).toLocaleDateString()}</td>
                         <td className="px-6 py-4">
                           {user.isVerified ? 
                             <span className="text-green-500 flex items-center gap-1 text-xs font-bold"><Shield size={12}/> Verified</span> : 
-                            <span className="text-gray-600 flex items-center gap-1 text-xs"><ShieldAlert size={12}/> Unverified</span>
+                            <span className="text-slate-500 dark:text-gray-500 flex items-center gap-1 text-xs"><ShieldAlert size={12}/> Unverified</span>
                           }
                           {user.isActive === false && (
                             <span className="text-red-500 flex items-center gap-1 text-xs font-bold mt-1">Inactive</span>
@@ -285,7 +285,7 @@ const UsersList = () => {
                         <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
                           <button
                             onClick={() => { setViewUser(user); setRoleDraft(user.role); }}
-                            className="p-2 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded transition-colors"
+                            className="p-2 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white admin-button-secondary rounded transition-colors"
                             title="View Profile"
                           >
                             <Eye size={16} />
@@ -305,24 +305,24 @@ const UsersList = () => {
       )}
 
       {!loading && totalItems > 0 && (
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-gray-400">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-slate-500 dark:text-gray-400">
           <div>
             Showing {(safePage - 1) * pageSize + 1}-{Math.min(safePage * pageSize, totalItems)} of {totalItems}
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-white disabled:opacity-40"
+              className="px-3 py-1.5 rounded admin-button-secondary disabled:opacity-40"
               disabled={safePage === 1}
             >
               Prev
             </button>
-            <span className="text-gray-500">
+            <span className="text-slate-500 dark:text-gray-500">
               Page {safePage} of {totalPages}
             </span>
             <button
               onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-white disabled:opacity-40"
+              className="px-3 py-1.5 rounded admin-button-secondary disabled:opacity-40"
               disabled={safePage === totalPages}
             >
               Next
@@ -334,10 +334,10 @@ const UsersList = () => {
       {/* View User Modal */}
       {viewUser && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1d1d20] border border-white/10 rounded-xl w-full max-w-lg p-6 relative">
+          <div className="bg-white border border-slate-200 rounded-xl w-full max-w-lg p-6 relative dark:bg-[#1d1d20] dark:border-white/10">
             <button 
               onClick={() => { setViewUser(null); setRoleDraft(''); }} 
-              className="absolute top-4 right-4 text-gray-500 hover:text-white"
+              className="absolute top-4 right-4 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white"
               title="Close Profile Modal"
               type="button"
               aria-label="Close Profile Modal"
@@ -345,46 +345,46 @@ const UsersList = () => {
               <X size={20} />
               <span className="sr-only">Close Profile Modal</span>
             </button>
-            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                User Profile Details {viewUser.isVerified && <Shield className="text-green-500" size={18} />}
             </h3>
             
-            <div className="space-y-4 text-sm text-gray-300">
-              <div className="grid grid-cols-2 gap-4 bg-white/5 p-4 rounded-lg">
+            <div className="space-y-4 text-sm text-slate-700 dark:text-gray-300">
+              <div className="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-white/5 p-4 rounded-lg">
                 <div>
-                  <p className="text-gray-500 text-xs uppercase mb-1">Email</p>
-                  <p className="font-medium text-white">{viewUser.email}</p>
+                  <p className="text-slate-500 dark:text-gray-500 text-xs uppercase mb-1">Email</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{viewUser.email}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500 text-xs uppercase mb-1">Role</p>
-                  <p className="font-medium text-white">{viewUser.role}</p>
+                  <p className="text-slate-500 dark:text-gray-500 text-xs uppercase mb-1">Role</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{viewUser.role}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500 text-xs uppercase mb-1">Status</p>
+                  <p className="text-slate-500 dark:text-gray-500 text-xs uppercase mb-1">Status</p>
                   <p className={`font-medium ${viewUser.isActive === false ? 'text-red-400' : 'text-green-400'}`}>
                     {viewUser.isActive === false ? 'Inactive' : 'Active'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray-500 text-xs uppercase mb-1">Joined On</p>
-                  <p className="font-medium text-white">{new Date(viewUser.createdAt).toLocaleDateString()}</p>
+                  <p className="text-slate-500 dark:text-gray-500 text-xs uppercase mb-1">Joined On</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{new Date(viewUser.createdAt).toLocaleDateString()}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500 text-xs uppercase mb-1">ID</p>
-                  <p className="font-mono text-xs text-gray-400 truncate" title={viewUser.id}>{viewUser.id.substring(0, 12)}...</p>
+                  <p className="text-slate-500 dark:text-gray-500 text-xs uppercase mb-1">ID</p>
+                  <p className="font-mono text-xs text-slate-400 dark:text-gray-400 truncate" title={viewUser.id}>{viewUser.id.substring(0, 12)}...</p>
                 </div>
               </div>
 
               {/* Profile Details (Entrepreneur or Investor) */}
               {(viewUser.entrepreneurProfile || viewUser.investorProfile) && (
-                <div className="bg-white/5 p-4 rounded-lg space-y-3">
-                  <h4 className="text-white font-bold mb-2">Extended Profile</h4>
+                <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-lg space-y-3">
+                  <h4 className="text-slate-900 dark:text-white font-bold mb-2">Extended Profile</h4>
                   {Object.entries(viewUser.entrepreneurProfile || viewUser.investorProfile).map(([key, value]) => {
                     if (['id', 'userId', 'createdAt', 'updatedAt'].includes(key) || !value) return null;
                     return (
-                      <div key={key} className="flex flex-col border-b border-white/5 pb-2">
-                        <span className="text-gray-500 text-xs uppercase">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                        <span className="text-white font-medium">{String(value)}</span>
+                      <div key={key} className="flex flex-col border-b border-slate-200 dark:border-white/5 pb-2">
+                        <span className="text-slate-500 dark:text-gray-500 text-xs uppercase">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                        <span className="text-slate-900 dark:text-white font-medium">{String(value)}</span>
                       </div>
                     );
                   })}
@@ -392,13 +392,13 @@ const UsersList = () => {
               )}
             </div>
 
-            <div className="mt-6 border-t border-white/10 pt-4 space-y-3">
+            <div className="mt-6 border-t border-slate-200 dark:border-white/10 pt-4 space-y-3">
               <div className="flex flex-col md:flex-row md:items-center gap-3">
-                <label className="text-xs text-gray-500 uppercase font-bold">Update Role</label>
+                <label className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold">Update Role</label>
                 <select
                   value={roleDraft || viewUser.role}
                   onChange={(e) => setRoleDraft(e.target.value)}
-                  className="bg-[#111113] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none"
+                  className="admin-input px-3 py-2 text-sm"
                 >
                   <option value="ENTREPRENEUR">Entrepreneur</option>
                   <option value="INVESTOR">Investor</option>
@@ -407,7 +407,7 @@ const UsersList = () => {
                 </select>
                 <button
                   onClick={handleRoleUpdate}
-                  className="px-4 py-2 bg-white/10 text-white rounded hover:bg-white/20"
+                  className="px-4 py-2 admin-button-secondary rounded"
                 >
                   Save Role
                 </button>
@@ -430,7 +430,7 @@ const UsersList = () => {
             </div>
             
             <div className="mt-6 flex justify-end">
-              <button onClick={() => { setViewUser(null); setRoleDraft(''); }} className="px-4 py-2 bg-white/10 text-white rounded hover:bg-white/20">Close</button>
+              <button onClick={() => { setViewUser(null); setRoleDraft(''); }} className="px-4 py-2 admin-button-secondary rounded">Close</button>
             </div>
           </div>
         </div>

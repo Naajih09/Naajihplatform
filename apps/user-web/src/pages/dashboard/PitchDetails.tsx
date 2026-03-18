@@ -97,7 +97,7 @@ const PitchDetails = () => {
   if (!pitch) return <div className="text-center py-20 text-slate-500">Pitch not found</div>;
 
   const isOwner = user.id === pitch.userId;
-  const inputStyle = "w-full p-2 bg-black/20 border border-gray-700 rounded text-slate-900 dark:text-white mb-2 focus:outline-none focus:border-primary";
+  const inputStyle = "w-full p-2 bg-slate-100 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded text-slate-900 dark:text-white mb-2 focus:outline-none focus:border-primary";
 
   return (
     <div className="max-w-4xl mx-auto pb-20 font-sans text-slate-900 dark:text-white">
@@ -118,12 +118,12 @@ const PitchDetails = () => {
             <div className="flex gap-2">
                 {isEditing ? (
                     <>
-                        <Button onClick={() => setIsEditing(false)} variant="ghost" className="text-gray-400"><X size={18}/> Cancel</Button>
+                        <Button onClick={() => setIsEditing(false)} variant="ghost" className="text-slate-500 dark:text-gray-400"><X size={18}/> Cancel</Button>
                         <Button onClick={handleUpdate} className="bg-green-600 text-white"><Save size={18}/> Save</Button>
                     </>
                 ) : (
                     <>
-                        <Button onClick={() => setIsEditing(true)} variant="outline" className="border-gray-600"><Edit3 size={18}/> Edit</Button>
+                        <Button onClick={() => setIsEditing(true)} variant="outline" className="border-slate-300 dark:border-gray-600"><Edit3 size={18}/> Edit</Button>
                         <Button onClick={handleDelete} variant="outline" className="border-red-900 text-red-500 hover:bg-red-900/20"><Trash2 size={18}/></Button>
                     </>
                 )}

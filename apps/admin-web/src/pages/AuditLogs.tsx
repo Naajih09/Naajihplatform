@@ -62,13 +62,13 @@ const AuditLogs = () => {
     <div className="max-w-6xl mx-auto space-y-6 pb-20 relative">
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-white">Audit Log</h1>
-          <p className="text-gray-500 mt-1">Track administrative actions and system events.</p>
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Audit Log</h1>
+          <p className="text-slate-500 mt-1 dark:text-gray-500">Track administrative actions and system events.</p>
         </div>
         <button
           type="button"
           onClick={() => exportCsv(logs)}
-          className="px-3 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-medium transition-colors"
+          className="px-3 py-2 admin-button-secondary rounded-lg text-sm font-medium transition-colors"
         >
           Export CSV
         </button>
@@ -83,20 +83,20 @@ const AuditLogs = () => {
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-grow md:flex-grow-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500" size={16} />
           <input
             value={searchQuery}
             onChange={(e) => { setCurrentPage(1); setSearchQuery(e.target.value); }}
             placeholder="Search action, email, entity..."
-            className="w-full md:w-72 pl-9 pr-4 py-2 bg-[#1d1d20] border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-primary"
+            className="admin-input w-full md:w-72 pl-9 pr-4 py-2 text-sm"
           />
         </div>
-        <div className="flex items-center gap-2 bg-[#1d1d20] border border-white/10 rounded-lg px-3 py-2">
-          <Filter size={16} className="text-gray-500" />
+        <div className="flex items-center gap-2 admin-input px-3 py-2">
+          <Filter size={16} className="text-slate-500 dark:text-gray-500" />
           <select
             value={actionFilter}
             onChange={(e) => { setCurrentPage(1); setActionFilter(e.target.value); }}
-            className="bg-transparent text-sm text-white focus:outline-none"
+            className="bg-transparent text-sm text-slate-900 focus:outline-none dark:text-white"
             title="Filter by action"
             aria-label="Filter by action"
           >
@@ -109,7 +109,7 @@ const AuditLogs = () => {
           type="date"
           value={dateFrom}
           onChange={(e) => { setCurrentPage(1); setDateFrom(e.target.value); }}
-          className="bg-[#1d1d20] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none"
+          className="admin-input px-3 py-2 text-sm"
           aria-label="From date"
           title="From date"
         />
@@ -117,14 +117,14 @@ const AuditLogs = () => {
           type="date"
           value={dateTo}
           onChange={(e) => { setCurrentPage(1); setDateTo(e.target.value); }}
-          className="bg-[#1d1d20] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none"
+          className="admin-input px-3 py-2 text-sm"
           aria-label="To date"
           title="To date"
         />
         <select
           value={pageSize}
           onChange={(e) => { setCurrentPage(1); setPageSize(Number(e.target.value)); }}
-          className="bg-[#1d1d20] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none"
+          className="admin-input px-3 py-2 text-sm"
           aria-label="Items per page"
           title="Items per page"
         >
@@ -135,29 +135,29 @@ const AuditLogs = () => {
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-white"><Loader2 className="animate-spin inline mr-2"/> Loading audit logs...</div>
+        <div className="text-center py-20 text-slate-500 dark:text-gray-400"><Loader2 className="animate-spin inline mr-2"/> Loading audit logs...</div>
       ) : (
-        <div className="bg-[#1d1d20] border border-white/5 rounded-xl overflow-hidden">
+        <div className="admin-surface rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
-                <tr className="bg-white/[0.02] text-gray-500 text-xs font-bold uppercase tracking-widest">
+                <tr className="bg-slate-50 dark:bg-white/[0.02] text-slate-500 dark:text-gray-500 text-xs font-bold uppercase tracking-widest">
                   <th className="px-6 py-4">Action</th>
                   <th className="px-6 py-4">Actor</th>
                   <th className="px-6 py-4">Entity</th>
                   <th className="px-6 py-4">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 text-sm text-gray-300">
+              <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-sm text-slate-700 dark:text-gray-300">
                 {logs.length === 0 ? (
-                  <tr><td colSpan={4} className="py-10 text-center text-gray-500">No audit logs found.</td></tr>
+                  <tr><td colSpan={4} className="py-10 text-center text-slate-500 dark:text-gray-500">No audit logs found.</td></tr>
                 ) : (
                   logs.map((log) => (
-                    <tr key={log.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4 text-white font-medium">{formatAuditTitle(log)}</td>
-                      <td className="px-6 py-4 text-gray-400">{log.actor?.email || 'System'}</td>
-                      <td className="px-6 py-4 text-gray-400">{log.entityType} {log.entityId ? `(${log.entityId.slice(0, 6)}...)` : ''}</td>
-                      <td className="px-6 py-4 text-gray-400">{log.createdAt ? new Date(log.createdAt).toLocaleString() : ''}</td>
+                    <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                      <td className="px-6 py-4 text-slate-900 dark:text-white font-medium">{formatAuditTitle(log)}</td>
+                      <td className="px-6 py-4 text-slate-500 dark:text-gray-400">{log.actor?.email || 'System'}</td>
+                      <td className="px-6 py-4 text-slate-500 dark:text-gray-400">{log.entityType} {log.entityId ? `(${log.entityId.slice(0, 6)}...)` : ''}</td>
+                      <td className="px-6 py-4 text-slate-500 dark:text-gray-400">{log.createdAt ? new Date(log.createdAt).toLocaleString() : ''}</td>
                     </tr>
                   ))
                 )}
@@ -168,24 +168,24 @@ const AuditLogs = () => {
       )}
 
       {!loading && totalItems > 0 && (
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-gray-400">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-slate-500 dark:text-gray-400">
           <div>
             Showing {(safePage - 1) * pageSize + 1}-{Math.min(safePage * pageSize, totalItems)} of {totalItems}
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-white disabled:opacity-40"
+              className="px-3 py-1.5 rounded admin-button-secondary disabled:opacity-40"
               disabled={safePage === 1}
             >
               Prev
             </button>
-            <span className="text-gray-500">
+            <span className="text-slate-500 dark:text-gray-500">
               Page {safePage} of {totalPages}
             </span>
             <button
               onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-white disabled:opacity-40"
+              className="px-3 py-1.5 rounded admin-button-secondary disabled:opacity-40"
               disabled={safePage === totalPages}
             >
               Next

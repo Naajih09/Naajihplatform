@@ -59,8 +59,8 @@ const Settings = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20 relative">
       <div>
-        <h1 className="text-3xl font-black tracking-tight text-white">Admin Settings</h1>
-        <p className="text-gray-500 mt-1">Manage your admin profile and security.</p>
+        <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Admin Settings</h1>
+        <p className="text-slate-500 mt-1 dark:text-gray-500">Manage your admin profile and security.</p>
       </div>
 
       {toast.show && (
@@ -70,38 +70,38 @@ const Settings = () => {
         </div>
       )}
 
-      <div className="bg-[#1d1d20] border border-white/5 rounded-xl p-6 space-y-4">
+      <div className="admin-surface p-6 space-y-4">
         <div className="flex items-center gap-3">
-          <div className="size-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-900/30">
+          <div className="size-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary shadow-lg shadow-primary/20">
             <ShieldCheck size={20} />
           </div>
           <div>
-            <p className="text-sm text-gray-400">Signed in as</p>
-            <p className="text-lg font-bold text-white">{payload?.email || 'Admin'}</p>
-            <p className="text-xs text-gray-500 uppercase">{payload?.role || 'ADMIN'}</p>
+            <p className="text-sm text-slate-500 dark:text-gray-400">Signed in as</p>
+            <p className="text-lg font-bold text-slate-900 dark:text-white">{payload?.email || 'Admin'}</p>
+            <p className="text-xs text-slate-500 uppercase dark:text-gray-500">{payload?.role || 'ADMIN'}</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-[#1d1d20] border border-white/5 rounded-xl p-6">
-        <h2 className="text-lg font-bold text-white mb-4">Change Password</h2>
+      <div className="admin-surface p-6">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Change Password</h2>
         <form onSubmit={handlePasswordChange} className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-2">New Password</label>
+            <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2">New Password</label>
             <input
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-3 py-2 bg-[#111113] border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="admin-input w-full px-3 py-2"
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-2">Confirm Password</label>
+            <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2">Confirm Password</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 bg-[#111113] border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="admin-input w-full px-3 py-2"
             />
           </div>
           <button

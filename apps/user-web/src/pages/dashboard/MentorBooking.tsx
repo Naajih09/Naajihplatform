@@ -1,6 +1,6 @@
 import { Calendar, ExternalLink, Video } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
 import { showToast } from '../../lib/utils';
 
@@ -11,6 +11,8 @@ const MentorBooking = () => {
   const [subscription, setSubscription] = useState<any>(null);
   const navigate = useNavigate();
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAspirant = user?.role === 'ASPIRING_BUSINESS_OWNER';
   const authToken =
     localStorage.getItem('accessToken') ||
     localStorage.getItem('access_token') ||
@@ -37,6 +39,10 @@ const MentorBooking = () => {
   const hasPremium =
     subscription?.plan === 'PREMIUM' &&
     (!activeUntil || new Date(activeUntil) > new Date());
+
+  if (!isAspirant) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-20">

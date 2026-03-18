@@ -44,8 +44,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#111113] text-white">
-      <div className="hidden lg:flex w-1/2 border-r border-white/10 p-12 flex-col justify-between relative overflow-hidden">
+    <div className="min-h-screen flex bg-[#f8fafc] text-slate-900 dark:bg-[#111113] dark:text-white">
+      <div className="hidden lg:flex w-1/2 border-r border-slate-200 p-12 flex-col justify-between relative overflow-hidden dark:border-white/10">
         <div className="z-10 flex items-center gap-3">
           <div className="size-10 bg-primary rounded-xl flex items-center justify-center text-black font-extrabold shadow-lg shadow-primary/30">
             N
@@ -54,26 +54,26 @@ const Login = () => {
             <h1 className="text-2xl font-extrabold tracking-tight">
               NaajihBiz <span className="text-primary">Admin</span>
             </h1>
-            <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">
+            <p className="text-xs text-slate-500 uppercase tracking-widest font-bold dark:text-gray-500">
               CEO Mode
             </p>
           </div>
         </div>
         <div className="z-10 relative">
-          <h2 className="text-5xl font-bold mb-6 leading-tight text-white">
+          <h2 className="text-5xl font-bold mb-6 leading-tight text-slate-900 dark:text-white">
             Welcome back.
           </h2>
-          <p className="text-gray-400 text-lg">
+          <p className="text-slate-500 dark:text-gray-400 text-lg">
             Manage the platform with secure admin access.
           </p>
         </div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
       </div>
 
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="max-w-md w-full">
           <h2 className="text-3xl font-bold mb-2">Admin Login</h2>
-          <p className="text-gray-400 mb-8">
+          <p className="text-slate-500 dark:text-gray-400 mb-8">
             Enter your credentials to access the admin dashboard.
           </p>
 
@@ -85,34 +85,34 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
+              <label className="block text-sm font-medium text-slate-500 dark:text-gray-400 mb-2">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 text-gray-500" size={20} />
+                <Mail className="absolute left-3 top-3 text-slate-500 dark:text-gray-500" size={20} />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-transparent border border-white/10 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                  className="admin-input w-full pl-10 pr-4 py-3 transition-colors"
                   placeholder="admin@example.com"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
+              <label className="block text-sm font-medium text-slate-500 dark:text-gray-400 mb-2">
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 text-gray-500" size={20} />
+                <Lock className="absolute left-3 top-3 text-slate-500 dark:text-gray-500" size={20} />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-transparent border border-white/10 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                  className="admin-input w-full pl-10 pr-4 py-3 transition-colors"
                   placeholder="••••••••"
                 />
               </div>
@@ -121,7 +121,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-60 flex items-center justify-center gap-2"
+              className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-black hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {isSubmitting ? 'Signing in...' : 'Sign in'}
               <ArrowRight size={18} />

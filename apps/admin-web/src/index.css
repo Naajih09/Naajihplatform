@@ -1,3 +1,43 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[#f8fafc] text-slate-900 transition-colors duration-300;
+  }
+
+  .dark body {
+    @apply bg-[#111113] text-white;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+}
+
+@layer components {
+  .admin-surface {
+    @apply bg-white border border-slate-200 rounded-xl shadow-sm dark:bg-[#1d1d20] dark:border-white/5;
+  }
+
+  .admin-surface-muted {
+    @apply bg-slate-50 border border-slate-200 rounded-lg dark:bg-[#111113] dark:border-white/10;
+  }
+
+  .admin-input {
+    @apply bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-primary dark:bg-[#111113] dark:border-white/10 dark:text-white;
+  }
+
+  .admin-button-secondary {
+    @apply bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-white/5 dark:text-white dark:hover:bg-white/10;
+  }
+
+  .admin-muted {
+    @apply text-slate-500 dark:text-gray-500;
+  }
+}

@@ -82,14 +82,14 @@ const LearningCenter = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-10 pb-20 font-sans text-white">
+    <div className="max-w-7xl mx-auto space-y-10 pb-20 font-sans text-slate-900 dark:text-white">
       
       {/* HEADER */}
-      <div className="text-center space-y-4 py-10 bg-[#1d1d20] rounded-3xl border border-gray-800">
-        <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white">
+      <div className="text-center space-y-4 py-10 bg-white dark:bg-[#1d1d20] rounded-3xl border border-slate-200 dark:border-gray-800">
+        <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
           Naajih <span className="text-primary">Academy</span>
         </h1>
-        <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+        <p className="text-slate-500 dark:text-gray-400 max-w-2xl mx-auto text-lg">
           Practical, Islam-compliant business education. Go from idea to investment in weeks, not years.
         </p>
       </div>
@@ -121,14 +121,14 @@ const LearningCenter = () => {
 
             return (
             <div key={course.id} onClick={() => navigate(`/dashboard/academy/${course.id}`)} 
-                 className="group bg-[#151518] border border-gray-800 rounded-2xl overflow-hidden hover:border-primary/50 cursor-pointer transition-all hover:-translate-y-1 shadow-lg">
+                 className="group bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 rounded-2xl overflow-hidden hover:border-primary/50 cursor-pointer transition-all hover:-translate-y-1 shadow-lg">
               
               {/* Thumbnail */}
-              <div className="h-48 bg-gray-800 relative overflow-hidden">
+              <div className="h-48 bg-slate-100 dark:bg-gray-800 relative overflow-hidden">
                   {course.thumbnail ? (
                     <img src={course.thumbnail} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={course.title}/>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-500">
+                    <div className="w-full h-full flex items-center justify-center text-slate-500 dark:text-gray-500">
                       <BookOpen size={40} />
                     </div>
                   )}
@@ -143,19 +143,19 @@ const LearningCenter = () => {
 
               {/* Content */}
               <div className="p-6 flex flex-col h-52">
-                  <h3 className="font-bold text-xl mb-2 text-white line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+                  <h3 className="font-bold text-xl mb-2 text-slate-900 dark:text-white line-clamp-2 leading-tight group-hover:text-primary transition-colors">
                     {course.title}
                   </h3>
-                  <p className="text-sm text-gray-500 line-clamp-3 mb-4 flex-1">
+                  <p className="text-sm text-slate-500 dark:text-gray-500 line-clamp-3 mb-4 flex-1">
                     {course.description}
                   </p>
                   
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-800">
-                     <div className="flex items-center gap-4 text-xs text-gray-400 font-medium">
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-gray-800">
+                     <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-gray-400 font-medium">
                         <span className="flex items-center gap-1"><BarChart size={14}/> Beginner</span>
                         <span className="flex items-center gap-1"><Clock size={14}/> {totalLessons || 0} Lessons</span>
                      </div>
-                     <span className="text-[10px] font-bold text-gray-500 uppercase">
+                     <span className="text-[10px] font-bold text-slate-500 dark:text-gray-500 uppercase">
                        {completedLessons}/{totalLessons || 0} done
                      </span>
                   </div>
@@ -163,7 +163,7 @@ const LearningCenter = () => {
                   <Button
                     onClick={(event) => handleJoin(event, course.id, Boolean(course.isPremium))}
                     className={`mt-4 w-full font-bold ${
-                      isEnrolled ? 'bg-white/10 text-white' : 'bg-primary text-neutral-dark'
+                      isEnrolled ? 'bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-white' : 'bg-primary text-neutral-dark'
                     }`}
                     disabled={joiningId === course.id || isPending}
                   >

@@ -24,7 +24,7 @@ export class CreateUserDto {
       UserRole.INVESTOR,
       UserRole.ASPIRING_BUSINESS_OWNER,
     ],
-    { message: 'Admin accounts cannot be created via signup.' }
+    { message: 'Admin accounts cannot be created via signup.' },
   )
   role: UserRole;
 

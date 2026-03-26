@@ -1,13 +1,39 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { CheckCircle, XCircle, Users, Filter, Upload } from 'lucide-react';
 import api from '../utils/api';
 
-const statusOptions = ['ALL', 'PENDING', 'APPROVED', 'REJECTED'];
+const statusOptions = ['ALL', 'PENDING', 'APPROVED', 'REJECTED'] as const;
+type EnrollmentFilter = (typeof statusOptions)[number];
+type EnrollmentStatus = Exclude<EnrollmentFilter, 'ALL'>;
+
+interface AdminProfile {
+  firstName?: string;
+  lastName?: string;
+}
+
+interface EnrollmentUser {
+  email?: string;
+  entrepreneurProfile?: AdminProfile;
+  investorProfile?: AdminProfile;
+}
+
+interface EnrollmentProgram {
+  title?: string;
+  cohort?: string;
+}
+
+interface Enrollment {
+  id: string;
+  status: EnrollmentStatus;
+  user?: EnrollmentUser;
+  program?: EnrollmentProgram;
+  enrolledAt?: string;
+}
 
 const AcademyEnrollments = () => {
-  const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('PENDING');
+  const [statusFilter, setStatusFilter] = useState<EnrollmentFilter>('PENDING');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [enrollmentCsvFile, setEnrollmentCsvFile] = useState<File | null>(null);
   const [importErrors, setImportErrors] = useState<string[]>([]);
@@ -23,28 +49,28 @@ const AcademyEnrollments = () => {
     type: 'success',
   });
 
-  const showToast = (message: string, type: 'success' | 'error') => {
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ show: true, message, type });
     setTimeout(() => setToast({ show: false, message: '', type }), 2500);
-  };
+  }, []);
 
-  const fetchEnrollments = async () => {
+  const fetchEnrollments = useCallback(async () => {
     setLoading(true);
     try {
       const params =
-        statusFilter !== 'ALL' ? { status: statusFilter } : undefined;
+        statusFilter !== 'ALL' ? { status: statusFilter as EnrollmentStatus } : undefined;
       const res = await api.get('/academy/admin/enrollments', { params });
       setEnrollments(res.data || []);
-    } catch (error) {
+    } catch {
       showToast('Failed to load enrollments.', 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast, statusFilter]);
 
   useEffect(() => {
     fetchEnrollments();
-  }, [statusFilter]);
+  }, [fetchEnrollments]);
 
   const handleUpdate = async (id: string, status: string) => {
     setUpdatingId(id);
@@ -52,7 +78,7 @@ const AcademyEnrollments = () => {
       await api.patch(`/academy/admin/enrollments/${id}`, { status });
       showToast(`Enrollment ${status.toLowerCase()}.`, 'success');
       fetchEnrollments();
-    } catch (error) {
+    } catch {
       showToast('Failed to update enrollment.', 'error');
     } finally {
       setUpdatingId(null);
@@ -115,7 +141,7 @@ const AcademyEnrollments = () => {
       setPreviewHeaders([]);
       setPreviewRows([]);
       fetchEnrollments();
-    } catch (error) {
+    } catch {
       showToast('Failed to import enrollments.', 'error');
     }
   };
@@ -136,8 +162,11 @@ const AcademyEnrollments = () => {
           <Filter size={16} className="text-slate-500 dark:text-gray-400" />
           <select
             value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value)}
+            onChange={(event) =>
+              setStatusFilter(event.target.value as EnrollmentFilter)
+            }
             className="admin-input px-3 py-2 text-sm"
+            id="status-filter-select"
           >
             {statusOptions.map((status) => (
               <option key={status} value={status}>
@@ -153,12 +182,15 @@ const AcademyEnrollments = () => {
           <Upload size={18} className="text-primary" /> Bulk Import Enrollments (CSV)
         </h2>
         <div className="flex flex-col md:flex-row md:items-center gap-3">
+          <label htmlFor="status-filter-select" className="sr-only">Filter by Status</label> 
           <input
             type="file"
             accept=".csv"
             onChange={(event) => handleFileChange(event.target.files?.[0])}
             className="text-sm text-slate-500 dark:text-gray-400"
+            id="enrollment-csv-upload"
           />
+          <label htmlFor="enrollment-csv-upload" className="sr-only">Upload Enrollment CSV</label> 
           <button
             onClick={handleImportEnrollments}
             className="bg-primary text-neutral-dark font-bold px-4 py-2 rounded-lg"
@@ -214,7 +246,15 @@ const AcademyEnrollments = () => {
         <div className="text-slate-500 dark:text-gray-400">Loading enrollments...</div>
       ) : enrollments.length === 0 ? (
         <div className="admin-surface rounded-2xl p-6 text-slate-500 dark:text-gray-400">
-          No enrollment requests found.
+          <div className="mx-auto max-w-lg rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center dark:border-white/10 dark:bg-white/[0.03]">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm dark:bg-[#151518] dark:text-gray-400">
+              0
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No enrollment requests found</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-gray-400">
+              No learner enrollments match the current filters. New requests will show here for review.
+            </p>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">

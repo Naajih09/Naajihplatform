@@ -29,7 +29,8 @@ export class PitchesService {
     page?: string;
     pageSize?: string;
   }) {
-    const { search, category, status, stage, industry, minTicket, maxTicket } = query;
+    const { search, category, status, stage, industry, minTicket, maxTicket } =
+      query;
     const page = Math.max(1, Number(query.page) || 1);
     const pageSize = Math.min(100, Math.max(1, Number(query.pageSize) || 20));
     const skip = (page - 1) * pageSize;
@@ -37,7 +38,9 @@ export class PitchesService {
     const where: any = {
       AND: [
         // Filter by Category if provided
-        category && category !== 'All' && category !== 'ALL' ? { category: category } : {},
+        category && category !== 'All' && category !== 'ALL'
+          ? { category: category }
+          : {},
 
         // Filter by Status if provided
         status && status !== 'All' && status !== 'ALL' ? { status } : {},
@@ -138,11 +141,14 @@ export class PitchesService {
       return sum + (Number.isFinite(ask) ? ask : 0);
     }, 0);
 
-    const categoryCounts = pitches.reduce((acc: Record<string, number>, pitch) => {
-      const category = pitch.category || 'Uncategorized';
-      acc[category] = (acc[category] || 0) + 1;
-      return acc;
-    }, {});
+    const categoryCounts = pitches.reduce(
+      (acc: Record<string, number>, pitch) => {
+        const category = pitch.category || 'Uncategorized';
+        acc[category] = (acc[category] || 0) + 1;
+        return acc;
+      },
+      {},
+    );
 
     const investmentBreakdown = Object.entries(categoryCounts)
       .map(([label, count]) => ({

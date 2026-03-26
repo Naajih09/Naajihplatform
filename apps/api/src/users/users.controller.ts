@@ -36,7 +36,9 @@ export class UsersController {
   create(@Body() createUserDto: CreateUserDto) {
     // Use DTO for validation
     if (createUserDto.role === UserRole.ADMIN) {
-      throw new BadRequestException('Admin accounts cannot be created via signup.');
+      throw new BadRequestException(
+        'Admin accounts cannot be created via signup.',
+      );
     }
     return this.usersService.create(createUserDto);
   }
@@ -181,8 +183,13 @@ export class UsersController {
     // if (req.user.role !== UserRole.ADMIN && req.user.id !== id) {
     //   throw new ForbiddenException('You can only update your own profile.');
     // }
-    if ((body.role || typeof body.isActive === 'boolean') && req.user.role !== UserRole.ADMIN) {
-      throw new ForbiddenException('Only admins can change role or active status.');
+    if (
+      (body.role || typeof body.isActive === 'boolean') &&
+      req.user.role !== UserRole.ADMIN
+    ) {
+      throw new ForbiddenException(
+        'Only admins can change role or active status.',
+      );
     }
     return this.usersService.update(id, body);
   }

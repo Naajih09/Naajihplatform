@@ -37,22 +37,24 @@ export class AcademyCohortNotificationsService {
     if (!modules.length) return;
 
     for (const mod of modules) {
-      const enrollments = await this.databaseService.programEnrollment.findMany({
-        where: {
-          programId: mod.programId,
-          status: 'APPROVED',
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              email: true,
-              entrepreneurProfile: { select: { firstName: true } },
-              investorProfile: { select: { firstName: true } },
+      const enrollments = await this.databaseService.programEnrollment.findMany(
+        {
+          where: {
+            programId: mod.programId,
+            status: 'APPROVED',
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                entrepreneurProfile: { select: { firstName: true } },
+                investorProfile: { select: { firstName: true } },
+              },
             },
           },
         },
-      });
+      );
 
       for (const enrollment of enrollments) {
         const firstName =

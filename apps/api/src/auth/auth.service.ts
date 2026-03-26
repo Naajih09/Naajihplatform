@@ -31,8 +31,8 @@ export class AuthService {
     }
 
     if (
-      (!(await bcrypt.compare(pass, user.password).catch(() => false)) &&
-        user.password !== pass)
+      !(await bcrypt.compare(pass, user.password).catch(() => false)) &&
+      user.password !== pass
     ) {
       throw new UnauthorizedException('Invalid Credentials');
     }

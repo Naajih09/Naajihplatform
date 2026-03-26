@@ -66,11 +66,11 @@ const UsersList = () => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_BASE}/api/users/${id}`, { 
+      const res = await fetch(`${API_BASE}/api/users/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      
+
       if (res.ok) {
         showToast("User has been banned and removed.", "success");
         setUsers(users.filter(u => u.id !== id));
@@ -96,7 +96,7 @@ const UsersList = () => {
 
       if (res.ok) {
         showToast(`User ${user.isActive ? 'deactivated' : 'activated'} successfully.`, 'success');
-        setUsers(users.map(u => u.id === user.id ? { ...u, isActive: !user.isActive } : u));
+        setUsers(users.map(u => u.id === user.id ? { ...u, isActive: !u.isActive } : u));
         if (viewUser?.id === user.id) {
           setViewUser({ ...viewUser, isActive: !viewUser.isActive });
         }
@@ -173,27 +173,35 @@ const UsersList = () => {
           <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">User Management</h1>
           <p className="text-slate-500 mt-1 dark:text-gray-500">Manage, verify, and monitor platform accounts.</p>
         </div>
-        
+
         {/* Controls */}
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <div className="relative flex-grow md:flex-grow-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500" size={16} />
-            <input 
-              type="text" 
-              placeholder="Search users..." 
+            {/* Added id and sr-only label for the search input */}
+            <label htmlFor="search-users-input" className="sr-only">Search Users</label>
+            <input
+              type="text"
+              placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="admin-input w-full md:w-64 pl-9 pr-4 py-2 text-sm"
+              id="search-users-input" // Added id
+              aria-label="Search users" // Good practice to keep aria-label too
             />
           </div>
           <div className="flex items-center gap-2 admin-input px-3 py-2">
             <Filter size={16} className="text-slate-500 dark:text-gray-500" />
-            <select 
-              value={roleFilter} 
+            {/* Added a visually hidden label and an id */}
+            <label htmlFor="role-filter-select" className="sr-only">Filter by User Role</label>
+            <select
+              value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
               className="bg-transparent text-sm text-slate-900 focus:outline-none dark:text-white"
+              // Keep title and aria-label as they provide good fallback/additional context
               title="Filter by user role"
               aria-label="Filter by user role"
+              id="role-filter-select" // Added id
             >
               <option value="ALL">All Roles</option>
               <option value="ENTREPRENEUR">Entrepreneurs</option>
@@ -201,22 +209,28 @@ const UsersList = () => {
               <option value="ADMIN">Admins</option>
             </select>
           </div>
-          <select 
-            value={sortBy} 
+          {/* Added a visually hidden label and an id */}
+          <label htmlFor="sort-by-select" className="sr-only">Sort Users By</label>
+          <select
+            value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
             className="admin-input px-3 py-2 text-sm"
             title="Sort users"
             aria-label="Sort users"
+            id="sort-by-select" // Added id
           >
             <option value="date">Sort: Newest</option>
             <option value="name">Sort: A-Z</option>
           </select>
+          {/* Added a visually hidden label and an id */}
+          <label htmlFor="page-size-select" className="sr-only">Items per page</label>
           <select
             value={pageSize}
             onChange={(e) => setPageSize(Number(e.target.value))}
             className="admin-input px-3 py-2 text-sm"
             title="Items per page"
             aria-label="Items per page"
+            id="page-size-select" // Added id
           >
             <option value={10}>10 per page</option>
             <option value={20}>20 per page</option>
@@ -249,7 +263,19 @@ const UsersList = () => {
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-sm text-slate-700 dark:text-gray-300">
                 {users.length === 0 ? (
-                  <tr><td colSpan={5} className="py-10 text-center text-slate-500 dark:text-gray-500">No users found matching your criteria.</td></tr>
+                  <tr>
+                    <td colSpan={5} className="px-6 py-10">
+                      <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center dark:border-white/10 dark:bg-white/[0.03]">
+                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm dark:bg-[#151518] dark:text-gray-400">
+                          0
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">No users match this view</h3>
+                        <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-gray-400">
+                          Adjust the search query, role filter, or sort option to surface the accounts you want to manage.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
                 ) : (
                   users.map((user) => {
                     const profile = user.entrepreneurProfile || user.investorProfile || {};
@@ -274,8 +300,8 @@ const UsersList = () => {
                         </td>
                         <td className="px-6 py-4 text-slate-500 dark:text-gray-500">{new Date(user.createdAt).toLocaleDateString()}</td>
                         <td className="px-6 py-4">
-                          {user.isVerified ? 
-                            <span className="text-green-500 flex items-center gap-1 text-xs font-bold"><Shield size={12}/> Verified</span> : 
+                          {user.isVerified ?
+                            <span className="text-green-500 flex items-center gap-1 text-xs font-bold"><Shield size={12}/> Verified</span> :
                             <span className="text-slate-500 dark:text-gray-500 flex items-center gap-1 text-xs"><ShieldAlert size={12}/> Unverified</span>
                           }
                           {user.isActive === false && (
@@ -335,8 +361,8 @@ const UsersList = () => {
       {viewUser && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-white border border-slate-200 rounded-xl w-full max-w-lg p-6 relative dark:bg-[#1d1d20] dark:border-white/10">
-            <button 
-              onClick={() => { setViewUser(null); setRoleDraft(''); }} 
+            <button
+              onClick={() => { setViewUser(null); setRoleDraft(''); }}
               className="absolute top-4 right-4 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white"
               title="Close Profile Modal"
               type="button"
@@ -348,7 +374,7 @@ const UsersList = () => {
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                User Profile Details {viewUser.isVerified && <Shield className="text-green-500" size={18} />}
             </h3>
-            
+
             <div className="space-y-4 text-sm text-slate-700 dark:text-gray-300">
               <div className="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-white/5 p-4 rounded-lg">
                 <div>
@@ -394,11 +420,15 @@ const UsersList = () => {
 
             <div className="mt-6 border-t border-slate-200 dark:border-white/10 pt-4 space-y-3">
               <div className="flex flex-col md:flex-row md:items-center gap-3">
-                <label className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold">Update Role</label>
+                {/* Linked label to select using htmlFor and id */}
+                <label htmlFor="update-role-select" className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold">Update Role</label>
                 <select
                   value={roleDraft || viewUser.role}
                   onChange={(e) => setRoleDraft(e.target.value)}
                   className="admin-input px-3 py-2 text-sm"
+                  id="update-role-select" // Added id
+                  // Also good to add an aria-label for clarity, even with visual label
+                  aria-label="Select new user role"
                 >
                   <option value="ENTREPRENEUR">Entrepreneur</option>
                   <option value="INVESTOR">Investor</option>
@@ -428,7 +458,7 @@ const UsersList = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="mt-6 flex justify-end">
               <button onClick={() => { setViewUser(null); setRoleDraft(''); }} className="px-4 py-2 admin-button-secondary rounded">Close</button>
             </div>

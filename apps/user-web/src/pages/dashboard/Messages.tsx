@@ -245,7 +245,17 @@ const Messages = () => {
         
         <div className="flex-1 overflow-y-auto">
           {loading ? <div className="p-4 text-center text-slate-500"><Loader2 className="animate-spin inline mr-2"/> Loading...</div> : 
-           filteredPartners.length === 0 ? <div className="p-4 text-center text-slate-500 text-sm">No connections found.</div> :
+           filteredPartners.length === 0 ? (
+            <div className="m-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center dark:border-white/10 dark:bg-white/5">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm dark:bg-[#151518] dark:text-gray-400">
+                0
+              </div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">No conversations available</h3>
+              <p className="mt-1 text-xs text-slate-500 dark:text-gray-400">
+                Once you connect with a founder or investor, your chats will appear here.
+              </p>
+            </div>
+           ) :
            filteredPartners.map((conn) => {
              const partner = getPartnerDetails(conn);
              return (

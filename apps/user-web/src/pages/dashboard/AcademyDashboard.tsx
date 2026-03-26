@@ -494,7 +494,9 @@ const AcademyDashboard = () => {
                 </div>
               ) : (
                 <div className="text-[10px] text-slate-500 dark:text-gray-500 uppercase font-bold">
-                  No milestones achieved yet.
+                  <span className="inline-block rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-center text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
+                    No milestones yet. Complete lessons and assignments to unlock progress markers here.
+                  </span>
                 </div>
               )}
            </div>

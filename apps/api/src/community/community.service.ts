@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import {
   CommunityReportStatus,
   CommunityReportTarget,
@@ -43,7 +47,9 @@ export class CommunityService {
             id: true,
             email: true,
             role: true,
-            entrepreneurProfile: { select: { firstName: true, lastName: true } },
+            entrepreneurProfile: {
+              select: { firstName: true, lastName: true },
+            },
             investorProfile: { select: { firstName: true, lastName: true } },
           },
         },
@@ -51,7 +57,8 @@ export class CommunityService {
       },
     });
 
-    const nextCursor = posts.length === take ? posts[posts.length - 1].id : null;
+    const nextCursor =
+      posts.length === take ? posts[posts.length - 1].id : null;
     return { items: posts, nextCursor };
   }
 
@@ -64,7 +71,9 @@ export class CommunityService {
             id: true,
             email: true,
             role: true,
-            entrepreneurProfile: { select: { firstName: true, lastName: true } },
+            entrepreneurProfile: {
+              select: { firstName: true, lastName: true },
+            },
             investorProfile: { select: { firstName: true, lastName: true } },
           },
         },
@@ -85,8 +94,12 @@ export class CommunityService {
                 id: true,
                 email: true,
                 role: true,
-                entrepreneurProfile: { select: { firstName: true, lastName: true } },
-                investorProfile: { select: { firstName: true, lastName: true } },
+                entrepreneurProfile: {
+                  select: { firstName: true, lastName: true },
+                },
+                investorProfile: {
+                  select: { firstName: true, lastName: true },
+                },
               },
             },
           },
@@ -107,7 +120,10 @@ export class CommunityService {
     return post;
   }
 
-  async createPost(userId: string, data: { title: string; body: string; tags?: string[] }) {
+  async createPost(
+    userId: string,
+    data: { title: string; body: string; tags?: string[] },
+  ) {
     const user = await this.databaseService.user.findUnique({
       where: { id: userId },
       select: { id: true, role: true, isVerified: true },
@@ -131,7 +147,9 @@ export class CommunityService {
             id: true,
             email: true,
             role: true,
-            entrepreneurProfile: { select: { firstName: true, lastName: true } },
+            entrepreneurProfile: {
+              select: { firstName: true, lastName: true },
+            },
             investorProfile: { select: { firstName: true, lastName: true } },
           },
         },
@@ -149,7 +167,9 @@ export class CommunityService {
       throw new NotFoundException('Post not found.');
     }
     if (post.status !== CommunityStatus.APPROVED) {
-      throw new ForbiddenException('Comments are disabled until the post is approved.');
+      throw new ForbiddenException(
+        'Comments are disabled until the post is approved.',
+      );
     }
 
     const user = await this.databaseService.user.findUnique({
@@ -174,7 +194,9 @@ export class CommunityService {
             id: true,
             email: true,
             role: true,
-            entrepreneurProfile: { select: { firstName: true, lastName: true } },
+            entrepreneurProfile: {
+              select: { firstName: true, lastName: true },
+            },
             investorProfile: { select: { firstName: true, lastName: true } },
           },
         },
@@ -207,7 +229,9 @@ export class CommunityService {
             id: true,
             email: true,
             role: true,
-            entrepreneurProfile: { select: { firstName: true, lastName: true } },
+            entrepreneurProfile: {
+              select: { firstName: true, lastName: true },
+            },
             investorProfile: { select: { firstName: true, lastName: true } },
           },
         },
@@ -219,15 +243,30 @@ export class CommunityService {
         if (report.targetType === CommunityReportTarget.POST) {
           const post = await this.databaseService.communityPost.findUnique({
             where: { id: report.targetId },
-            select: { id: true, title: true, body: true, userId: true, status: true },
+            select: {
+              id: true,
+              title: true,
+              body: true,
+              userId: true,
+              status: true,
+            },
           });
           return { ...report, target: post ? { ...post, type: 'POST' } : null };
         }
         const comment = await this.databaseService.communityComment.findUnique({
           where: { id: report.targetId },
-          select: { id: true, body: true, userId: true, status: true, postId: true },
+          select: {
+            id: true,
+            body: true,
+            userId: true,
+            status: true,
+            postId: true,
+          },
         });
-        return { ...report, target: comment ? { ...comment, type: 'COMMENT' } : null };
+        return {
+          ...report,
+          target: comment ? { ...comment, type: 'COMMENT' } : null,
+        };
       }),
     );
 
@@ -291,7 +330,9 @@ export class CommunityService {
             id: true,
             email: true,
             role: true,
-            entrepreneurProfile: { select: { firstName: true, lastName: true } },
+            entrepreneurProfile: {
+              select: { firstName: true, lastName: true },
+            },
             investorProfile: { select: { firstName: true, lastName: true } },
           },
         },
@@ -309,7 +350,9 @@ export class CommunityService {
             id: true,
             email: true,
             role: true,
-            entrepreneurProfile: { select: { firstName: true, lastName: true } },
+            entrepreneurProfile: {
+              select: { firstName: true, lastName: true },
+            },
             investorProfile: { select: { firstName: true, lastName: true } },
           },
         },

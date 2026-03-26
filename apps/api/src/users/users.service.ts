@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { User, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
@@ -96,7 +100,12 @@ export class UsersService {
   }
 
   // Admin-only creation (no public signup)
-  async createAdmin(email: string, password: string, firstName: string, lastName: string) {
+  async createAdmin(
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+  ) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await this.databaseService.user.create({
@@ -217,7 +226,11 @@ export class UsersService {
   async findOne(email: string) {
     return this.databaseService.user.findUnique({
       where: { email },
-      include: { entrepreneurProfile: true, investorProfile: true, subscription: true },
+      include: {
+        entrepreneurProfile: true,
+        investorProfile: true,
+        subscription: true,
+      },
     });
   }
 
@@ -330,15 +343,16 @@ export class UsersService {
   // Admin stats (platform overview)
   async getAdminStats() {
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const [totalUsers, activeUsers, verifiedUsers, roleCounts] = await Promise.all([
-      this.databaseService.user.count(),
-      this.databaseService.user.count({ where: { isActive: true } }),
-      this.databaseService.user.count({ where: { isVerified: true } }),
-      this.databaseService.user.groupBy({
-        by: ['role'],
-        _count: { _all: true },
-      }),
-    ]);
+    const [totalUsers, activeUsers, verifiedUsers, roleCounts] =
+      await Promise.all([
+        this.databaseService.user.count(),
+        this.databaseService.user.count({ where: { isActive: true } }),
+        this.databaseService.user.count({ where: { isVerified: true } }),
+        this.databaseService.user.groupBy({
+          by: ['role'],
+          _count: { _all: true },
+        }),
+      ]);
 
     const [newUsersLast7Days, newConnectionsLast7Days] = await Promise.all([
       this.databaseService.user.count({
@@ -484,8 +498,14 @@ export class UsersService {
     }
 
     const now = new Date();
-    if (subscription?.plan === 'PREMIUM' && subscription?.endDate && subscription.endDate > now) {
-      throw new ForbiddenException('Active premium subscription already exists.');
+    if (
+      subscription?.plan === 'PREMIUM' &&
+      subscription?.endDate &&
+      subscription.endDate > now
+    ) {
+      throw new ForbiddenException(
+        'Active premium subscription already exists.',
+      );
     }
 
     const trialEndsAt = new Date(

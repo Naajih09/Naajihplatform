@@ -85,7 +85,10 @@ export class PaymentsService {
     await this.databaseService.paymentTransaction.create({
       data: {
         reference,
-        provider: provider === 'paystack' ? PaymentProvider.PAYSTACK : PaymentProvider.OPAY,
+        provider:
+          provider === 'paystack'
+            ? PaymentProvider.PAYSTACK
+            : PaymentProvider.OPAY,
         amount: amountKobo,
         email,
         userId,
@@ -99,7 +102,11 @@ export class PaymentsService {
     return this.initializeOPay(email, amountKobo, reference);
   }
 
-  private async initializePaystack(email: string, amountKobo: number, reference: string) {
+  private async initializePaystack(
+    email: string,
+    amountKobo: number,
+    reference: string,
+  ) {
     const url = 'https://api.paystack.co/transaction/initialize';
     const response = await axios.post(
       url,
@@ -118,7 +125,11 @@ export class PaymentsService {
     return response.data.data; // { authorization_url, reference }
   }
 
-  private async initializeOPay(email: string, amountKobo: number, reference: string) {
+  private async initializeOPay(
+    email: string,
+    amountKobo: number,
+    reference: string,
+  ) {
     const url =
       'https://api.opaycheckout.com/api/v1/international/cashier/create';
 
@@ -157,14 +168,16 @@ export class PaymentsService {
   }
 
   async verifyTransaction(provider: 'paystack' | 'opay', reference: string) {
-    const transaction = await this.databaseService.paymentTransaction.findUnique({
-      where: { reference },
-    });
+    const transaction =
+      await this.databaseService.paymentTransaction.findUnique({
+        where: { reference },
+      });
     if (!transaction) {
       throw new BadRequestException('Unknown reference');
     }
     if (
-      (provider === 'paystack' && transaction.provider !== PaymentProvider.PAYSTACK) ||
+      (provider === 'paystack' &&
+        transaction.provider !== PaymentProvider.PAYSTACK) ||
       (provider === 'opay' && transaction.provider !== PaymentProvider.OPAY)
     ) {
       throw new BadRequestException('Provider mismatch');
@@ -209,7 +222,8 @@ export class PaymentsService {
     await this.databaseService.paymentTransaction.update({
       where: { reference },
       data: {
-        status: status === 'success' ? PaymentStatus.SUCCESS : PaymentStatus.FAILED,
+        status:
+          status === 'success' ? PaymentStatus.SUCCESS : PaymentStatus.FAILED,
         email: customerEmail || transaction.email,
       },
     });
@@ -277,7 +291,9 @@ export class PaymentsService {
   ) {
     const paystackSecret = process.env.PAYSTACK_WEBHOOK_SECRET;
     if (!paystackSecret) {
-      throw new BadRequestException('PAYSTACK_WEBHOOK_SECRET is not configured');
+      throw new BadRequestException(
+        'PAYSTACK_WEBHOOK_SECRET is not configured',
+      );
     }
 
     const expected = crypto
@@ -299,9 +315,10 @@ export class PaymentsService {
     }
 
     const amount = payload?.data?.amount;
-    const transaction = await this.databaseService.paymentTransaction.findUnique({
-      where: { reference },
-    });
+    const transaction =
+      await this.databaseService.paymentTransaction.findUnique({
+        where: { reference },
+      });
     if (!transaction) {
       throw new BadRequestException('Unknown reference');
     }
@@ -338,9 +355,10 @@ export class PaymentsService {
     }
 
     const amount = payload?.data?.amount?.total || payload?.amount?.total;
-    const transaction = await this.databaseService.paymentTransaction.findUnique({
-      where: { reference },
-    });
+    const transaction =
+      await this.databaseService.paymentTransaction.findUnique({
+        where: { reference },
+      });
     if (!transaction) {
       throw new BadRequestException('Unknown reference');
     }

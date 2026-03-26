@@ -68,19 +68,13 @@ export class MessagesController {
 
   // PATCH /api/messages/:messageId/read -> Mark as read
   @Patch(':messageId/read')
-  markAsRead(
-    @Param('messageId') messageId: string,
-    @Request() req,
-  ) {
+  markAsRead(@Param('messageId') messageId: string, @Request() req) {
     return this.messagesService.markAsRead(messageId, req.user.id);
   }
 
   // DELETE /api/messages/:messageId -> Unsend/Delete message
   @Delete(':messageId')
-  deleteMessage(
-    @Param('messageId') messageId: string,
-    @Request() req,
-  ) {
+  deleteMessage(@Param('messageId') messageId: string, @Request() req) {
     return this.messagesService.deleteMessage(messageId, req.user.id);
   }
 }

@@ -1,9 +1,30 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UseGuards } from '@nestjs/common';
-import { IsArray, IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  IsArray,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { CommunityReportTarget, CommunityStatus, UserRole } from '@prisma/client';
+import {
+  CommunityReportTarget,
+  CommunityStatus,
+  UserRole,
+} from '@prisma/client';
 import { CommunityService } from './community.service';
 
 class CreatePostDto {
@@ -65,10 +86,14 @@ export class CommunityController {
     const isAdmin = req?.user?.role === UserRole.ADMIN;
     const statuses =
       mine === 'true' && userId
-        ? [CommunityStatus.APPROVED, CommunityStatus.PENDING, CommunityStatus.REJECTED]
+        ? [
+            CommunityStatus.APPROVED,
+            CommunityStatus.PENDING,
+            CommunityStatus.REJECTED,
+          ]
         : isAdmin
-        ? undefined
-        : [CommunityStatus.APPROVED];
+          ? undefined
+          : [CommunityStatus.APPROVED];
     return this.communityService.listPosts(size, cursor, {
       userId,
       tag: tag?.trim() || undefined,
@@ -105,7 +130,11 @@ export class CommunityController {
     UserRole.INVESTOR,
     UserRole.ADMIN,
   )
-  addComment(@Param('id') id: string, @Body() body: CreateCommentDto, @Request() req) {
+  addComment(
+    @Param('id') id: string,
+    @Body() body: CreateCommentDto,
+    @Request() req,
+  ) {
     return this.communityService.addComment(req.user.id, id, body.body);
   }
 
@@ -158,7 +187,11 @@ export class CommunityController {
     UserRole.INVESTOR,
     UserRole.ADMIN,
   )
-  createReport(@Param('id') id: string, @Body() body: CreateReportDto, @Request() req) {
+  createReport(
+    @Param('id') id: string,
+    @Body() body: CreateReportDto,
+    @Request() req,
+  ) {
     return this.communityService.createReport(
       req.user.id,
       body.targetType,

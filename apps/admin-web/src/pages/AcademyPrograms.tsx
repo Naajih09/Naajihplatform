@@ -1,10 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, PlusCircle, XCircle, CheckCircle, Upload } from 'lucide-react';
 import api from '../utils/api';
 
+interface ProgramModuleCount {
+  lessons?: number;
+  tasks?: number;
+}
+
+interface ProgramModule {
+  _count?: ProgramModuleCount;
+}
+
+interface Program {
+  id: string;
+  title?: string;
+  description?: string;
+  cohort?: string;
+  isPremium?: boolean;
+  _count?: { modules?: number };
+  modules?: ProgramModule[];
+}
+
 const AcademyPrograms = () => {
-  const [programs, setPrograms] = useState<any[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ title: '', description: '', cohort: '', isPremium: false });
   const [programCsvFile, setProgramCsvFile] = useState<File | null>(null);
@@ -21,26 +40,26 @@ const AcademyPrograms = () => {
     type: 'success',
   });
 
-  const showToast = (message: string, type: 'success' | 'error') => {
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ show: true, message, type });
     setTimeout(() => setToast({ show: false, message: '', type }), 2500);
-  };
+  }, []);
 
-  const fetchPrograms = async () => {
+  const fetchPrograms = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get('/academy/admin/programs');
       setPrograms(res.data || []);
-    } catch (error) {
+    } catch {
       showToast('Failed to load programs.', 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     fetchPrograms();
-  }, []);
+  }, [fetchPrograms]);
 
   const handleCreate = async () => {
     if (!form.title.trim()) {
@@ -52,7 +71,7 @@ const AcademyPrograms = () => {
       setForm({ title: '', description: '', cohort: '', isPremium: false });
       showToast('Program created.', 'success');
       fetchPrograms();
-    } catch (error) {
+    } catch {
       showToast('Failed to create program.', 'error');
     }
   };
@@ -89,7 +108,7 @@ const AcademyPrograms = () => {
         errors.length ? 'error' : 'success',
       );
       fetchPrograms();
-    } catch (error) {
+    } catch {
       showToast('Failed to import programs.', 'error');
     }
   };
@@ -289,7 +308,7 @@ const AcademyPrograms = () => {
                   <p className="uppercase">Lessons</p>
                   <p className="text-lg text-slate-900 dark:text-white font-bold">
                     {program.modules?.reduce(
-                      (total: number, mod: any) =>
+                      (total: number, mod: ProgramModule) =>
                         total + (mod._count?.lessons || 0),
                       0,
                     )}
@@ -299,7 +318,7 @@ const AcademyPrograms = () => {
                   <p className="uppercase">Tasks</p>
                   <p className="text-lg text-slate-900 dark:text-white font-bold">
                     {program.modules?.reduce(
-                      (total: number, mod: any) => total + (mod._count?.tasks || 0),
+                      (total: number, mod: ProgramModule) => total + (mod._count?.tasks || 0),
                       0,
                     )}
                   </p>

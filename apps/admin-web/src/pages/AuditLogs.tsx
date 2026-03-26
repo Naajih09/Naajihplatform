@@ -1,10 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { CheckCircle, Filter, Loader2, Search, XCircle } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
+type AuditAction =
+  | 'VERIFICATION_STATUS_UPDATED'
+  | 'PITCH_STATUS_UPDATED'
+  | string;
+
+interface AuditMetadata {
+  status?: string;
+  targetUserEmail?: string;
+  targetUserId?: string;
+  pitchTitle?: string;
+  [key: string]: unknown;
+}
+
+interface AuditActor {
+  email?: string;
+}
+
+interface AuditLog {
+  id: string;
+  action?: AuditAction;
+  actor?: AuditActor;
+  entityType?: string;
+  entityId?: string;
+  createdAt?: string;
+  metadata?: AuditMetadata;
+}
+
 const AuditLogs = () => {
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [actionFilter, setActionFilter] = useState('ALL');
@@ -20,12 +47,12 @@ const AuditLogs = () => {
     type: 'success',
   });
 
-  const showToast = (message: string, type: 'success' | 'error') => {
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
-  };
+    setTimeout(() => setToast({ show: false, message: '', type }), 3000);
+  }, []);
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
@@ -38,23 +65,23 @@ const AuditLogs = () => {
       if (dateTo) params.set('dateTo', dateTo);
 
       const res = await fetch(`${API_BASE}/api/audit?${params.toString()}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      const list = data.data || data || [];
+      const list = (data.data as AuditLog[]) || (data as AuditLog[]) || [];
       setLogs(list);
       setTotalItems(data.meta?.total ?? list.length);
       setTotalPages(data.meta?.totalPages ?? 1);
-    } catch (err) {
+    } catch {
       showToast('Failed to load audit logs', 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [actionFilter, currentPage, dateFrom, dateTo, pageSize, searchQuery, showToast]);
 
   useEffect(() => {
     fetchLogs();
-  }, [searchQuery, actionFilter, dateFrom, dateTo, currentPage, pageSize]);
+  }, [fetchLogs]);
 
   const safePage = Math.min(currentPage, totalPages);
 
@@ -150,7 +177,19 @@ const AuditLogs = () => {
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-sm text-slate-700 dark:text-gray-300">
                 {logs.length === 0 ? (
-                  <tr><td colSpan={4} className="py-10 text-center text-slate-500 dark:text-gray-500">No audit logs found.</td></tr>
+                  <tr>
+                    <td colSpan={4} className="px-6 py-10">
+                      <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center dark:border-white/10 dark:bg-white/[0.03]">
+                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm dark:bg-[#151518] dark:text-gray-400">
+                          0
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">No audit activity found</h3>
+                        <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-gray-400">
+                          Audit events will show here after admins perform actions such as approvals, updates, or moderation.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
                 ) : (
                   logs.map((log) => (
                     <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
@@ -197,23 +236,26 @@ const AuditLogs = () => {
   );
 };
 
-const formatAuditTitle = (log: any) => {
+const formatAuditTitle = (log: AuditLog) => {
   if (log.action === 'VERIFICATION_STATUS_UPDATED') {
-    const status = log.metadata?.status || 'UPDATED';
-    const target = log.metadata?.targetUserEmail || log.metadata?.targetUserId || 'user';
+    const status = (log.metadata?.status as string) || 'UPDATED';
+    const target =
+      (log.metadata?.targetUserEmail as string) ||
+      (log.metadata?.targetUserId as string) ||
+      'user';
     return `Verification ${String(status).toLowerCase()} for ${target}`;
   }
 
   if (log.action === 'PITCH_STATUS_UPDATED') {
-    const status = log.metadata?.status || 'UPDATED';
-    const title = log.metadata?.pitchTitle || 'pitch';
+    const status = (log.metadata?.status as string) || 'UPDATED';
+    const title = (log.metadata?.pitchTitle as string) || 'pitch';
     return `Pitch ${String(status).toLowerCase()}: ${title}`;
   }
 
   return log.action || 'Activity';
 };
 
-const exportCsv = (rows: any[]) => {
+const exportCsv = (rows: AuditLog[]) => {
   if (!rows.length) return;
   const headers = ['action', 'actorEmail', 'entityType', 'entityId', 'createdAt'];
   const lines = [

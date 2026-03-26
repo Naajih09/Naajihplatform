@@ -41,7 +41,13 @@ export class PitchesController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
   ) {
-    return this.pitchesService.findAll({ search, category, status, page, pageSize });
+    return this.pitchesService.findAll({
+      search,
+      category,
+      status,
+      page,
+      pageSize,
+    });
   }
 
   // Admin-only list with filters + pagination
@@ -55,7 +61,13 @@ export class PitchesController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
   ) {
-    return this.pitchesService.findAll({ search, category, status, page, pageSize });
+    return this.pitchesService.findAll({
+      search,
+      category,
+      status,
+      page,
+      pageSize,
+    });
   }
 
   // Admin stats

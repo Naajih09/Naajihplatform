@@ -438,7 +438,15 @@ const Community = () => {
         {loading ? (
           <div className="text-center text-slate-500">Loading community posts...</div>
         ) : posts.length === 0 ? (
-          <div className="text-center text-slate-500">No posts yet. Be the first to share.</div>
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center dark:border-white/10 dark:bg-[#151518]">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-gray-400">
+              0
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No community posts yet</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-gray-400">
+              Start the conversation with a question, insight, or lesson from your learning journey.
+            </p>
+          </div>
         ) : (
           posts.map((post) => {
             const details = postDetails[post.id];
@@ -558,7 +566,9 @@ const Community = () => {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-slate-500">No comments yet.</p>
+                      <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-xs text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
+                        No comments yet. Add the first response to keep the discussion moving.
+                      </div>
                     )}
 
                     <div className="flex gap-3">
@@ -592,7 +602,9 @@ const Community = () => {
             <div className="bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 rounded-2xl p-6 space-y-4">
               <h3 className="text-sm font-bold uppercase text-slate-500">Pending Posts</h3>
               {pendingPosts.length === 0 ? (
-                <p className="text-sm text-slate-500">No pending posts.</p>
+                <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
+                  No pending posts. New submissions waiting for review will appear here.
+                </div>
               ) : (
                 pendingPosts.map((post) => (
                   <div key={post.id} className="border border-slate-200 dark:border-gray-700 rounded-xl p-4">
@@ -620,7 +632,9 @@ const Community = () => {
             <div className="bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 rounded-2xl p-6 space-y-4">
               <h3 className="text-sm font-bold uppercase text-slate-500">Pending Comments</h3>
               {pendingComments.length === 0 ? (
-                <p className="text-sm text-slate-500">No pending comments.</p>
+                <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
+                  No pending comments. Comment reviews will appear here when moderation is needed.
+                </div>
               ) : (
                 pendingComments.map((comment) => (
                   <div key={comment.id} className="border border-slate-200 dark:border-gray-700 rounded-xl p-4">
@@ -655,7 +669,9 @@ const Community = () => {
           <div className="bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 rounded-2xl p-6 space-y-4">
             <h3 className="text-sm font-bold uppercase text-slate-500">Reports</h3>
             {reports.length === 0 ? (
-              <p className="text-sm text-slate-500">No open reports.</p>
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
+                No open reports. Reported posts and comments will appear here until resolved.
+              </div>
             ) : (
               reports.map((report) => (
                 <div key={report.id} className="border border-slate-200 dark:border-gray-700 rounded-xl p-4 space-y-2">

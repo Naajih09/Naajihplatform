@@ -157,10 +157,13 @@ const Opportunities = () => {
         <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-500 uppercase">Stage:</span>
-                <select 
-                    value={filters.stage} 
+                <label htmlFor="stage-filter-select" className="sr-only">Filter by Stage</label>
+                <select
+                    value={filters.stage}
                     onChange={(e) => setFilters({...filters, stage: e.target.value})}
                     className="bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none"
+                    id="stage-filter-select" // Added a unique id
+                    aria-label="Filter pitches by stage" // Added an aria-label for good measure
                 >
                     <option value="All">All Stages</option>
                     <option value="Idea">Idea</option>
@@ -172,6 +175,7 @@ const Opportunities = () => {
 
             <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-500 uppercase">Ticket (NGN):</span>
+                <label htmlFor="min-ticket-input" className="sr-only">Minimum Ticket</label>
                 <input 
                     type="number" 
                     placeholder="Min" 
@@ -196,13 +200,25 @@ const Opportunities = () => {
         </div>
       </div>
 
+
       {/* FEED */}
       {loading ? (
          <div className="text-center py-20 text-slate-500 animate-pulse">Loading opportunities...</div>
       ) : pitches.length === 0 ? (
-        <div className="text-center p-10 bg-slate-100 dark:bg-[#151518] rounded-xl border border-dashed border-slate-300 dark:border-white/10">
-          <p className="text-slate-500">No opportunities found matching your criteria.</p>
-          <button onClick={() => { setSearchTerm(''); setActiveCategory('All'); }} className="text-primary text-sm font-bold mt-2 hover:underline">Clear Filters</button>
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm dark:border-white/10 dark:bg-[#151518]">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-gray-400">
+            0
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">No opportunities match this view</h3>
+          <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-gray-400">
+            Try a broader search or remove your category filter to see more founder pitches.
+          </p>
+          <button
+            onClick={() => { setSearchTerm(''); setActiveCategory('All'); }}
+            className="mt-4 inline-flex items-center rounded-xl bg-primary px-4 py-2 text-sm font-bold text-black transition hover:brightness-110"
+          >
+            Clear filters
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

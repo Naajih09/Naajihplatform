@@ -252,7 +252,9 @@ const Dashboard = () => {
               ) : pendingVerifications.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-8 text-center text-gray-500">
-                    No pending verifications.
+                    <span className="inline-block rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-center text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
+                      No pending verifications. New KYC requests will appear here.
+                    </span>
                   </td>
                 </tr>
               ) : (
@@ -315,7 +317,9 @@ const Dashboard = () => {
                 {loading ? (
                   <div className="text-xs text-gray-500">Loading audit activity...</div>
                 ) : auditLogs.length === 0 ? (
-                  <div className="text-xs text-gray-500">No recent activity yet.</div>
+                  <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-xs text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
+                    No recent activity yet. Admin actions and system events will appear here.
+                  </div>
                 ) : (
                   auditLogs.map((log) => (
                     <AuditItem
@@ -342,7 +346,9 @@ const Dashboard = () => {
                 {loading ? (
                   <div className="text-xs text-gray-500">Loading categories...</div>
                 ) : investmentBreakdown.length === 0 ? (
-                  <div className="text-xs text-gray-500">No pitch categories yet.</div>
+                  <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-xs text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
+                    No pitch categories yet. Category distribution will appear after founders publish pitches.
+                  </div>
                 ) : (
                   investmentBreakdown.map((item, index) => (
                     <ProgressBar
@@ -370,7 +376,9 @@ const Dashboard = () => {
             </div>
           ) : insights.length === 0 ? (
             <div className="py-8 text-center text-gray-500">
-              No activity data yet.
+              <span className="inline-block rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
+                No activity data yet. This chart will populate as platform usage increases.
+              </span>
             </div>
           ) : (
             <div className="h-72">

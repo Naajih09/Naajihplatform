@@ -97,6 +97,7 @@ const CreatePitch = () => {
           </Button>
         </div>
       ) : (
+      <>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Create New Pitch</h1>
         <Button variant="ghost" onClick={() => navigate('/dashboard/opportunities')}>Cancel</Button>
@@ -139,6 +140,7 @@ const CreatePitch = () => {
           <Button type='submit' className='w-full bg-primary text-neutral-dark font-bold hover:brightness-110' isLoading={loading}>Post Pitch</Button>
         </form>
       </div>
+      </>
       )}
     </div>
   );

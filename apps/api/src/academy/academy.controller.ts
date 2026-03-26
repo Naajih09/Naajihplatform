@@ -1,4 +1,19 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Request, UseGuards, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Request,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  Res,
+} from '@nestjs/common';
 import { AcademyService } from './academy.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -38,10 +53,7 @@ export class AcademyController {
     UserRole.ENTREPRENEUR,
     UserRole.INVESTOR,
   )
-  completeLesson(
-    @Param('lessonId') lessonId: string,
-    @Request() req,
-  ) {
+  completeLesson(@Param('lessonId') lessonId: string, @Request() req) {
     return this.academyService.completeLesson(req.user.id, lessonId);
   }
 
@@ -114,12 +126,18 @@ export class AcademyController {
     @Request() req,
     @Res() res: Response,
   ) {
-    const pdf = await this.academyService.getCertificatePdf(req.user.id, programId);
+    const pdf = await this.academyService.getCertificatePdf(
+      req.user.id,
+      programId,
+    );
     if (!pdf) {
       return res.status(404).json({ message: 'Certificate not available.' });
     }
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="certificate.pdf"');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="certificate.pdf"',
+    );
     return res.send(pdf);
   }
 
@@ -146,7 +164,12 @@ export class AcademyController {
   @Roles(UserRole.ADMIN)
   adminCreateProgram(
     @Body()
-    body: { title: string; description?: string; cohort?: string; isPremium?: boolean },
+    body: {
+      title: string;
+      description?: string;
+      cohort?: string;
+      isPremium?: boolean;
+    },
   ) {
     return this.academyService.adminCreateProgram(body);
   }
@@ -162,7 +185,9 @@ export class AcademyController {
     )
     file: Express.Multer.File,
   ) {
-    return this.academyService.adminImportPrograms(file.buffer.toString('utf-8'));
+    return this.academyService.adminImportPrograms(
+      file.buffer.toString('utf-8'),
+    );
   }
 
   @Patch('admin/programs/:id')
@@ -170,7 +195,12 @@ export class AcademyController {
   adminUpdateProgram(
     @Param('id') id: string,
     @Body()
-    body: { title?: string; description?: string; cohort?: string; isPremium?: boolean },
+    body: {
+      title?: string;
+      description?: string;
+      cohort?: string;
+      isPremium?: boolean;
+    },
   ) {
     return this.academyService.adminUpdateProgram(id, body);
   }
@@ -197,7 +227,10 @@ export class AcademyController {
     )
     file: Express.Multer.File,
   ) {
-    return this.academyService.adminImportModules(programId, file.buffer.toString('utf-8'));
+    return this.academyService.adminImportModules(
+      programId,
+      file.buffer.toString('utf-8'),
+    );
   }
 
   @Patch('admin/modules/:id')
@@ -239,7 +272,10 @@ export class AcademyController {
     )
     file: Express.Multer.File,
   ) {
-    return this.academyService.adminImportLessons(moduleId, file.buffer.toString('utf-8'));
+    return this.academyService.adminImportLessons(
+      moduleId,
+      file.buffer.toString('utf-8'),
+    );
   }
 
   @Patch('admin/lessons/:id')
@@ -281,7 +317,10 @@ export class AcademyController {
     )
     file: Express.Multer.File,
   ) {
-    return this.academyService.adminImportTasks(moduleId, file.buffer.toString('utf-8'));
+    return this.academyService.adminImportTasks(
+      moduleId,
+      file.buffer.toString('utf-8'),
+    );
   }
 
   @Patch('admin/tasks/:id')

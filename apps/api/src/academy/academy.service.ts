@@ -67,7 +67,9 @@ export class AcademyService {
         },
       },
     });
-    return program ? (this.addProgramComputedFields([program])[0] ?? program) : program;
+    return program
+      ? (this.addProgramComputedFields([program])[0] ?? program)
+      : program;
   }
 
   // 3️⃣ GET ONE LESSON
@@ -87,17 +89,20 @@ export class AcademyService {
     if (!lesson) return null;
 
     const isUnlocked =
-      !lesson.module?.unlockDate || new Date(lesson.module.unlockDate) <= new Date();
+      !lesson.module?.unlockDate ||
+      new Date(lesson.module.unlockDate) <= new Date();
 
     let isEnrolled = true;
     if (userId && lesson.module?.programId) {
-      const enrollment = await this.databaseService.programEnrollment.findFirst({
-        where: {
-          userId,
-          programId: lesson.module.programId,
-          status: 'APPROVED',
+      const enrollment = await this.databaseService.programEnrollment.findFirst(
+        {
+          where: {
+            userId,
+            programId: lesson.module.programId,
+            status: 'APPROVED',
+          },
         },
-      });
+      );
       isEnrolled = Boolean(enrollment);
     }
 
@@ -119,7 +124,10 @@ export class AcademyService {
       update: { isCompleted: true },
       create: { userId, lessonId, isCompleted: true },
     });
-    const milestone = await this.awardProgramCompletionMilestone(userId, lessonId);
+    const milestone = await this.awardProgramCompletionMilestone(
+      userId,
+      lessonId,
+    );
     return { progress, milestone };
   }
 
@@ -263,7 +271,12 @@ export class AcademyService {
 
   async adminUpdateProgram(
     id: string,
-    body: { title?: string; description?: string; cohort?: string; isPremium?: boolean },
+    body: {
+      title?: string;
+      description?: string;
+      cohort?: string;
+      isPremium?: boolean;
+    },
   ) {
     return this.databaseService.program.update({
       where: { id },
@@ -303,8 +316,8 @@ export class AcademyService {
           body.unlockDate === null
             ? null
             : body.unlockDate
-            ? new Date(body.unlockDate)
-            : undefined,
+              ? new Date(body.unlockDate)
+              : undefined,
       },
     });
   }
@@ -384,8 +397,8 @@ export class AcademyService {
           body.dueDate === null
             ? null
             : body.dueDate
-            ? new Date(body.dueDate)
-            : undefined,
+              ? new Date(body.dueDate)
+              : undefined,
       },
     });
   }
@@ -405,14 +418,18 @@ export class AcademyService {
       }
       let contentType = (data.contentType || 'VIDEO').toUpperCase();
       if (!['VIDEO', 'ARTICLE', 'QUIZ'].includes(contentType)) {
-        errors.push(`Row ${row.rowNumber}: Invalid contentType "${data.contentType}".`);
+        errors.push(
+          `Row ${row.rowNumber}: Invalid contentType "${data.contentType}".`,
+        );
         contentType = 'VIDEO';
       }
 
       const duration = Number(data.duration);
       const durationValue = Number.isFinite(duration) ? duration : 300;
       if (data.duration && !Number.isFinite(duration)) {
-        errors.push(`Row ${row.rowNumber}: Invalid duration "${data.duration}".`);
+        errors.push(
+          `Row ${row.rowNumber}: Invalid duration "${data.duration}".`,
+        );
       }
 
       await this.databaseService.lesson.create({
@@ -450,7 +467,9 @@ export class AcademyService {
       if (data.dueDate) {
         const parsed = new Date(data.dueDate);
         if (Number.isNaN(parsed.getTime())) {
-          errors.push(`Row ${row.rowNumber}: Invalid dueDate "${data.dueDate}".`);
+          errors.push(
+            `Row ${row.rowNumber}: Invalid dueDate "${data.dueDate}".`,
+          );
         } else {
           dueDate = parsed;
         }
@@ -521,7 +540,9 @@ export class AcademyService {
       if (data.unlockDate) {
         const parsed = new Date(data.unlockDate);
         if (Number.isNaN(parsed.getTime())) {
-          errors.push(`Row ${row.rowNumber}: Invalid unlockDate "${data.unlockDate}".`);
+          errors.push(
+            `Row ${row.rowNumber}: Invalid unlockDate "${data.unlockDate}".`,
+          );
         } else {
           unlockDate = parsed;
         }
@@ -631,7 +652,9 @@ export class AcademyService {
             id: true,
             email: true,
             role: true,
-            entrepreneurProfile: { select: { firstName: true, lastName: true } },
+            entrepreneurProfile: {
+              select: { firstName: true, lastName: true },
+            },
             investorProfile: { select: { firstName: true, lastName: true } },
           },
         },
@@ -674,8 +697,8 @@ export class AcademyService {
       body.status === 'APPROVED'
         ? 'Your assignment submission has been approved.'
         : body.status === 'REJECTED'
-        ? `Your assignment submission was rejected${body.feedback ? `: ${body.feedback}` : '.'}`
-        : 'Your assignment submission status was updated.';
+          ? `Your assignment submission was rejected${body.feedback ? `: ${body.feedback}` : '.'}`
+          : 'Your assignment submission status was updated.';
     await this.notificationsService.create(submission.userId, message);
     if (submission.user?.email) {
       const html = `
@@ -709,7 +732,9 @@ export class AcademyService {
             id: true,
             email: true,
             role: true,
-            entrepreneurProfile: { select: { firstName: true, lastName: true } },
+            entrepreneurProfile: {
+              select: { firstName: true, lastName: true },
+            },
             investorProfile: { select: { firstName: true, lastName: true } },
           },
         },
@@ -737,8 +762,8 @@ export class AcademyService {
       body.status === 'APPROVED'
         ? 'Your enrollment request has been approved. Welcome to the cohort!'
         : body.status === 'REJECTED'
-        ? 'Your enrollment request was declined. You can reapply.'
-        : 'Your enrollment status was updated.';
+          ? 'Your enrollment request was declined. You can reapply.'
+          : 'Your enrollment status was updated.';
     await this.notificationsService.create(enrollment.userId, message);
     if (enrollment.user?.email) {
       const html = `
@@ -790,7 +815,9 @@ export class AcademyService {
         user: {
           select: {
             email: true,
-            entrepreneurProfile: { select: { firstName: true, lastName: true } },
+            entrepreneurProfile: {
+              select: { firstName: true, lastName: true },
+            },
             investorProfile: { select: { firstName: true, lastName: true } },
           },
         },
@@ -837,7 +864,9 @@ export class AcademyService {
         user: {
           select: {
             email: true,
-            entrepreneurProfile: { select: { firstName: true, lastName: true } },
+            entrepreneurProfile: {
+              select: { firstName: true, lastName: true },
+            },
             investorProfile: { select: { firstName: true, lastName: true } },
           },
         },
@@ -867,7 +896,8 @@ export class AcademyService {
     const certificate = await this.getCertificate(userId, programId);
     if (!certificate) return null;
 
-    const { PDFDocument, rgb, StandardFonts, degrees } = await import('pdf-lib');
+    const { PDFDocument, rgb, StandardFonts, degrees } =
+      await import('pdf-lib');
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([842, 595]); // A4 landscape
     const { width, height } = page.getSize();
@@ -900,10 +930,9 @@ export class AcademyService {
         if (resp.ok) {
           const bytes = await resp.arrayBuffer();
           const contentType = resp.headers.get('content-type') || '';
-          const image =
-            contentType.includes('png')
-              ? await pdfDoc.embedPng(bytes)
-              : await pdfDoc.embedJpg(bytes);
+          const image = contentType.includes('png')
+            ? await pdfDoc.embedPng(bytes)
+            : await pdfDoc.embedJpg(bytes);
           const logoDims = image.scale(0.2);
           page.drawImage(image, {
             x: width - logoDims.width - 70,
@@ -966,9 +995,12 @@ export class AcademyService {
       color: primary,
     });
 
-    const awarded = new Date(certificate.achievedAt).toLocaleDateString('en-NG', {
-      dateStyle: 'long',
-    });
+    const awarded = new Date(certificate.achievedAt).toLocaleDateString(
+      'en-NG',
+      {
+        dateStyle: 'long',
+      },
+    );
 
     page.drawText(`Awarded on ${awarded}`, {
       x: 60,
@@ -1251,7 +1283,10 @@ export class AcademyService {
     });
   }
 
-  private async awardProgramCompletionMilestone(userId: string, lessonId: string) {
+  private async awardProgramCompletionMilestone(
+    userId: string,
+    lessonId: string,
+  ) {
     const lesson = await this.databaseService.lesson.findUnique({
       where: { id: lessonId },
       select: {
@@ -1271,13 +1306,14 @@ export class AcademyService {
     const totalLessons = await this.databaseService.lesson.count({
       where: { module: { programId } },
     });
-    const completedLessons = await this.databaseService.userLessonProgress.count({
-      where: {
-        userId,
-        isCompleted: true,
-        lesson: { module: { programId } },
-      },
-    });
+    const completedLessons =
+      await this.databaseService.userLessonProgress.count({
+        where: {
+          userId,
+          isCompleted: true,
+          lesson: { module: { programId } },
+        },
+      });
 
     if (totalLessons === 0 || completedLessons < totalLessons) {
       return null;

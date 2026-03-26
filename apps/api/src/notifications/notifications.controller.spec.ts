@@ -14,7 +14,10 @@ describe('NotificationsController', () => {
       providers: [
         NotificationsService,
         { provide: DatabaseService, useValue: {} },
-        { provide: NotificationsGateway, useValue: { sendNotification: jest.fn() } },
+        {
+          provide: NotificationsGateway,
+          useValue: { sendNotification: jest.fn() },
+        },
         { provide: MailerService, useValue: { sendMail: jest.fn() } },
       ],
     }).compile();

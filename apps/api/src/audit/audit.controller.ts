@@ -26,6 +26,13 @@ export class AuditController {
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
-    return this.auditService.getAll({ page, pageSize, action, search, dateFrom, dateTo });
+    return this.auditService.getAll({
+      page,
+      pageSize,
+      action,
+      search,
+      dateFrom,
+      dateTo,
+    });
   }
 }

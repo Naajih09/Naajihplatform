@@ -46,16 +46,19 @@ export class VerificationService {
   }
 
   // 3. ADMIN: GET ALL PENDING
-  async findAllPending(query?: { page?: string; pageSize?: string; status?: string; search?: string }) {
+  async findAllPending(query?: {
+    page?: string;
+    pageSize?: string;
+    status?: string;
+    search?: string;
+  }) {
     const page = Math.max(1, Number(query?.page) || 1);
     const pageSize = Math.min(100, Math.max(1, Number(query?.pageSize) || 20));
     const skip = (page - 1) * pageSize;
 
     const where: any = {
       status:
-        query?.status && query.status !== 'ALL'
-          ? query.status
-          : 'PENDING',
+        query?.status && query.status !== 'ALL' ? query.status : 'PENDING',
     };
 
     if (query?.search) {

@@ -1,10 +1,32 @@
 import { CheckCircle, ExternalLink, FileText, Loader2, XCircle, ChevronLeft, ChevronRight, X, Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
+interface VerificationProfile {
+  firstName?: string;
+  lastName?: string;
+}
+
+interface VerificationUser {
+  email?: string;
+  role?: string;
+  entrepreneurProfile?: VerificationProfile;
+  investorProfile?: VerificationProfile;
+}
+
+interface VerificationRequest {
+  id: string;
+  documentUrl?: string;
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED';
+  user?: VerificationUser;
+  createdAt?: string;
+}
+
+type VerificationStatusFilter = NonNullable<VerificationRequest['status']>;
+
 const Verification = () => {
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<VerificationRequest[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Pagination State
@@ -13,7 +35,7 @@ const Verification = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('PENDING');
+  const [statusFilter, setStatusFilter] = useState<VerificationStatusFilter>('PENDING');
 
   // Modals State
   const[rejectModal, setRejectModal] = useState<{show: boolean; id: string | null}>({ show: false, id: null });
@@ -23,12 +45,12 @@ const Verification = () => {
   // Toast State
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({ show: false, message: '', type: 'success' });
 
-  const showToast = (message: string, type: 'success' | 'error') => {
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
-  };
+    setTimeout(() => setToast({ show: false, message: '', type }), 3000);
+  }, []);
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
@@ -38,24 +60,23 @@ const Verification = () => {
       if (searchQuery) params.set('search', searchQuery);
       if (statusFilter) params.set('status', statusFilter);
       const res = await fetch(`${API_BASE}/api/verification/admin/pending?${params.toString()}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      const list = data.data || data || [];
+      const list = (data.data as VerificationRequest[]) || (data as VerificationRequest[]) || [];
       setRequests(list);
       setTotalItems(data.meta?.total ?? list.length);
       setTotalPages(data.meta?.totalPages ?? 1);
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to fetch requests", "error");
+    } catch {
+      showToast('Failed to fetch requests', 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, pageSize, searchQuery, statusFilter, showToast]);
 
   useEffect(() => {
     fetchRequests();
-  }, [currentPage, pageSize, searchQuery, statusFilter]);
+  }, [fetchRequests]);
 
   const handleApprove = async (id: string) => {
     if (!window.confirm(`Are you sure you want to APPROVE this user?`)) return;
@@ -77,21 +98,21 @@ const Verification = () => {
       const token = localStorage.getItem('accessToken');
       const res = await fetch(`${API_BASE}/api/verification/admin/${id}`, {
         method: 'PATCH',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ status, rejectionReason: reason })
+        body: JSON.stringify({ status, rejectionReason: reason }),
       });
-      
+
       if (res.ok) {
-        showToast(`Request ${status} successfully!`, "success");
-        fetchRequests(); 
+        showToast(`Request ${status} successfully!`, 'success');
+        fetchRequests();
       } else {
-        showToast("Action failed to save.", "error");
+        showToast('Action failed to save.', 'error');
       }
-    } catch (err) {
-      showToast("Network error occurred.", "error");
+    } catch {
+      showToast('Network error occurred.', 'error');
     }
   };
 
@@ -146,8 +167,14 @@ const Verification = () => {
       {loading ? (
         <div className="text-slate-500 dark:text-gray-400 text-center py-20"><Loader2 className="animate-spin inline mr-2"/> Loading queue...</div>
       ) : requests.length === 0 ? (
-        <div className="p-10 admin-surface text-center text-slate-500 dark:text-gray-500">
-           No pending verifications. Good job!
+        <div className="admin-surface p-10 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-gray-400">
+            0
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Verification queue is clear</h3>
+          <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-gray-400">
+            There are no verification requests for this filter right now. Try changing status or search terms if you expected results.
+          </p>
         </div>
       ) : (
         <div className="admin-surface overflow-hidden flex flex-col min-h-[500px]">
@@ -307,7 +334,7 @@ const Verification = () => {
   );
 };
 
-const exportCsv = (rows: any[]) => {
+const exportCsv = (rows: VerificationRequest[]) => {
   if (!rows.length) return;
   const headers = ['email', 'role', 'status', 'documentUrl', 'createdAt'];
   const lines = [

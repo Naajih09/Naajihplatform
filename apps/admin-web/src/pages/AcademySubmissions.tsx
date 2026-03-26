@@ -1,13 +1,41 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { CheckCircle, XCircle, ClipboardCheck, Filter } from 'lucide-react';
 import api from '../utils/api';
 
-const statusOptions = ['ALL', 'PENDING', 'SUBMITTED', 'APPROVED', 'REJECTED'];
+const statusOptions = ['ALL', 'PENDING', 'SUBMITTED', 'APPROVED', 'REJECTED'] as const;
+type SubmissionFilter = (typeof statusOptions)[number];
+type SubmissionStatus = Exclude<SubmissionFilter, 'ALL'>;
+
+interface SubmissionUser {
+  email?: string;
+  entrepreneurProfile?: { firstName?: string; lastName?: string };
+  investorProfile?: { firstName?: string; lastName?: string };
+}
+
+interface SubmissionTask {
+  title?: string;
+  module?: {
+    title?: string;
+    program?: {
+      title?: string;
+    };
+  };
+}
+
+interface SubmissionRecord {
+  id: string;
+  status: SubmissionStatus;
+  user?: SubmissionUser;
+  task?: SubmissionTask;
+  submittedAt?: string;
+  submissionUrl?: string;
+  feedback?: string;
+}
 
 const AcademySubmissions = () => {
-  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [submissions, setSubmissions] = useState<SubmissionRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState<SubmissionFilter>('ALL');
   const [feedbackMap, setFeedbackMap] = useState<Record<string, string>>({});
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{
@@ -20,30 +48,30 @@ const AcademySubmissions = () => {
     type: 'success',
   });
 
-  const showToast = (message: string, type: 'success' | 'error') => {
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ show: true, message, type });
     setTimeout(() => setToast({ show: false, message: '', type }), 2500);
-  };
+  }, []);
 
-  const fetchSubmissions = async () => {
+  const fetchSubmissions = useCallback(async () => {
     setLoading(true);
     try {
       const params =
         statusFilter !== 'ALL' ? { status: statusFilter } : undefined;
       const res = await api.get('/academy/admin/submissions', { params });
       setSubmissions(res.data || []);
-    } catch (error) {
+    } catch {
       showToast('Failed to load submissions.', 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast, statusFilter]);
 
   useEffect(() => {
     fetchSubmissions();
-  }, [statusFilter]);
+  }, [fetchSubmissions]);
 
-  const handleUpdate = async (submissionId: string, status: string) => {
+  const handleUpdate = async (submissionId: string, status: SubmissionStatus) => {
     setUpdatingId(submissionId);
     try {
       await api.patch(`/academy/admin/submissions/${submissionId}`, {
@@ -52,7 +80,7 @@ const AcademySubmissions = () => {
       });
       showToast(`Submission ${status.toLowerCase()}.`, 'success');
       fetchSubmissions();
-    } catch (error) {
+    } catch {
       showToast('Failed to update submission.', 'error');
     } finally {
       setUpdatingId(null);
@@ -75,7 +103,9 @@ const AcademySubmissions = () => {
           <Filter size={16} className="text-slate-500 dark:text-gray-400" />
           <select
             value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value)}
+            onChange={(event) =>
+              setStatusFilter(event.target.value as SubmissionFilter)
+            }
             aria-label="Filter submissions by status"
             className="admin-input px-3 py-2 text-sm"
           >
@@ -92,7 +122,15 @@ const AcademySubmissions = () => {
         <div className="text-slate-500 dark:text-gray-400">Loading submissions...</div>
       ) : submissions.length === 0 ? (
         <div className="admin-surface rounded-2xl p-6 text-slate-500 dark:text-gray-400">
-          No submissions found.
+          <div className="mx-auto max-w-lg rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center dark:border-white/10 dark:bg-white/[0.03]">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm dark:bg-[#151518] dark:text-gray-400">
+              0
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No submissions found</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-gray-400">
+              Try a different status or program filter. Student task submissions will appear here once they are sent in.
+            </p>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">

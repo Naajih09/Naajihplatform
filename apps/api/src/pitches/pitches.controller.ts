@@ -8,7 +8,6 @@ import {
   Request,
 } from '@nestjs/common';
 import { PitchesService } from './pitches.service';
-import { Prisma } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Query } from '@nestjs/common';
 import { Patch, Delete } from '@nestjs/common';

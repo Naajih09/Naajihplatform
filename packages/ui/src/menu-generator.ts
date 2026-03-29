@@ -29,7 +29,6 @@ import {
   Map,
   Briefcase,
   Globe,
-  Folder,
   Lock,
   Palette,
   Layers,

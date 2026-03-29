@@ -1,5 +1,4 @@
 import { lazy } from 'react';
-import Verification from '../pages/dashboard/Verification';
 
 // --- Public Pages ---
 const HomePage = lazy(() => import('../pages/landing'));
@@ -18,7 +17,7 @@ const CreatePitch = lazy(() => import('../pages/dashboard/CreatePitch'));
 const Connections = lazy(() => import('../pages/dashboard/Connections'));
 const Messages = lazy(() => import('../pages/dashboard/Messages').then(module => ({ default: module.default })));
 const Settings = lazy(() => import('../pages/dashboard/Settings'));
-const verification = lazy(() => import('../pages/dashboard/Verification'));
+const Verification = lazy(() => import('../pages/dashboard/Verification'));
 const LearningCenter = lazy(() => import('../pages/dashboard/LearningCenter'));
 const CourseViewer = lazy(() => import('../pages/dashboard/CourseViewer'));
 const AcademyDashboard = lazy(() => import('../pages/dashboard/AcademyDashboard'));

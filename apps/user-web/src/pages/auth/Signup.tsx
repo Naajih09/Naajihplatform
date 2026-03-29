@@ -4,7 +4,6 @@ import {
   Rocket, Wallet, GraduationCap, ArrowRight, CheckCircle, 
   AlertCircle, Eye, EyeOff, ChevronRight, Lock, ShieldCheck, BadgeDollarSign
 } from 'lucide-react';
-import Button from '../../components/Button';
 
 const Signup = () => {
   const navigate = useNavigate();

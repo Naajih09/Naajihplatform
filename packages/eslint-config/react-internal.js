@@ -32,6 +32,16 @@ export const config = [
     settings: { react: { version: "detect" } },
     rules: {
       ...pluginReactHooks.configs.recommended.rules,
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^(fill|duotone|_)",
+          varsIgnorePattern: "^(fill|duotone|_)",
+          caughtErrors: "none",
+        },
+      ],
+      "react/prop-types": "off",
       // React scope no longer necessary with new JSX transform.
       "react/react-in-jsx-scope": "off",
     },

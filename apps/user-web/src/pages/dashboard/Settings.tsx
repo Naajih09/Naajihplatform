@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Bell, Lock, LogOut, Trash2, Save, Loader2 } from 'lucide-react';
+import { Bell, Lock, Trash2 } from 'lucide-react';
 import Button from '../../components/Button';
 import { useNavigate } from 'react-router-dom';
 

@@ -160,7 +160,9 @@ const AcademySubmissions = () => {
                       Submitted by {userName || submission.user?.email}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-gray-500">
-                      {new Date(submission.submittedAt).toLocaleString('en-NG')}
+                      {submission.submittedAt
+                        ? new Date(submission.submittedAt).toLocaleString('en-NG')
+                        : 'Unknown submission date'}
                     </p>
                   </div>
                   <span

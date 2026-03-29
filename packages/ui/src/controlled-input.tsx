@@ -34,7 +34,6 @@ export const TextField = React.forwardRef<HTMLInputElement, InputProps>(
       labelClassName,
       isRequired,
       error,
-      isPhone,
       containerClass,
       type,
       info,
@@ -124,7 +123,7 @@ interface IControllTextInput<
   TFieldValues extends FieldValues,
 > extends OmitTextField {
   errors?: Partial<FieldErrorsImpl<TFieldValues>>;
-  control: Control<TFieldValues, any>;
+  control: Control<TFieldValues>;
   name: Path<TFieldValues>;
   rules?: Omit<
     RegisterOptions<TFieldValues, Path<TFieldValues>>,

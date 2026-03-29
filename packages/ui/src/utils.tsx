@@ -11,17 +11,6 @@ type FormatNumberOptions = {
   fractionDigits?: number;
 };
 
-// Fallback to localhost if the env var isn't set, ensuring it doesn't crash
-// Add this type declaration above or in a separate .d.ts file if preferred
-declare global {
-  interface ImportMeta {
-    env: {
-      VITE_API_BASE_URL?: string;
-      [key: string]: any;
-    };
-  }
-}
-
 export const API_BASE_URL = (import.meta.env && import.meta.env.VITE_API_BASE_URL) || 'http://localhost:3000/api';
 
 export const getApiUrl = (endpoint: string): string => {
@@ -94,7 +83,6 @@ export const DEFAULT_QUERY_PAGE_SIZE = 10;
 export const onNumberValidator = (
   e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
   onChange: (
-    // eslint-disable-next-line no-unused-vars
     d: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
   ) => void
 ) => {

@@ -1,4 +1,4 @@
-import { SVGProps } from 'react';
+import type { SVGProps } from 'react';
 
 export function NoDataIcon({
   width = 100,
@@ -189,13 +189,13 @@ export function ErrorIcon({
         d="M120.392 24.5779L120.392 24.5779L120.393 24.5877L121.384 36.8824C121.468 38.3461 122.596 39.6531 124.042 39.6531C125.489 39.6531 126.617 38.3461 126.701 36.8824L127.692 24.5877L127.692 24.5877L127.693 24.5765C127.841 22.189 126.264 20.1317 124.042 20.1317C121.814 20.1317 120.243 22.273 120.392 24.5779Z"
         fill="white"
         stroke="white"
-        stroke-width="1.22009"
+        strokeWidth="1.22009"
       />
       <path
         d="M124.042 44.5335C122.011 44.5335 120.382 46.1623 120.382 48.1938C120.382 50.2253 122.011 51.8541 124.042 51.8541C126.074 51.8541 127.703 50.2253 127.703 48.1938C127.703 46.1623 126.074 44.5335 124.042 44.5335Z"
         fill="white"
         stroke="white"
-        stroke-width="1.22009"
+        strokeWidth="1.22009"
       />
       <defs>
         <linearGradient
@@ -206,8 +206,8 @@ export function ErrorIcon({
           y2="36.6081"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#B0BACC" />
-          <stop offset="1" stop-color="#969EAE" />
+          <stop stopColor="#B0BACC" />
+          <stop offset="1" stopColor="#969EAE" />
         </linearGradient>
       </defs>
     </svg>

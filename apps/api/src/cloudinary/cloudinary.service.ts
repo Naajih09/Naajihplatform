@@ -26,7 +26,12 @@ export class CloudinaryService {
         (error, result) => {
           if (error) {
             console.error('❌ Cloudinary Error:', error);
-            return reject(error);
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+            return reject(
+              error instanceof Error
+                ? error
+                : new Error('Cloudinary upload failed'),
+            );
           }
           console.log('✅ Upload Success:', result?.secure_url);
           resolve(result);

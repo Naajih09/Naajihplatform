@@ -1,10 +1,9 @@
-import { forwardRef, useRef, ChangeEvent, useState } from 'react';
+import { forwardRef, type ChangeEvent, useState } from 'react';
 import { Input, Label } from '.';
 import { UploadCloud } from 'lucide-react';
 
 interface FileUploaderProps {
   id: string;
-  labelRef?: React.RefObject<HTMLLabelElement>;
   onChange?: (files: FileList | null) => void;
   className?: string;
   accept?: string;
@@ -12,8 +11,7 @@ interface FileUploaderProps {
 }
 
 const FileUploader = forwardRef<HTMLInputElement, FileUploaderProps>(
-  ({ id, labelRef, onChange, className, accept, helperText }, ref) => {
-    const inputRef = useRef<HTMLInputElement>(null);
+  ({ id, onChange, className, accept, helperText }, ref) => {
     const [fileName, setFileName] = useState('No file chosen');
 
     // const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -45,14 +43,12 @@ const FileUploader = forwardRef<HTMLInputElement, FileUploaderProps>(
         <Input
           type='file'
           id={id}
-          ref={(node: any) => {
+          ref={(node) => {
             if (typeof ref === 'function') {
               ref(node);
             } else if (ref && 'current' in ref) {
-              (ref as React.MutableRefObject<HTMLInputElement | null>).current =
-                node;
+              ref.current = node;
             }
-            // inputRef.current = node; // Removed to fix read-only assignment error
           }}
           onChange={handleChange}
           className='hidden'

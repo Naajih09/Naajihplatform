@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DollarSign, FileText, Lightbulb, PieChart, Target, UploadCloud, CheckCircle, Loader2, Save, X } from 'lucide-react';
+import { Lightbulb, UploadCloud, CheckCircle, Loader2 } from 'lucide-react';
 import Button from '../../components/Button';
 
 const CreatePitch = () => {

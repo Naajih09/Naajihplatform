@@ -10,6 +10,4 @@ type AuthState = {
 };
 
 
-type IUser ={
-
-}
+type IUser = object

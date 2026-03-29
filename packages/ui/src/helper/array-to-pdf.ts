@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/indent */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export const arrayToPDF = <T extends Record<string, any>>(dataArray: T[]) => {
   const dataPer = (11 * 100) / Object.keys(dataArray[0] as any).length;
   const dataPercentage =

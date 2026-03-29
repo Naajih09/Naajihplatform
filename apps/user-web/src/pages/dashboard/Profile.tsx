@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Added navigation
-import { User, Save, Briefcase, Building, MapPin, Loader2, Verified, ShieldCheck, Edit3, X } from 'lucide-react';
+import { MapPin, Verified, ShieldCheck, Edit3, X } from 'lucide-react';
 import Button from '../../components/Button';
 
 const Profile = () => {

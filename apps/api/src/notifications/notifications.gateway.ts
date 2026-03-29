@@ -33,7 +33,7 @@ export class NotificationsGateway
     @MessageBody() data: { userId: string },
     @ConnectedSocket() client: Socket,
   ) {
-    client.join(`notifications_${data.userId}`);
+    void client.join(`notifications_${data.userId}`);
     console.log(`User ${data.userId} joined notification room`);
   }
 

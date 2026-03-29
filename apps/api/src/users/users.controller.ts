@@ -161,7 +161,7 @@ export class UsersController {
     UserRole.ASPIRING_BUSINESS_OWNER,
   )
   @Get(':email')
-  findOne(@Param('email') email: string, @Request() req) {
+  findOne(@Param('email') email: string, @Request() _req) {
     // Optional: Add logic to allow user to only fetch their own profile
     // if (req.user.role !== UserRole.ADMIN && req.user.email !== email) {
     //   throw new ForbiddenException('You can only view your own profile.');
@@ -178,14 +178,14 @@ export class UsersController {
     UserRole.ASPIRING_BUSINESS_OWNER,
   )
   @Patch(':id')
-  update(@Param('id') id: string, @Body() body: any, @Request() req) {
+  update(@Param('id') id: string, @Body() body: any, @Request() _req) {
     // Optional: Add logic to allow user to only update their own profile
     // if (req.user.role !== UserRole.ADMIN && req.user.id !== id) {
     //   throw new ForbiddenException('You can only update your own profile.');
     // }
     if (
       (body.role || typeof body.isActive === 'boolean') &&
-      req.user.role !== UserRole.ADMIN
+      _req.user.role !== UserRole.ADMIN
     ) {
       throw new ForbiddenException(
         'Only admins can change role or active status.',
@@ -203,7 +203,7 @@ export class UsersController {
     UserRole.ADMIN,
   )
   @Patch('password/:id')
-  changePassword(@Param('id') id: string, @Body() body: any, @Request() req) {
+  changePassword(@Param('id') id: string, @Body() body: any, @Request() _req) {
     // Optional: Add logic to allow user to only change their own password
     // if (req.user.role !== UserRole.ADMIN && req.user.id !== id) {
     //   throw new ForbiddenException('You can only change your own password.');

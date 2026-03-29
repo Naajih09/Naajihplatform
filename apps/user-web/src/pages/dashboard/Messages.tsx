@@ -88,7 +88,7 @@ const Messages = () => {
       }
     });
 
-    socket.on('message_sent', (message: any) => {
+    socket.on('message_sent', (_message: any) => {
         // Confirmation for sender's own message (if not using optimistic UI fully)
         // Since we currently use optimistic UI, we might not need to append again,
         // but it's good for ensuring consistency.

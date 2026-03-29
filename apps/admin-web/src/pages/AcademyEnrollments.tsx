@@ -281,7 +281,9 @@ const AcademyEnrollments = () => {
                       Requested by {userName || enrollment.user?.email}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-gray-500">
-                      {new Date(enrollment.enrolledAt).toLocaleString('en-NG')}
+                      {enrollment.enrolledAt
+                        ? new Date(enrollment.enrolledAt).toLocaleString('en-NG')
+                        : 'Unknown request date'}
                     </p>
                   </div>
                   <span

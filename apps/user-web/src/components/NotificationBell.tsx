@@ -2,8 +2,15 @@ import { Bell, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSocket } from '../hooks/useSocket';
 
+type Notification = {
+  id: string;
+  isRead: boolean;
+  message: string;
+  createdAt: string;
+};
+
 const NotificationBell = () => {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const socket = useSocket(user.id);
@@ -16,29 +23,36 @@ const NotificationBell = () => {
     ? { Authorization: `Bearer ${authToken}` }
     : {};
 
-  // 1. Fetch initial notifications
-  const fetchNotifications = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/notifications/${user.id}`, {
-        headers: authHeaders,
-      });
-      const data = await res.json();
-      setNotifications(data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   useEffect(() => {
-    if (user.id) {
-      fetchNotifications();
-    }
+    if (!user.id) return;
+
+    let active = true;
+
+    const loadNotifications = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/notifications/${user.id}`, {
+          headers: authHeaders,
+        });
+        const data = (await res.json()) as Notification[];
+        if (active) {
+          setNotifications(data);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    void loadNotifications();
+
+    return () => {
+      active = false;
+    };
   }, [user.id]);
 
   // 2. Listen for real-time notifications
   useEffect(() => {
     if (socket) {
-      socket.on('notification_received', (newNotif: any) => {
+      socket.on('notification_received', (newNotif: Notification) => {
         setNotifications((prev) => [newNotif, ...prev]);
         // Optional: Play sound or show toast
       });

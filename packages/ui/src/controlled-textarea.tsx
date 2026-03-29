@@ -9,7 +9,6 @@ import {
   RegisterOptions,
 } from 'react-hook-form';
 
-import { useState } from 'react';
 import { cn } from '.';
 
 import { Textarea } from './textarea';
@@ -35,23 +34,12 @@ export const TextFieldArea = React.forwardRef<HTMLTextAreaElement, InputProps>(
       labelClassName,
       isRequired,
       error,
-      isPhone,
       containerClass,
-      type,
       info,
       icon,
       infoMessage,
       ...inputProps
     } = props;
-
-    const [showPassword, setShowPassword] = useState(false);
-
-    const getInputType = () => {
-      if (type === 'password') {
-        return showPassword ? 'text' : 'password';
-      }
-      return type || 'text';
-    };
 
     return (
       <div className={cn('w-full mb-4', containerClass)}>
@@ -88,7 +76,7 @@ export const TextFieldArea = React.forwardRef<HTMLTextAreaElement, InputProps>(
               inputProps.className
             )}
             {...inputProps}
-            autoCapitalize={type === 'email' ? 'off' : undefined}
+            autoCapitalize={inputProps.autoCapitalize}
           />
         </div>
 
@@ -110,7 +98,7 @@ type OmitTextField = Omit<InputProps, 'name' | 'error' | 'onChange'> & {
 interface IControllTextInput<TFieldValues extends FieldValues>
   extends OmitTextField {
   errors?: Partial<FieldErrorsImpl<TFieldValues>>;
-  control: Control<TFieldValues, any>;
+  control: Control<TFieldValues>;
   name: Path<TFieldValues>;
   rules?: Omit<
     RegisterOptions<TFieldValues, Path<TFieldValues>>,

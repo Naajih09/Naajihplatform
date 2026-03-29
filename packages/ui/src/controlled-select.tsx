@@ -19,8 +19,7 @@ import {
   SelectValue,
 } from '.';
 
-// Re-export the types we need to avoid the TS4023 error
-export interface SelectRootProps extends SelectPrimitive.SelectProps {}
+type SelectRootProps = SelectPrimitive.SelectProps;
 
 // Define Props for the base Select component
 export interface BaseSelectProps extends SelectRootProps {
@@ -101,7 +100,7 @@ export const BaseSelect = React.forwardRef<HTMLButtonElement, BaseSelectProps>(
           <SelectContent className='bg-white'>
             {!isLoading ? (
               <SelectGroup>
-                {options?.map((option: any) => (
+                {options?.map((option) => (
                   <SelectItem key={option.value} value={String(option.value)}>
                     {option.label}
                   </SelectItem>
@@ -149,7 +148,6 @@ export const ControlledSelect = <TFormValue extends FieldValues>({
   options,
   ...rest
 }: ControlledSelectProps<TFormValue>): React.ReactElement => {
-  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   return (
     <Controller
       control={control}
@@ -164,8 +162,6 @@ export const ControlledSelect = <TFormValue extends FieldValues>({
           label={label}
           error={error}
           value={value}
-          onDropdownOpen={() => setIsDropdownOpen(true)}
-          onDropdownClose={() => setIsDropdownOpen(false)}
           onValueChange={onChange}
           options={options}
           {...rest}

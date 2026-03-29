@@ -1,6 +1,5 @@
 import { DataTable, DataTableSortStatus } from 'mantine-datatable';
 import { useEffect, useState } from 'react';
-import sortBy from 'lodash/sortBy';
 
 interface CustomTableProps<T> {
   data: T[];
@@ -26,7 +25,7 @@ interface CustomTableProps<T> {
   currentSort?: DataTableSortStatus;
 }
 
-const CustomTable = <T extends Record<string, any>>({
+const CustomTable = <T extends Record<string, unknown>>({
   data,
   columns,
   pageSizeOptions = [10, 20, 30, 50, 100],

@@ -40,7 +40,7 @@ export class MessagesGateway
     @MessageBody() data: { userId: string },
     @ConnectedSocket() client: Socket,
   ) {
-    client.join(data.userId);
+    void client.join(data.userId);
     console.log(`User ${data.userId} joined room`);
   }
 

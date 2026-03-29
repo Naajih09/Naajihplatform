@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { AlertOctagon, Loader2, CheckCircle, XCircle, Search, Filter, Eye, X, Clock } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { AlertOctagon, Loader2, CheckCircle, XCircle, Search, Eye, X, Clock } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 

@@ -35,12 +35,10 @@ function TabSelectItem({ isSelected, label, onSelect }: TabSelectItemProps) {
 
 type TabMultiSelectProps<T> = {
   options: { label: string; value: T }[];
-  // eslint-disable-next-line no-unused-vars
   handleChange?(v: T[]): void;
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _TabMultiSelect = <T,>(
+const TabMultiSelectImpl = <T,>(
   { options, handleChange }: TabMultiSelectProps<T>,
   ref: React.Ref<{ reset(): void }>
 ) => {
@@ -83,6 +81,6 @@ const _TabMultiSelect = <T,>(
   );
 };
 
-export const TabMultiSelect = forwardRef(_TabMultiSelect) as <T>(
+export const TabMultiSelect = forwardRef(TabMultiSelectImpl) as <T>(
   props: TabMultiSelectProps<T> & { ref?: React.Ref<{ reset(): void }> }
 ) => React.ReactElement;

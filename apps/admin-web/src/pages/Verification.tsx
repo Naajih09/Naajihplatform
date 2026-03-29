@@ -24,6 +24,7 @@ interface VerificationRequest {
 }
 
 type VerificationStatusFilter = NonNullable<VerificationRequest['status']>;
+const verificationStatusOptions: VerificationStatusFilter[] = ['PENDING', 'APPROVED', 'REJECTED'];
 
 const Verification = () => {
   const [requests, setRequests] = useState<VerificationRequest[]>([]);
@@ -137,14 +138,19 @@ const Verification = () => {
           </div>
           <select
             value={statusFilter}
-            onChange={(e) => { setCurrentPage(1); setStatusFilter(e.target.value); }}
+            onChange={(e) => {
+              setCurrentPage(1);
+              setStatusFilter(e.target.value as VerificationStatusFilter);
+            }}
             className="admin-input px-3 py-2 text-sm"
             aria-label="Filter by status"
             title="Filter by status"
           >
-            <option value="PENDING">Pending</option>
-            <option value="APPROVED">Approved</option>
-            <option value="REJECTED">Rejected</option>
+            {verificationStatusOptions.map((status) => (
+              <option key={status} value={status}>
+                {status.charAt(0)}{status.slice(1).toLowerCase()}
+              </option>
+            ))}
           </select>
           <button
             type="button"
@@ -203,7 +209,7 @@ const Verification = () => {
                     </td>
                     <td className="px-6 py-4">
                       <button 
-                        onClick={() => setDocModal({ show: true, url: req.documentUrl })}
+                        onClick={() => setDocModal({ show: true, url: req.documentUrl ?? null })}
                         className="flex items-center gap-2 text-primary hover:underline"
                       >
                         <FileText size={16} /> Preview <ExternalLink size={12}/>

@@ -46,6 +46,17 @@ export default function Subscription() {
       .catch(() => null);
   }, [authToken]);
 
+  const refreshSubscription = async () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user?.email || !authToken) return;
+    const refreshed = await fetch(`${API_BASE}/users/${user.email}`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    const data = await refreshed.json();
+    setSubscription(data.subscription || null);
+    localStorage.setItem('user', JSON.stringify(data));
+  };
+
   const verifyPayment = async (provider: 'paystack' | 'opay', reference: string) => {
     setLoading(true);
     try {
@@ -53,6 +64,7 @@ export default function Subscription() {
       const data = await res.json();
       if (data.status === 'success') {
         setToast({ show: true, message: 'Subscription successful! You are now a Premium member.', type: 'success' });
+        await refreshSubscription();
       } else {
         setToast({ show: true, message: 'Payment verification failed.', type: 'error' });
       }
@@ -78,11 +90,9 @@ export default function Subscription() {
           'Content-Type': 'application/json',
           ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           provider: selectedProvider,
-          email: user.email, 
           amount: subscriptionAmount,
-          userId: user.id,
         }),
       });
       const data = await res.json();
@@ -113,15 +123,7 @@ export default function Subscription() {
         throw new Error(data?.message || 'Trial start failed.');
       }
       setToast({ show: true, message: `Trial started. You have ${trialDays} days of Premium.`, type: 'success' });
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user?.email) {
-        const refreshed = await fetch(`${API_BASE}/users/${user.email}`, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-        const data = await refreshed.json();
-        setSubscription(data.subscription || null);
-        localStorage.setItem('user', JSON.stringify(data));
-      }
+      await refreshSubscription();
     } catch (error: any) {
       setToast({ show: true, message: error?.message || 'Unable to start trial.', type: 'error' });
     } finally {
@@ -208,7 +210,7 @@ export default function Subscription() {
                 </ul>
                 
                 <button disabled className="w-full py-3 rounded-lg bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-white/50 font-bold border border-slate-200 dark:border-white/5 cursor-not-allowed">
-                    Current Plan
+                    {hasPremium ? 'Downgrade' : 'Current Plan'}
                 </button>
             </div>
 
@@ -262,7 +264,7 @@ export default function Subscription() {
 
                 <div className="space-y-3">
                   {isAspirant && !subscription?.trialUsed && !hasPremium && (
-                    <button 
+                    <button
                       onClick={handleStartTrial}
                       disabled={loading}
                       className="w-full py-3 rounded-lg bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-white font-bold hover:bg-slate-200 dark:hover:bg-white/20 transition-colors flex justify-center items-center gap-2"
@@ -270,13 +272,19 @@ export default function Subscription() {
                         {loading ? "Processing..." : `Start ${trialDays}-Day Free Trial`}
                     </button>
                   )}
-                  <button 
-                    onClick={handleUpgrade}
-                    disabled={loading}
-                    className="w-full py-3 rounded-lg bg-primary text-black font-bold hover:bg-primary/90 transition-colors flex justify-center items-center gap-2"
-                  >
-                      {loading ? "Processing..." : <><Wallet size={18}/> Upgrade to Premium</>}
-                  </button>
+                  {hasPremium ? (
+                    <button disabled className="w-full py-3 rounded-lg bg-primary/50 text-black font-bold cursor-not-allowed flex justify-center items-center gap-2">
+                      <Zap size={18}/> Active Plan
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleUpgrade}
+                      disabled={loading}
+                      className="w-full py-3 rounded-lg bg-primary text-black font-bold hover:bg-primary/90 transition-colors flex justify-center items-center gap-2"
+                    >
+                        {loading ? "Processing..." : <><Wallet size={18}/> Upgrade to Premium</>}
+                    </button>
+                  )}
                 </div>
             </div>
 

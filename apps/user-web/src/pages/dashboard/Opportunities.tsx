@@ -59,9 +59,10 @@ const Opportunities = () => {
 
       const res = await fetch(`${API_BASE}/pitches?${params.toString()}`);
       const data = await res.json();
-      
-      // Safety check to ensure array
-      setPitches(Array.isArray(data) ? data : []);
+
+      // Handle both plain array and paginated { data, meta } response shapes
+      const pitchList = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+      setPitches(pitchList);
     } catch (error) {
       setToast({ show: true, message: 'Failed to load pitches.', type: 'error' });
     } finally {

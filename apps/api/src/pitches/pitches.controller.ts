@@ -37,13 +37,19 @@ export class PitchesController {
     @Query('search') search?: string,
     @Query('category') category?: string,
     @Query('status') status?: string,
+    @Query('stage') stage?: string,
+    @Query('minTicket') minTicket?: string,
+    @Query('maxTicket') maxTicket?: string,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
   ) {
     return this.pitchesService.findAll({
       search,
       category,
-      status,
+      status: status || 'APPROVED',
+      stage,
+      minTicket,
+      maxTicket,
       page,
       pageSize,
     });

@@ -50,14 +50,17 @@ export default function Subscription() {
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/payments/verify?provider=${provider}&reference=${reference}`);
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.message || 'Payment verification failed.');
+      }
       if (data.status === 'success') {
         setToast({ show: true, message: 'Subscription successful! You are now a Premium member.', type: 'success' });
       } else {
         setToast({ show: true, message: 'Payment verification failed.', type: 'error' });
       }
-    } catch (error) {
-      setToast({ show: true, message: 'Verification error.', type: 'error' });
+    } catch (error: any) {
+      setToast({ show: true, message: error?.message || 'Verification error.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -85,14 +88,17 @@ export default function Subscription() {
           userId: user.id,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.message || 'Failed to initialize payment.');
+      }
       if (data.authorization_url) {
         window.location.href = data.authorization_url;
       } else {
-        setToast({ show: true, message: 'Failed to initialize payment.', type: 'error' });
+        setToast({ show: true, message: 'Payment provider did not return a checkout URL.', type: 'error' });
       }
-    } catch (error) {
-      setToast({ show: true, message: 'Payment error occurred.', type: 'error' });
+    } catch (error: any) {
+      setToast({ show: true, message: error?.message || 'Payment error occurred.', type: 'error' });
     } finally {
       setLoading(false);
     }

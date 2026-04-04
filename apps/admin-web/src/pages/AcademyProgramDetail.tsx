@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { BookOpen, CalendarDays, CheckCircle, PlusCircle, XCircle, Upload } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { BookOpen, CalendarDays, CheckCircle, PlusCircle, Trash2, XCircle, Upload } from 'lucide-react';
 import api from '../utils/api';
 
 const AcademyProgramDetail = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [program, setProgram] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -26,6 +27,7 @@ const AcademyProgramDetail = () => {
   const [modulePreviewHeaders, setModulePreviewHeaders] = useState<string[]>([]);
   const [modulePreviewRows, setModulePreviewRows] = useState<string[][]>([]);
   const [savingProgram, setSavingProgram] = useState(false);
+  const [deletingProgram, setDeletingProgram] = useState(false);
   const [uploadingModuleId, setUploadingModuleId] = useState<string | null>(null);
   const [uploadingLessonId, setUploadingLessonId] = useState<string | null>(null);
   const [toast, setToast] = useState<{
@@ -74,6 +76,31 @@ const AcademyProgramDetail = () => {
       showToast('Failed to update program.', 'error');
     } finally {
       setSavingProgram(false);
+    }
+  };
+
+  const handleDeleteProgram = async () => {
+    if (!program?.id) return;
+
+    const confirmed = window.confirm(
+      `Delete "${program.title}" and all its modules, lessons, tasks, and enrollments? This cannot be undone.`,
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingProgram(true);
+    try {
+      await api.delete(`/academy/admin/programs/${program.id}`);
+      showToast('Program deleted.', 'success');
+      navigate('/admin/academy');
+    } catch (error: any) {
+      showToast(
+        error?.response?.data?.message || 'Failed to delete program.',
+        'error',
+      );
+    } finally {
+      setDeletingProgram(false);
     }
   };
 
@@ -417,13 +444,23 @@ const AcademyProgramDetail = () => {
           </h1>
           <p className="text-slate-500 dark:text-gray-400 text-sm">{program.cohort || 'No cohort set'}</p>
         </div>
-        <button
-          onClick={handleProgramUpdate}
-          disabled={savingProgram}
-          className="bg-primary text-neutral-dark font-bold px-4 py-2 rounded-lg"
-        >
-          {savingProgram ? 'Saving...' : 'Save Program'}
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleDeleteProgram}
+            disabled={deletingProgram}
+            className="inline-flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 font-bold text-red-500 transition-colors hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Trash2 size={16} />
+            {deletingProgram ? 'Deleting...' : 'Delete Program'}
+          </button>
+          <button
+            onClick={handleProgramUpdate}
+            disabled={savingProgram}
+            className="bg-primary text-neutral-dark font-bold px-4 py-2 rounded-lg"
+          >
+            {savingProgram ? 'Saving...' : 'Save Program'}
+          </button>
+        </div>
       </div>
 
       <div className="admin-surface rounded-2xl p-6 space-y-4">

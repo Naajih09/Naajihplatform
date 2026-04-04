@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as crypto from 'crypto';
 import axios from 'axios';
 import { DatabaseService } from '../database/database.service';
@@ -8,6 +13,40 @@ import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class PaymentsService {
+  private normalizeProviderError(
+    error: unknown,
+    provider: 'paystack' | 'opay',
+  ) {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      const providerName = provider === 'paystack' ? 'Paystack' : 'OPay';
+      const providerMessage =
+        typeof error.response?.data?.message === 'string'
+          ? error.response.data.message
+          : typeof error.response?.data?.error === 'string'
+            ? error.response.data.error
+            : error.message;
+
+      if (status === 401 || status === 403) {
+        throw new UnauthorizedException(
+          `${providerName} rejected the request. Check your API keys and account mode.`,
+        );
+      }
+
+      if (status && status >= 400 && status < 500) {
+        throw new BadRequestException(
+          `${providerName} error: ${providerMessage}`,
+        );
+      }
+
+      throw new BadGatewayException(
+        `${providerName} is temporarily unavailable. ${providerMessage}`,
+      );
+    }
+
+    throw error;
+  }
+
   private getEnv(name: string) {
     const value = process.env[name];
     if (!value) {
@@ -108,21 +147,25 @@ export class PaymentsService {
     reference: string,
   ) {
     const url = 'https://api.paystack.co/transaction/initialize';
-    const response = await axios.post(
-      url,
-      {
-        email,
-        amount: amountKobo,
-        reference,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${this.paystackSecretKey}`,
-          'Content-Type': 'application/json',
+    try {
+      const response = await axios.post(
+        url,
+        {
+          email,
+          amount: amountKobo,
+          reference,
         },
-      },
-    );
-    return response.data.data; // { authorization_url, reference }
+        {
+          headers: {
+            Authorization: `Bearer ${this.paystackSecretKey}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      return response.data.data; // { authorization_url, reference }
+    } catch (error) {
+      this.normalizeProviderError(error, 'paystack');
+    }
   }
 
   private async initializeOPay(
@@ -133,38 +176,45 @@ export class PaymentsService {
     const url =
       'https://api.opaycheckout.com/api/v1/international/cashier/create';
 
-    const response = await axios.post(
-      url,
-      {
-        amount: {
-          total: amountKobo,
-          currency: 'NGN',
+    try {
+      const response = await axios.post(
+        url,
+        {
+          amount: {
+            total: amountKobo,
+            currency: 'NGN',
+          },
+          reference,
+          returnUrl: `${this.frontendUrl}/dashboard/subscription?provider=opay`,
+          callbackUrl: `${this.backendUrl}/api/payments/webhook/opay`,
+          merchantId: this.opayMerchantId,
+          productName: 'Najih Premium Subscription',
+          productDescription:
+            'Subscription for Premium access on Naajihplatform',
+          userClientIp: '127.0.0.1', // Should be dynamic in production
         },
+        {
+          headers: {
+            Authorization: `Bearer ${this.opayPublicKey}`,
+            'Content-Type': 'application/json',
+            'Merchant-Id': this.opayMerchantId,
+          },
+        },
+      );
+
+      if (response.data.code !== '00000') {
+        throw new BadRequestException(
+          response.data.message || 'OPay initialization failed',
+        );
+      }
+
+      return {
+        authorization_url: response.data.data.cashierUrl,
         reference,
-        returnUrl: `${this.frontendUrl}/dashboard/subscription?provider=opay`,
-        callbackUrl: `${this.backendUrl}/api/payments/webhook/opay`,
-        merchantId: this.opayMerchantId,
-        productName: 'Najih Premium Subscription',
-        productDescription: 'Subscription for Premium access on Naajihplatform',
-        userClientIp: '127.0.0.1', // Should be dynamic in production
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${this.opayPublicKey}`,
-          'Content-Type': 'application/json',
-          'Merchant-Id': this.opayMerchantId,
-        },
-      },
-    );
-
-    if (response.data.code !== '00000') {
-      throw new Error(response.data.message || 'OPay initialization failed');
+      };
+    } catch (error) {
+      this.normalizeProviderError(error, 'opay');
     }
-
-    return {
-      authorization_url: response.data.data.cashierUrl,
-      reference,
-    };
   }
 
   async verifyTransaction(provider: 'paystack' | 'opay', reference: string) {

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -203,6 +204,12 @@ export class AcademyController {
     },
   ) {
     return this.academyService.adminUpdateProgram(id, body);
+  }
+
+  @Delete('admin/programs/:id')
+  @Roles(UserRole.ADMIN)
+  adminDeleteProgram(@Param('id') id: string) {
+    return this.academyService.adminDeleteProgram(id);
   }
 
   @Post('admin/programs/:id/modules')

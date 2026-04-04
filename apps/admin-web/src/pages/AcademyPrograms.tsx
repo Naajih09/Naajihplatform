@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, PlusCircle, XCircle, CheckCircle, Upload } from 'lucide-react';
+import {
+  BookOpen,
+  PlusCircle,
+  XCircle,
+  CheckCircle,
+  Upload,
+  Trash2,
+} from 'lucide-react';
 import api from '../utils/api';
 
 interface ProgramModuleCount {
@@ -30,6 +37,7 @@ const AcademyPrograms = () => {
   const [programImportErrors, setProgramImportErrors] = useState<string[]>([]);
   const [programPreviewHeaders, setProgramPreviewHeaders] = useState<string[]>([]);
   const [programPreviewRows, setProgramPreviewRows] = useState<string[][]>([]);
+  const [deletingProgramId, setDeletingProgramId] = useState<string | null>(null);
   const [toast, setToast] = useState<{
     show: boolean;
     message: string;
@@ -136,6 +144,31 @@ const AcademyPrograms = () => {
     const reader = new FileReader();
     reader.onload = () => parseCsvPreview(String(reader.result || ''));
     reader.readAsText(file);
+  };
+
+  const handleDeleteProgram = async (program: Program) => {
+    const label = program.title || 'this program';
+    const confirmed = window.confirm(
+      `Delete "${label}" and all its modules, lessons, tasks, and enrollments? This cannot be undone.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingProgramId(program.id);
+    try {
+      await api.delete(`/academy/admin/programs/${program.id}`);
+      setPrograms((prev) => prev.filter((item) => item.id !== program.id));
+      showToast('Program deleted.', 'success');
+    } catch (error: any) {
+      showToast(
+        error?.response?.data?.message || 'Failed to delete program.',
+        'error',
+      );
+    } finally {
+      setDeletingProgramId(null);
+    }
   };
 
   return (
@@ -323,6 +356,17 @@ const AcademyPrograms = () => {
                     )}
                   </p>
                 </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => handleDeleteProgram(program)}
+                  disabled={deletingProgramId === program.id}
+                  className="inline-flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-500 transition-colors hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Trash2 size={16} />
+                  {deletingProgramId === program.id ? 'Deleting...' : 'Delete Program'}
+                </button>
               </div>
             </div>
           ))}

@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MailerService } from '../mailer/mailer.service';
@@ -287,6 +291,75 @@ export class AcademyService {
         isPremium: body.isPremium,
       },
     });
+  }
+
+  async adminDeleteProgram(id: string) {
+    const program = await this.databaseService.program.findUnique({
+      where: { id },
+      include: {
+        modules: {
+          select: {
+            id: true,
+            lessons: { select: { id: true } },
+            tasks: { select: { id: true } },
+          },
+        },
+      },
+    });
+
+    if (!program) {
+      throw new NotFoundException('Program not found.');
+    }
+
+    const moduleIds = program.modules.map((module) => module.id);
+    const lessonIds = program.modules.flatMap((module) =>
+      module.lessons.map((lesson) => lesson.id),
+    );
+    const taskIds = program.modules.flatMap((module) =>
+      module.tasks.map((task) => task.id),
+    );
+
+    await this.databaseService.$transaction(async (tx) => {
+      if (lessonIds.length) {
+        await tx.userLessonProgress.deleteMany({
+          where: { lessonId: { in: lessonIds } },
+        });
+      }
+
+      if (taskIds.length) {
+        await tx.userTaskSubmission.deleteMany({
+          where: { taskId: { in: taskIds } },
+        });
+      }
+
+      await tx.programEnrollment.deleteMany({
+        where: { programId: id },
+      });
+
+      if (taskIds.length) {
+        await tx.task.deleteMany({
+          where: { id: { in: taskIds } },
+        });
+      }
+
+      if (lessonIds.length) {
+        await tx.lesson.deleteMany({
+          where: { id: { in: lessonIds } },
+        });
+      }
+
+      if (moduleIds.length) {
+        await tx.module.deleteMany({
+          where: { id: { in: moduleIds } },
+        });
+      }
+
+      await tx.program.delete({
+        where: { id },
+      });
+    });
+
+    return { message: 'Program deleted successfully.' };
   }
 
   async adminCreateModule(

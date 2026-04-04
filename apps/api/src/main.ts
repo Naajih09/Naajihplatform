@@ -47,8 +47,8 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('Naaji pitch api')
-    .setDescription('Api for Naaji pitch')
+    .setTitle('Naajih pitch api')
+    .setDescription('Api for Naajih pitch')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

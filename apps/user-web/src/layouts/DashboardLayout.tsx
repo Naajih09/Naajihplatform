@@ -12,13 +12,13 @@ import {
     Video,
     Zap
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import NotificationBell from '../components/NotificationBell';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppDispatch } from '@/store/store';
-import { logout, setAuth, setToken } from '@/store/slices/auth-slice';
+import { logout, setAuth, setToken, setUser } from '@/store/slices/auth-slice';
 
 interface DashboardLayoutProps {
   children?: React.ReactNode; 
@@ -30,6 +30,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const dispatch = useAppDispatch();
   const userString = localStorage.getItem('user');
   const user = authUser || (userString ? JSON.parse(userString) : {});
+  const authToken =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('access_token') ||
+    '';
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -39,6 +43,36 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const firstName = profile.firstName || user.firstName || 'User';
   const lastName = profile.lastName || user.lastName || '';
   const role = user.role || 'Guest';
+  const profileAvatar = profile.avatarUrl || user.avatarUrl || '';
+
+  useEffect(() => {
+    const currentUser = authUser || (userString ? JSON.parse(userString) : null);
+    const email = currentUser?.email;
+    if (!authToken || !email) return;
+
+    let cancelled = false;
+
+    const refreshUser = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}/users/${email}`, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled || !data) return;
+        localStorage.setItem('user', JSON.stringify(data));
+        dispatch(setUser(data));
+      } catch {
+        // Ignore refresh failures and keep the current session state.
+      }
+    };
+
+    refreshUser();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authUser?.email, authToken, dispatch]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -155,15 +189,27 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
             <div className="h-8 w-px bg-slate-200 dark:bg-gray-800 mx-2"></div>
             
-            <div className="flex items-center gap-3">
+            <Link
+              to="/dashboard/profile"
+              className="flex items-center gap-3 rounded-xl px-2 py-1 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+              aria-label="Open profile"
+            >
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-bold leading-none text-slate-900 dark:text-white">{firstName} {lastName}</p>
                 <p className="text-[10px] text-slate-500 dark:text-gray-400 font-medium uppercase">{role}</p>
               </div>
-              <div className="size-10 rounded-full bg-primary flex items-center justify-center font-bold text-black border-2 border-white dark:border-gray-700">
-                {firstName?.[0] || 'U'}
+              <div className="size-10 rounded-full bg-primary flex items-center justify-center font-bold text-black border-2 border-white dark:border-gray-700 overflow-hidden">
+                {profileAvatar ? (
+                  <img
+                    src={profileAvatar}
+                    alt={`${firstName} ${lastName}`.trim() || 'Profile'}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  firstName?.[0] || 'U'
+                )}
               </div>
-            </div>
+            </Link>
           </div>
         </header>
 

@@ -63,10 +63,17 @@ const Verification = () => {
         method: 'POST',
         headers: { ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        setToast({ show: true, message: 'Verification email sent.', type: 'success' });
+        if (data?.emailed) {
+          setToast({ show: true, message: 'Verification email sent.', type: 'success' });
+        } else if (data?.verifyUrl) {
+          setToast({ show: true, message: 'Email is not configured here, so the verification link is opening in a new tab.', type: 'success' });
+          window.open(data.verifyUrl, '_blank', 'noopener,noreferrer');
+        } else {
+          setToast({ show: true, message: data?.message || 'Verification email requested.', type: 'success' });
+        }
       } else {
-        const data = await res.json().catch(() => ({}));
         setToast({ show: true, message: data?.message || 'Failed to send email.', type: 'error' });
       }
     } catch (err) {
@@ -89,16 +96,17 @@ const Verification = () => {
       const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
       const data = await res.json();
 
-      if (data.url) {
+      const uploadUrl = data.secure_url || data.url;
+      if (uploadUrl) {
         await fetch(`${API_BASE}/verification/submit`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
           },
-          body: JSON.stringify({ documentUrl: data.url })
+          body: JSON.stringify({ documentUrl: uploadUrl })
         });
-        setStatus({ status: 'PENDING', documentUrl: data.url });
+        setStatus({ status: 'PENDING', documentUrl: uploadUrl });
         setToast({ show: true, message: 'Documents submitted successfully. Pending review.', type: 'success' });
       }
     } catch (err) {

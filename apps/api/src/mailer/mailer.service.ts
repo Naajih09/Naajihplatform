@@ -27,10 +27,11 @@ export class MailerService {
     const transporter = this.getTransporter();
     if (!transporter) {
       this.logger.warn('SMTP not configured. Email skipped.');
-      return;
+      return false;
     }
 
     const from = process.env.SMTP_FROM || 'NaajihBiz <noreply@naajihbiz.com>';
     await transporter.sendMail({ from, to, subject, html });
+    return true;
   }
 }

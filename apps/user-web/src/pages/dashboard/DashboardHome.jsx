@@ -25,7 +25,11 @@ function DashboardHome() {
     activePitches: 0,
     pendingConnections: 0,
     isVerified: false,
-    totalViews: 0
+    totalViews: 0,
+    hasPremium: false,
+    pitchLimit: 1,
+    remainingPitchSlots: 1,
+    canCreatePitch: true,
   });
 
   // FIX: Removed <any[]>
@@ -77,6 +81,12 @@ if (isAspirant) {
   const hasPremium =
     subscription?.plan === 'PREMIUM' &&
     (!activeUntil || new Date(activeUntil) > new Date());
+  const pitchLimitReached = user.role === 'ENTREPRENEUR' && stats.canCreatePitch === false;
+  const pitchLimitText = stats.remainingPitchSlots === 0
+    ? 'Free pitch allowance used'
+    : stats.remainingPitchSlots === 1
+    ? '1 free pitch slot left'
+    : `${stats.remainingPitchSlots || 0} free pitch slots left`;
 
   const handleJoin = async (event, programId, isEnrolled, isPremium) => {
     event.stopPropagation();
@@ -296,17 +306,26 @@ if (isAspirant) {
         <div className="bg-primary p-8 rounded-3xl relative overflow-hidden group">
           <div className="relative z-10">
             <h3 className="text-2xl font-black text-neutral-dark mb-2">
-              {isAspirant ? "Start Your Business" : "Ready to expand?"}
+              {isAspirant ? "Start Your Business" : pitchLimitReached ? "Upgrade to keep posting" : "Ready to expand?"}
             </h3>
             <p className="text-neutral-dark/70 font-medium mb-6 max-w-sm">
-              {isAspirant ? "Have you completed your courses? Create your first pitch now." : "Connect with over 500+ certified halal investors."}
+              {isAspirant
+                ? "Have you completed your courses? Create your first pitch now."
+                : pitchLimitReached
+                ? `You have reached the free plan limit. ${pitchLimitText}. Upgrade to Premium to post unlimited pitches.`
+                : "Connect with over 500+ certified halal investors."}
             </p>
 
-            <Link to="/dashboard/create-pitch" className="inline-block">
+            <Link to={pitchLimitReached ? "/dashboard/subscription?reason=pitch-limit" : "/dashboard/create-pitch"} className="inline-block">
               <button className="bg-neutral-dark text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-neutral-dark/90 transition-all flex items-center gap-2">
-                Launch New Pitch <ChevronRight size={16} />
+                {pitchLimitReached ? "Upgrade Now" : "Launch New Pitch"} <ChevronRight size={16} />
               </button>
             </Link>
+            {user.role === 'ENTREPRENEUR' && (
+              <p className="mt-4 text-xs font-bold uppercase tracking-widest text-neutral-dark/70">
+                {hasPremium ? 'Premium active - unlimited pitches' : pitchLimitText}
+              </p>
+            )}
           </div>
         </div>
 

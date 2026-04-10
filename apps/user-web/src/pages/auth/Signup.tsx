@@ -228,7 +228,7 @@ const Signup = () => {
                     {/* FIX 2: ADD ARIA-LABEL TO CHECKBOX */}
                     <input aria-label="Agree to Terms" className="mt-1 h-5 w-5 rounded border-slate-300 dark:border-white/10 text-primary focus:ring-0 accent-primary" type="checkbox" required />
                     <label className="text-sm text-slate-600 dark:text-slate-400 leading-tight">
-                        I agree to the <a className="text-slate-900 dark:text-white font-bold underline decoration-primary underline-offset-4" href="#">Halal Investment Terms</a> which prohibit interest (Riba).
+                        I agree to the <Link to="/terms" className="text-slate-900 dark:text-white font-bold underline decoration-primary underline-offset-4">Halal Investment Terms</Link> which prohibit interest (Riba).
                     </label>
                 </div>
 

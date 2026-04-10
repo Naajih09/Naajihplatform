@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 export default function EntrepreneurProfile() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const profile = user?.entrepreneurProfile || user?.investorProfile || {};
+  const profileAvatar = profile.avatarUrl || user.avatarUrl || '';
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
   const authToken =
     localStorage.getItem('accessToken') ||
@@ -77,8 +78,16 @@ export default function EntrepreneurProfile() {
             <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
 
               <div className="flex items-center gap-6">
-                <div className="w-28 h-28 rounded-2xl border-2 border-primary bg-white/5 flex items-center justify-center">
-                  <UserIcon size={40} className="text-white/60" />
+                <div className="w-28 h-28 rounded-2xl border-2 border-primary bg-white/5 flex items-center justify-center overflow-hidden">
+                  {profileAvatar ? (
+                    <img
+                      src={profileAvatar}
+                      alt={`${fullName} profile`}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon size={40} className="text-white/60" />
+                  )}
                 </div>
 
                 <div>

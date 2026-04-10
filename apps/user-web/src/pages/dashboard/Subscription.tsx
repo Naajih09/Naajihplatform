@@ -13,8 +13,10 @@ export default function Subscription() {
   });
   const [subscription, setSubscription] = useState<any>(null);
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
-  const subscriptionAmount = Number(import.meta.env.VITE_SUBSCRIPTION_AMOUNT_NGN || 5000);
+  const subscriptionAmount = Number(import.meta.env.VITE_SUBSCRIPTION_AMOUNT_NGN || 15000);
   const trialDays = Number(import.meta.env.VITE_TRIAL_DAYS || 14);
+  const estimatedAnnualValue = subscriptionAmount * 10;
+  const pitchLimitReason = searchParams.get('reason') === 'pitch-limit';
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAspirant = user?.role === 'ASPIRING_BUSINESS_OWNER';
   const authToken =
@@ -161,7 +163,26 @@ export default function Subscription() {
               ? 'Premium is for advanced courses, mentor sessions, and completion certificates.'
               : 'Choose the tier that matches your ambition. All plans comply with Sharia business principles.'}
           </p>
+          {!isAspirant && (
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs font-bold uppercase tracking-widest">
+              <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-primary">
+                1 free pitch
+              </span>
+              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white/60">
+                Unlimited pitches on Premium
+              </span>
+              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white/60">
+                Monthly checkout
+              </span>
+            </div>
+          )}
         </div>
+
+        {pitchLimitReason && !isAspirant && (
+          <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 text-sm text-slate-700 dark:text-white/80">
+            You have reached the free pitch limit. Upgrade to Premium to continue posting pitches without interruption.
+          </div>
+        )}
 
         {/* Current Plan Alert */}
         <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
@@ -199,7 +220,7 @@ export default function Subscription() {
                 <p className="text-sm text-slate-600 dark:text-white/70 mb-8 flex-grow">
                     {isAspirant
                       ? 'Perfect for learners getting started with business fundamentals.'
-                      : 'Perfect for new founders making their first connections.'}
+                      : 'Perfect for new founders making their first connections and testing the market.'}
                 </p>
                 
                 <ul className="space-y-4 mb-8">
@@ -219,9 +240,9 @@ export default function Subscription() {
             </div>
 
             {/* Premium Tier */}
-            <div className="bg-gradient-to-b from-white to-slate-100 dark:from-[#262626] dark:to-[#1a1a1a] border-2 border-primary rounded-2xl p-8 relative flex flex-col shadow-2xl shadow-primary/10">
+            <div className="bg-gradient-to-b from-white to-slate-100 dark:from-[#262626] dark:to-[#1a1a1a] border-2 border-primary rounded-2xl p-8 relative flex flex-col shadow-2xl shadow-primary/10 scale-[1.01]">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-black px-4 py-1 rounded-full text-xs font-black tracking-widest uppercase flex items-center gap-1">
-                    <Zap size={14} /> Recommended
+                    <Zap size={14} /> Most founders choose this
                 </div>
 
                 <h3 className="text-2xl font-bold text-primary mb-2">
@@ -231,6 +252,9 @@ export default function Subscription() {
                     <span className="text-5xl font-black">NGN {subscriptionAmount.toLocaleString()}</span>
                     <span className="text-slate-400 dark:text-white/50">/ month</span>
                 </div>
+                <p className="text-xs text-slate-500 dark:text-white/50 mb-4 font-bold uppercase tracking-widest">
+                  Estimated annual value: NGN {estimatedAnnualValue.toLocaleString()}
+                </p>
                 {isAspirant && (
                   <p className="text-xs text-primary mb-4 font-bold uppercase tracking-widest">
                     {trialDays}-day free trial
@@ -266,6 +290,12 @@ export default function Subscription() {
                     ))}
                 </ul>
 
+                {!isAspirant && (
+                  <div className="mb-6 rounded-xl border border-primary/20 bg-primary/10 p-4 text-sm text-slate-700 dark:text-white/80">
+                    Upgrade once and keep posting. Premium removes the pitch cap, keeps your listings active, and gives you a cleaner path to investor discovery.
+                  </div>
+                )}
+
                 <div className="space-y-3">
                   {isAspirant && !subscription?.trialUsed && !hasPremium && (
                     <button 
@@ -292,6 +322,43 @@ export default function Subscription() {
         <div className="mt-16 text-center text-slate-400 dark:text-white/40 text-xs flex items-center justify-center gap-2">
             <Shield size={14} /> Payments are processed securely. Cancel anytime.
         </div>
+
+        {!isAspirant && (
+          <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-white/10 rounded-2xl p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 dark:text-white">Free vs Premium</h2>
+                <p className="text-sm text-slate-500 dark:text-white/60">
+                  Compare the core limits and upgrade benefits before you choose a plan.
+                </p>
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest text-primary">
+                Built for serious founders
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div className="rounded-xl border border-slate-200 dark:border-white/10 p-4">
+                <h3 className="font-bold text-slate-900 dark:text-white mb-3">Free Tier</h3>
+                <ul className="space-y-3 text-slate-600 dark:text-white/70">
+                  <li>Post 1 pitch only</li>
+                  <li>Browse public opportunities</li>
+                  <li>Basic visibility</li>
+                  <li>Limited connection requests</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-primary/20 bg-primary/10 p-4">
+                <h3 className="font-bold text-primary mb-3">Premium</h3>
+                <ul className="space-y-3 text-slate-700 dark:text-white/80">
+                  <li>Unlimited pitch submissions</li>
+                  <li>Priority placement in feeds</li>
+                  <li>Better discovery and filtering</li>
+                  <li>Stronger networking workflow</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

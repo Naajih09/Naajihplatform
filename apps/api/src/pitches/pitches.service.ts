@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { Prisma } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
@@ -11,9 +15,46 @@ export class PitchesService {
   ) {}
 
   // 1. CREATE A PITCH
-  async create(data: Prisma.PitchCreateInput) {
+  async create(data: Prisma.PitchCreateInput, userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        subscription: true,
+        _count: {
+          select: { pitches: true },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const now = new Date();
+    const activeUntil =
+      user.subscription?.endDate || user.subscription?.trialEndsAt;
+    const hasPremium =
+      user.subscription?.plan === 'PREMIUM' &&
+      (!activeUntil || activeUntil > now);
+    const freePitchLimit = Number(process.env.FREE_PITCH_LIMIT || 1);
+    const pitchLimit =
+      Number.isFinite(freePitchLimit) && freePitchLimit > 0
+        ? freePitchLimit
+        : 1;
+
+    if (!hasPremium && user._count.pitches >= pitchLimit) {
+      throw new ForbiddenException(
+        `Free tier allows ${pitchLimit} pitch${pitchLimit === 1 ? '' : 'es'}. Upgrade to Premium to create more pitches.`,
+      );
+    }
+
     return this.prisma.pitch.create({
-      data,
+      data: {
+        ...data,
+        user: {
+          connect: { id: userId },
+        },
+      },
     });
   }
 

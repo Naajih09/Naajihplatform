@@ -4,7 +4,8 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import AdminLayout from '../layouts/AdminLayout';
 import { ErrorBoundaryFallback } from '../../../../packages/ui/src';
 import ProtectedRoute from '../components/ProtectedRoute';
-import { UserRole } from '../types/enums'; 
+import { UserRole } from '../types/enums';
+import RouteFallback from './RouteFallback';
 const Dashboard = lazy(() => import('../pages/Dashboard'));
 const Verification = lazy(() => import('../pages/Verification'));
 const PitchesList = lazy(() => import('../pages/PitchesLists'));
@@ -17,12 +18,6 @@ const AcademySubmissions = lazy(() => import('../pages/AcademySubmissions'));
 const AcademyEnrollments = lazy(() => import('../pages/AcademyEnrollments'));
 const Login = lazy(() => import('../pages/Login'));
 const Unauthorized = lazy(() => import('../pages/Unauthorized'));
-
-const RouteFallback = () => (
-  <div className="min-h-[40vh] flex items-center justify-center text-sm text-slate-500 dark:text-gray-400">
-    Loading...
-  </div>
-);
 
 const withSuspense = (element: React.ReactNode) => (
   <Suspense fallback={<RouteFallback />}>{element}</Suspense>

@@ -6,9 +6,9 @@ export default defineConfig((options: Options) => ({
     js: "'use client'",
   },
   treeshake: true,
-  dts: true,
+  dts: options.watch ? false : true,
   minify: false,
-  clean: true,
+  clean: options.watch ? false : true,
   outDir: 'dist',
 
   // Single entry point for better bundling

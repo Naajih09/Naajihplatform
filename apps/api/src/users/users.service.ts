@@ -53,11 +53,13 @@ export class UsersService {
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
     const verifyUrl = `${backendUrl}/${apiPrefix}/users/verify-email?token=${token}`;
 
-    await this.mailerService.sendMail(
+    const emailed = await this.mailerService.sendMail(
       email,
       'Verify your Naajih account',
       verificationEmail(verifyUrl, this.getVerificationTtlHours()),
     );
+
+    return { verifyUrl, emailed };
   }
 
   // 1. SIGNUP (Create User + Profile + Hash Password)
@@ -248,8 +250,18 @@ export class UsersService {
       return { status: 'ok', message: 'Email already verified' };
     }
 
-    await this.issueEmailVerification(user.id, user.email);
-    return { status: 'ok', message: 'Verification email sent' };
+    const { verifyUrl, emailed } = await this.issueEmailVerification(
+      user.id,
+      user.email,
+    );
+    return {
+      status: 'ok',
+      message: emailed
+        ? 'Verification email sent'
+        : 'SMTP is not configured. Use the verification link manually.',
+      emailed,
+      verifyUrl,
+    };
   }
 
   async verifyEmailToken(token: string) {
@@ -316,26 +328,45 @@ export class UsersService {
 
   // 6. DASHBOARD STATS
   async getDashboardStats(userId: string) {
-    const activePitches = await this.databaseService.pitch.count({
-      where: { userId },
-    });
+    const [activePitches, pendingConnections, user] = await Promise.all([
+      this.databaseService.pitch.count({
+        where: { userId },
+      }),
+      this.databaseService.connection.count({
+        where: {
+          receiverId: userId,
+          status: 'PENDING',
+        },
+      }),
+      this.databaseService.user.findUnique({
+        where: { id: userId },
+        include: { subscription: true },
+      }),
+    ]);
 
-    const pendingConnections = await this.databaseService.connection.count({
-      where: {
-        receiverId: userId,
-        status: 'PENDING',
-      },
-    });
-
-    const user = await this.databaseService.user.findUnique({
-      where: { id: userId },
-      select: { isVerified: true },
-    });
+    const now = new Date();
+    const activeUntil =
+      user?.subscription?.endDate || user?.subscription?.trialEndsAt;
+    const hasPremium =
+      user?.subscription?.plan === 'PREMIUM' &&
+      (!activeUntil || activeUntil > now);
+    const freePitchLimit = Number(process.env.FREE_PITCH_LIMIT || 1);
+    const pitchLimit =
+      Number.isFinite(freePitchLimit) && freePitchLimit > 0
+        ? freePitchLimit
+        : 1;
+    const remainingPitchSlots = hasPremium
+      ? null
+      : Math.max(0, pitchLimit - activePitches);
 
     return {
       activePitches,
       pendingConnections,
       isVerified: user?.isVerified || false,
+      hasPremium,
+      pitchLimit: hasPremium ? null : pitchLimit,
+      remainingPitchSlots,
+      canCreatePitch: hasPremium || activePitches < pitchLimit,
       totalViews: 0,
     };
   }

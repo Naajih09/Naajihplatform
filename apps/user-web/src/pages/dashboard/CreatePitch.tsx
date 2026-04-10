@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lightbulb, UploadCloud, CheckCircle, Loader2 } from 'lucide-react';
 import Button from '../../components/Button';
+import { usePitchAccess } from '../../hooks/usePitchAccess';
 
 const CreatePitch = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { loading: pitchAccessLoading, canCreatePitch, remainingPitchSlots, hasPremium } = usePitchAccess();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
@@ -33,8 +35,9 @@ const CreatePitch = () => {
     try {
       const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: uploadData });
       const data = await res.json();
-      if (data.url) {
-        setFormData((prev) => ({ ...prev, pitchDeckUrl: data.url }));
+      const uploadUrl = data.secure_url || data.url;
+      if (uploadUrl) {
+        setFormData((prev) => ({ ...prev, pitchDeckUrl: uploadUrl }));
         setToast({ show: true, message: 'File uploaded successfully.', type: 'success' });
       } else throw new Error("No URL returned");
     } catch (err) {
@@ -42,9 +45,8 @@ const CreatePitch = () => {
     } finally { setUploading(false); }
   };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
     // 1. Get the token stored securely
     const token =
@@ -56,6 +58,18 @@ const CreatePitch = () => {
         navigate('/login');
         return;
     }
+
+    if (!pitchAccessLoading && !canCreatePitch) {
+      setToast({
+        show: true,
+        message: 'Your free pitch limit is exhausted. Upgrade to Premium to post more pitches.',
+        type: 'error',
+      });
+      navigate('/dashboard/subscription?reason=pitch-limit');
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const res = await fetch(`${API_BASE}/pitches`, {
@@ -78,6 +92,7 @@ const CreatePitch = () => {
 
   const inputStyles = "w-full p-3 bg-slate-50 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded-xl text-slate-900 dark:text-white focus:border-primary focus:outline-none transition-colors placeholder:text-gray-400";
   const labelStyles = "block text-sm font-bold text-slate-600 dark:text-gray-400 mb-2";
+  const showPitchLimitNotice = !pitchAccessLoading && !hasPremium;
 
   return (
     <div className='max-w-3xl mx-auto pb-20 font-sans'>
@@ -96,12 +111,34 @@ const CreatePitch = () => {
             Browse Opportunities
           </Button>
         </div>
+      ) : !pitchAccessLoading && !canCreatePitch ? (
+      <div className="bg-white dark:bg-[#1d1d20] rounded-2xl border border-slate-200 dark:border-gray-800 p-8 shadow-xl">
+        <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Free tier limit reached</p>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Upgrade to post more pitches</h2>
+            <p className="text-slate-500 dark:text-gray-400 max-w-2xl">
+              Your free plan allows {typeof remainingPitchSlots === 'number' ? `${remainingPitchSlots} remaining pitch${remainingPitchSlots === 1 ? '' : 'es'}` : 'one pitch'}.
+              Upgrade to Premium to unlock unlimited pitch submissions and keep building your investor pipeline.
+            </p>
+          </div>
+          <Button onClick={() => navigate('/dashboard/subscription?reason=pitch-limit')} className="bg-primary text-neutral-dark font-bold">
+            Upgrade Now
+          </Button>
+        </div>
+      </div>
       ) : (
       <>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Create New Pitch</h1>
         <Button variant="ghost" onClick={() => navigate('/dashboard/opportunities')}>Cancel</Button>
       </div>
+
+      {showPitchLimitNotice && (
+        <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/10 p-4 text-sm text-slate-700 dark:text-white/80">
+          <strong className="text-primary">Free tier:</strong> you can post 1 pitch before upgrading. Premium gives you unlimited pitch submissions.
+        </div>
+      )}
 
       <div className='bg-white dark:bg-[#1d1d20] rounded-2xl border border-slate-200 dark:border-gray-800 p-8 shadow-xl'>
         <form onSubmit={handleSubmit} className='space-y-6'>

@@ -11,8 +11,9 @@ import {
     X
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
+import { usePitchAccess } from '../../hooks/usePitchAccess';
 
 const Opportunities = () => {
   const [pitches, setPitches] = useState<any[]>([]);
@@ -38,6 +39,25 @@ const Opportunities = () => {
   const authHeaders = authToken
     ? { Authorization: `Bearer ${authToken}` }
     : {};
+  const getPitchStatusBadge = (status?: string) => {
+    const normalized = (status || 'PENDING').toUpperCase();
+    if (normalized === 'APPROVED' || normalized === 'ACTIVE') {
+      return {
+        label: 'Published',
+        className: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300',
+      };
+    }
+    if (normalized === 'REJECTED') {
+      return {
+        label: 'Rejected',
+        className: 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300',
+      };
+    }
+    return {
+      label: 'Pending review',
+      className: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300',
+    };
+  };
 
   // --- 1. FETCH PITCHES (With Search & Filter) ---
   const [filters, setFilters] = useState({
@@ -59,9 +79,14 @@ const Opportunities = () => {
 
       const res = await fetch(`${API_BASE}/pitches?${params.toString()}`);
       const data = await res.json();
-      
-      // Safety check to ensure array
-      setPitches(Array.isArray(data) ? data : []);
+
+      // The API returns a paginated object, so accept both response shapes.
+      const items = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.data)
+          ? data.data
+          : [];
+      setPitches(items);
     } catch (error) {
       setToast({ show: true, message: 'Failed to load pitches.', type: 'error' });
     } finally {
@@ -226,13 +251,24 @@ const Opportunities = () => {
             <div key={pitch.id} className="group bg-white dark:bg-[#151518] border border-slate-200 dark:border-white/5 rounded-xl p-5 flex flex-col hover:shadow-lg transition-all duration-300">
               
               <div className="flex items-start justify-between mb-6">
-                <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-[#1d1d20] flex items-center justify-center text-2xl font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/5">
-                  {pitch.title.charAt(0)}
+                <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-[#1d1d20] flex items-center justify-center text-2xl font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/5 overflow-hidden">
+                  {pitch.user?.entrepreneurProfile?.avatarUrl || pitch.user?.investorProfile?.avatarUrl || pitch.user?.avatarUrl ? (
+                    <img
+                      src={pitch.user?.entrepreneurProfile?.avatarUrl || pitch.user?.investorProfile?.avatarUrl || pitch.user?.avatarUrl}
+                      alt={pitch.user?.entrepreneurProfile?.firstName || pitch.user?.investorProfile?.firstName || pitch.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    pitch.title.charAt(0)
+                  )}
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <div className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full">
                     <Verified size={14} className="text-primary fill-current" />
                     <span className="text-[10px] font-bold text-primary uppercase">Verified</span>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-widest ${getPitchStatusBadge(pitch.status).className}`}>
+                    {getPitchStatusBadge(pitch.status).label}
                   </div>
                   <span className="text-[10px] text-slate-400 font-semibold uppercase">{pitch.category}</span>
                 </div>
@@ -297,6 +333,8 @@ const Opportunities = () => {
 
 // --- SUB-COMPONENT: CREATE PITCH FORM (Included here for simplicity) ---
 const CreatePitchModal = ({ onClose, onSuccess, apiBase, authHeaders }: any) => {
+  const navigate = useNavigate();
+  const { loading: pitchAccessLoading, canCreatePitch, remainingPitchSlots, hasPremium } = usePitchAccess();
   const [formData, setFormData] = useState({
     title: '', tagline: '', problemStatement: '', solution: '', 
     traction: '', marketSize: '', fundingAsk: '', equityOffer: '', category: 'FinTech',
@@ -320,8 +358,9 @@ const CreatePitchModal = ({ onClose, onSuccess, apiBase, authHeaders }: any) => 
     try {
       const res = await fetch(`${apiBase}/upload`, { method: 'POST', body: uploadData });
       const data = await res.json();
-      if (data.url) {
-        setFormData((prev) => ({ ...prev, pitchDeckUrl: data.url }));
+      const uploadUrl = data.secure_url || data.url;
+      if (uploadUrl) {
+        setFormData((prev) => ({ ...prev, pitchDeckUrl: uploadUrl }));
         // No-op: show success in UI
       }
     } catch (err) {
@@ -331,6 +370,10 @@ const CreatePitchModal = ({ onClose, onSuccess, apiBase, authHeaders }: any) => 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!pitchAccessLoading && !canCreatePitch) {
+      setError('Your free pitch limit is exhausted. Upgrade to Premium to post more pitches.');
+      return;
+    }
     setSubmitting(true);
     setError('');
     try {
@@ -350,6 +393,46 @@ const CreatePitchModal = ({ onClose, onSuccess, apiBase, authHeaders }: any) => 
 
   const inputStyle = "w-full p-3 bg-slate-100 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded-lg text-slate-900 dark:text-white focus:border-primary focus:outline-none transition-colors";
   const labelStyle = "block text-sm font-bold text-slate-500 dark:text-gray-400 mb-1";
+  const locked = !pitchAccessLoading && !canCreatePitch;
+
+  if (locked) {
+    return (
+      <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm p-4">
+        <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-2xl w-full max-w-2xl shadow-2xl p-8">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Upgrade required</p>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Free pitch limit reached</h2>
+              <p className="text-slate-500 dark:text-gray-400 max-w-xl">
+                {typeof remainingPitchSlots === 'number'
+                  ? `You have ${remainingPitchSlots} free pitch slot${remainingPitchSlots === 1 ? '' : 's'} left.`
+                  : 'Your free pitch allowance has been used.'}{' '}
+                Premium unlocks unlimited pitch submissions and helps you keep posting when you grow.
+              </p>
+            </div>
+            <button onClick={onClose} className="text-slate-500 hover:text-red-500" aria-label="Close modal">
+              <X size={24} />
+            </button>
+          </div>
+
+          <div className="mt-8 flex flex-col sm:flex-row gap-3">
+            <Button onClick={() => navigate('/dashboard/subscription?reason=pitch-limit')} className="bg-primary text-neutral-dark font-bold flex-1">
+              Upgrade to Premium
+            </Button>
+            <Button variant="ghost" onClick={onClose} className="flex-1">
+              Close
+            </Button>
+          </div>
+
+          {!hasPremium && (
+            <p className="mt-6 text-xs text-slate-500 dark:text-gray-400">
+              You can still review your existing pitch history and investor activity while upgrading.
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm p-4">

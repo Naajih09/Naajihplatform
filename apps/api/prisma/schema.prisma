@@ -125,6 +125,7 @@ model EntrepreneurProfile {
 
   firstName    String
   lastName     String
+  avatarUrl    String?
   businessName String?
   industry     String?
   stage        String?
@@ -139,6 +140,7 @@ model InvestorProfile {
 
   firstName       String
   lastName        String
+  avatarUrl       String?
   organization    String?
   minTicketSize   Decimal?
   maxTicketSize   Decimal?

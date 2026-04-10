@@ -1,10 +1,13 @@
 import react from '@vitejs/plugin-react';
 import autoprefixer from 'autoprefixer';
-import path from 'path';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
 import tailwindcss from 'tailwindcss';
 import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 export default defineConfig({
   plugins: [react()],
   css: {

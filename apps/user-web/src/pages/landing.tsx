@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import React from 'react';
 import Navbar from '../components/landing/Navbar';
 import HeroSection from '../components/landing/HeroSection';
@@ -43,8 +44,16 @@ const Landing = () => {
             <h4 className="text-slate-900 dark:text-white font-bold mb-6">Legal</h4>
             <ul className="space-y-4 text-sm text-slate-500">
                 <li className="hover:text-primary cursor-pointer">Sharia Certification</li>
-                <li className="hover:text-primary cursor-pointer">Privacy Policy</li>
-                <li className="hover:text-primary cursor-pointer">Terms of Service</li>
+                <li>
+                  <Link to="/privacy" className="hover:text-primary">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/terms" className="hover:text-primary">
+                    Terms of Service
+                  </Link>
+                </li>
             </ul>
           </div>
 

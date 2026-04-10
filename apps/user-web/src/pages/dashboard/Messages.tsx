@@ -113,7 +113,7 @@ const Messages = () => {
     try {
       const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
       const data = await res.json();
-      return data.url;
+      return data.secure_url || data.url || null;
     } catch (err) {
       setToast({ show: true, message: 'Upload failed.', type: 'error' });
       return null;
@@ -206,7 +206,8 @@ const Messages = () => {
       id: otherUser.id,
       name: `${profile.firstName || 'User'} ${profile.lastName || ''}`,
       role: otherUser.role,
-      initial: profile.firstName?.[0] || 'U'
+      initial: profile.firstName?.[0] || 'U',
+      avatarUrl: profile.avatarUrl || otherUser.avatarUrl || '',
     };
   };
 
@@ -262,7 +263,15 @@ const Messages = () => {
                <div key={conn.id} onClick={() => setActiveChat(partner)} className={`p-4 border-b border-slate-200 dark:border-gray-800/50 cursor-pointer transition-colors ${activeChat?.id === partner.id ? 'bg-primary/10 border-l-4 border-l-primary' : 'hover:bg-slate-200 dark:hover:bg-white/5'}`}>
                   <div className="flex items-center gap-3">
                     <div className="size-10 bg-slate-200 dark:bg-gray-700 rounded-full flex items-center justify-center font-bold text-slate-700 dark:text-white">
-                      {partner.initial}
+                      {partner.avatarUrl ? (
+                        <img
+                          src={partner.avatarUrl}
+                          alt={partner.name}
+                          className="h-full w-full object-cover rounded-full"
+                        />
+                      ) : (
+                        partner.initial
+                      )}
                     </div>
                     <div>
                       <h4 className="font-bold text-sm text-slate-900 dark:text-white">{partner.name}</h4>
@@ -289,7 +298,17 @@ const Messages = () => {
                         <ArrowLeft size={24} />
                     </button>
 
-                    <div className="size-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold">{activeChat.initial}</div>
+                    <div className="size-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold overflow-hidden">
+                      {activeChat.avatarUrl ? (
+                        <img
+                          src={activeChat.avatarUrl}
+                          alt={activeChat.name}
+                          className="h-full w-full object-cover rounded-full"
+                        />
+                      ) : (
+                        activeChat.initial
+                      )}
+                    </div>
                     <div>
                         <h3 className="font-bold text-slate-900 dark:text-white text-sm">{activeChat.name}</h3>
                         <p className="text-xs text-slate-500 dark:text-gray-400 font-bold uppercase tracking-wider">{activeChat.role}</p>

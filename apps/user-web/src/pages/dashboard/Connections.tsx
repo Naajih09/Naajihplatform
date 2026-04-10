@@ -73,8 +73,16 @@ const Connections = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {pending.map((req) => (
                   <div key={req.id} className="bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 p-4 rounded-xl flex items-center gap-4 shadow-sm">
-                    <div className="size-12 bg-slate-200 dark:bg-gray-800 rounded-full flex items-center justify-center font-bold text-lg text-slate-600 dark:text-gray-400">
-                      {(req.sender?.entrepreneurProfile?.firstName || 'U')[0]}
+                    <div className="size-12 bg-slate-200 dark:bg-gray-800 rounded-full flex items-center justify-center font-bold text-lg text-slate-600 dark:text-gray-400 overflow-hidden">
+                      {req.sender?.entrepreneurProfile?.avatarUrl || req.sender?.investorProfile?.avatarUrl ? (
+                        <img
+                          src={req.sender?.entrepreneurProfile?.avatarUrl || req.sender?.investorProfile?.avatarUrl}
+                          alt={req.sender?.entrepreneurProfile?.firstName || req.sender?.investorProfile?.firstName || 'User'}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        (req.sender?.entrepreneurProfile?.firstName || req.sender?.investorProfile?.firstName || 'U')[0]
+                      )}
                     </div>
                     <div className="flex-1">
                       <h4 className="font-bold text-slate-900 dark:text-white">{req.sender?.entrepreneurProfile?.firstName || 'User'}</h4>
@@ -114,7 +122,17 @@ const Connections = () => {
                   const profile = other.entrepreneurProfile || other.investorProfile || {};
                   return (
                     <div key={conn.id} className="bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 p-4 rounded-xl flex items-center gap-3">
-                       <div className="size-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold">{(profile.firstName || 'U')[0]}</div>
+                       <div className="size-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold overflow-hidden">
+                         {profile.avatarUrl ? (
+                           <img
+                             src={profile.avatarUrl}
+                             alt={profile.firstName || 'User'}
+                             className="h-full w-full object-cover"
+                           />
+                         ) : (
+                           (profile.firstName || 'U')[0]
+                         )}
+                       </div>
                        <div><h4 className="font-bold text-slate-900 dark:text-white text-sm">{profile.firstName}</h4><p className="text-[10px] text-slate-500 uppercase">{other.role}</p></div>
                     </div>
                   );

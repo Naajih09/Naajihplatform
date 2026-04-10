@@ -5,6 +5,8 @@ const HomePage = lazy(() => import('../pages/landing'));
 const Login = lazy(() => import('../pages/auth/Login'));
 const Signup = lazy(() => import('../pages/auth/Signup'));
 const CertificateVerify = lazy(() => import('../pages/certificate/CertificateVerify'));
+const Terms = lazy(() => import('../pages/legal/Terms'));
+const Privacy = lazy(() => import('../pages/legal/Privacy'));
 
 // --- Dashboard Pages ---
 const DashboardHome = lazy(() => import('../pages/dashboard/DashboardHome'));
@@ -45,6 +47,16 @@ const routes = [
   {
     path: 'certificate/verify/:programId/:userId',
     element: <CertificateVerify />,
+    layout: 'blank',
+  },
+  {
+    path: 'terms',
+    element: <Terms />,
+    layout: 'blank',
+  },
+  {
+    path: 'privacy',
+    element: <Privacy />,
     layout: 'blank',
   },
 

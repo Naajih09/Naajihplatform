@@ -23,12 +23,7 @@ export class PitchesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createPitchDto: any, @Request() req: any) {
-    return this.pitchesService.create({
-      ...createPitchDto,
-      user: {
-        connect: { id: req.user.id },
-      },
-    });
+    return this.pitchesService.create(createPitchDto, req.user.id);
   }
 
   //  Investors can see list without login

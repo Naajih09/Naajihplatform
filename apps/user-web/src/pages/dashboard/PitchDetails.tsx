@@ -97,6 +97,8 @@ const PitchDetails = () => {
   if (!pitch) return <div className="text-center py-20 text-slate-500">Pitch not found</div>;
 
   const isOwner = user.id === pitch.userId;
+  const founderProfile = pitch.user?.entrepreneurProfile || pitch.user?.investorProfile || {};
+  const founderAvatar = founderProfile.avatarUrl || pitch.user?.avatarUrl || '';
   const inputStyle = "w-full p-2 bg-slate-100 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded text-slate-900 dark:text-white mb-2 focus:outline-none focus:border-primary";
 
   return (
@@ -166,8 +168,16 @@ const PitchDetails = () => {
 
         {/* Founder Info */}
         <div className="flex items-center gap-3 mt-6 pt-6 border-t border-slate-100 dark:border-gray-800">
-           <div className="size-10 bg-slate-100 dark:bg-gray-700 rounded-full flex items-center justify-center font-bold text-slate-700 dark:text-white border border-slate-200 dark:border-gray-600">
-             {pitch.user?.entrepreneurProfile?.firstName?.[0] || 'U'}
+           <div className="size-10 bg-slate-100 dark:bg-gray-700 rounded-full flex items-center justify-center font-bold text-slate-700 dark:text-white border border-slate-200 dark:border-gray-600 overflow-hidden">
+             {founderAvatar ? (
+               <img
+                 src={founderAvatar}
+                 alt={`${pitch.user?.entrepreneurProfile?.firstName || 'Founder'} profile`}
+                 className="h-full w-full object-cover"
+               />
+             ) : (
+               pitch.user?.entrepreneurProfile?.firstName?.[0] || 'U'
+             )}
            </div>
            <div>
              <p className="text-sm font-bold">{pitch.user?.entrepreneurProfile?.firstName} {pitch.user?.entrepreneurProfile?.lastName}</p>

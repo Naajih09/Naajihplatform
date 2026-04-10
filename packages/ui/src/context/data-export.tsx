@@ -37,8 +37,6 @@ export function DataExportProvider({ children }: PropsWithChildren) {
     (d: unknown[] | null, _exportType?: 'excel' | 'pdf') => {
       setInternalData(d);
       setExportType(_exportType);
-      console.log(d);
-      console.log({ _exportType });
     },
     []
   );

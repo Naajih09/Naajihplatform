@@ -40,8 +40,17 @@ const UsersList = () => {
       const res = await fetch(`${API_BASE}/api/users?${params.toString()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (!res.ok) {
+        throw new Error(`Failed to load users (${res.status})`);
+      }
       const data = await res.json();
-      const list = data.data || data || [];
+      const list = Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data?.items)
+        ? data.items
+        : Array.isArray(data)
+        ? data
+        : [];
       setUsers(list);
       setTotalItems(data.meta?.total ?? list.length);
       setTotalPages(data.meta?.totalPages ?? 1);

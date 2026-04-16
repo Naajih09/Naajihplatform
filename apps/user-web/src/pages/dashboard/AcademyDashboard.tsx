@@ -41,6 +41,9 @@ const AcademyDashboard = () => {
         const res = await fetch(`${API_BASE}/academy/${id}`, {
           headers: authHeaders,
         });
+        if (!res.ok) {
+          throw new Error(`Failed to load program (${res.status})`);
+        }
         const data = await res.json();
         setProgram(data);
         // Set first active module if any
@@ -65,6 +68,7 @@ const AcademyDashboard = () => {
         const res = await fetch(`${API_BASE}/academy/milestones`, {
           headers: authHeaders,
         });
+        if (!res.ok) return;
         const data = await res.json();
         setMilestones(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -73,7 +77,7 @@ const AcademyDashboard = () => {
     };
 
     fetchMilestones();
-  }, [authToken]);
+  }, [API_BASE, authToken]);
 
   useEffect(() => {
     if (!authToken || !user?.email) return;
@@ -86,7 +90,7 @@ const AcademyDashboard = () => {
         }
       })
       .catch(() => null);
-  }, [authToken, user?.email]);
+  }, [API_BASE, authToken, user?.email]);
 
   if (loading) return <div className="text-center py-20 text-slate-500 dark:text-gray-500">Loading your curriculum...</div>;
   if (!program) return <div className="text-center py-20 text-red-500">Program not found</div>;

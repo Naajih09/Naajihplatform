@@ -11,6 +11,21 @@ async function bootstrap() {
 
   const { httpAdapter } = app.get(HttpAdapterHost);
 
+  app.use((req: any, res: any, next: () => void) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader(
+      'Permissions-Policy',
+      'camera=(), microphone=(), geolocation=()',
+    );
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'",
+    );
+    next();
+  });
+
   // Capture raw body for webhook signature verification
   app.use(
     json({
@@ -24,14 +39,25 @@ async function bootstrap() {
   app.setGlobalPrefix(process.env.API_PREFIX || 'api');
   app.useGlobalPipes(new ValidationPipe());
 
-  app.enableCors({
-    origin: [
-      'http://localhost:3001',
-      'http://localhost:5173',
-      'http://localhost:6000',
+  const corsOrigins = [
+    'http://localhost:3001',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:6000',
+    'http://127.0.0.1:3001',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+  ];
 
-      process.env.FRONTEND_URL,
-    ].filter(Boolean),
+  const extraOrigins = (process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  app.enableCors({
+    origin: [...corsOrigins, process.env.FRONTEND_URL, ...extraOrigins].filter(
+      Boolean,
+    ),
     credentials: true,
   });
 

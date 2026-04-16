@@ -7,8 +7,16 @@ export default function InvestorDashboard() {
   const [recommended, setRecommended] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const [networkCount, setNetworkCount] = useState(0);
   const [avgTicket, setAvgTicket] = useState(0);
+  const [savedPitchIds, setSavedPitchIds] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('saved-pitches') || '[]');
+    } catch {
+      return [];
+    }
+  });
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const authToken =
@@ -79,6 +87,36 @@ export default function InvestorDashboard() {
     };
     fetchRecommended();
   }, [authToken]);
+
+  useEffect(() => {
+    localStorage.setItem('saved-pitches', JSON.stringify(savedPitchIds));
+  }, [savedPitchIds]);
+
+  const matchesSearch = (pitch: any) => {
+    const needle = searchQuery.trim().toLowerCase();
+    if (!needle) return true;
+    return [
+      pitch.title,
+      pitch.tagline,
+      pitch.problemStatement,
+      pitch.category,
+      pitch.user?.entrepreneurProfile?.firstName,
+      pitch.user?.entrepreneurProfile?.lastName,
+      pitch.user?.investorProfile?.firstName,
+      pitch.user?.investorProfile?.lastName,
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(needle));
+  };
+
+  const visiblePitches = pitches.filter(matchesSearch);
+  const visibleRecommended = recommended.filter(matchesSearch);
+
+  const toggleSavedPitch = (pitchId: string) => {
+    setSavedPitchIds((prev) =>
+      prev.includes(pitchId) ? prev.filter((id) => id !== pitchId) : [...prev, pitchId],
+    );
+  };
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 dark:bg-background-dark dark:text-white px-6 md:px-10 py-8 pb-24">
@@ -151,11 +189,11 @@ export default function InvestorDashboard() {
 
         {/* Pitch Feed */}
         <div className="mt-10">
-          {recommended.length > 0 && (
+          {visibleRecommended.length > 0 && (
             <div className="mb-8">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Recommended for You</h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {recommended.slice(0, 4).map((pitch: any) => (
+                {visibleRecommended.slice(0, 4).map((pitch: any) => (
                   <div key={pitch.id} className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-white/5 hover:border-primary/30 transition-all rounded-xl p-6 group flex flex-col">
                     <div className="flex justify-between items-start mb-4">
                       <div>
@@ -186,8 +224,11 @@ export default function InvestorDashboard() {
                       <Link to={`/dashboard/opportunities/${pitch.id}`} className="flex-1 text-center bg-primary text-black font-bold text-sm py-2.5 rounded-lg hover:bg-primary/90 transition-colors">
                         Review Deal
                       </Link>
-                      <button className="px-4 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                        Save
+                      <button
+                        onClick={() => toggleSavedPitch(pitch.id)}
+                        className="px-4 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                      >
+                        {savedPitchIds.includes(pitch.id) ? 'Saved' : 'Save'}
                       </button>
                     </div>
                   </div>
@@ -200,11 +241,13 @@ export default function InvestorDashboard() {
              <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                <Filter size={18} className="text-primary" /> Deal Flow Pipeline
              </h2>
-             <div className="relative">
+              <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/40" size={16} />
                 <input 
                   type="text" 
                   placeholder="Search pitches..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-primary/50 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30"
                 />
              </div>
@@ -214,7 +257,7 @@ export default function InvestorDashboard() {
             <div className="flex justify-center items-center py-20">
               <Loader2 className="animate-spin text-primary" size={32} />
             </div>
-          ) : pitches.length === 0 ? (
+          ) : visiblePitches.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center dark:border-white/10 dark:bg-[#1d1d20]">
                 <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/5">
                   <Briefcase className="text-slate-400 dark:text-white/30" size={24} />
@@ -226,7 +269,7 @@ export default function InvestorDashboard() {
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {pitches.map((pitch: any) => (
+                {visiblePitches.map((pitch: any) => (
                     <div key={pitch.id} className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-white/5 hover:border-primary/30 transition-all rounded-xl p-6 group flex flex-col">
                         <div className="flex justify-between items-start mb-4">
                            <div>
@@ -257,8 +300,11 @@ export default function InvestorDashboard() {
                             <Link to={`/dashboard/opportunities/${pitch.id}`} className="flex-1 text-center bg-primary text-black font-bold text-sm py-2.5 rounded-lg hover:bg-primary/90 transition-colors">
                                 Review Deal
                             </Link>
-                            <button className="px-4 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                                Save
+                            <button
+                                onClick={() => toggleSavedPitch(pitch.id)}
+                                className="px-4 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                            >
+                                {savedPitchIds.includes(pitch.id) ? 'Saved' : 'Save'}
                             </button>
                         </div>
                     </div>

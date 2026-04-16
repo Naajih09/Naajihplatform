@@ -56,6 +56,12 @@ export class UsersController {
     @Body() body: AdminCreateUserDto,
     @Headers('x-admin-seed-secret') seedSecret?: string,
   ) {
+    if (process.env.ALLOW_ADMIN_SEED !== 'true') {
+      throw new ForbiddenException(
+        'Admin seed endpoint is disabled unless explicitly enabled.',
+      );
+    }
+
     const expected = process.env.ADMIN_SEED_SECRET;
     if (!expected) {
       throw new UnauthorizedException('Admin seed secret is not configured.');
@@ -162,10 +168,9 @@ export class UsersController {
   )
   @Get(':email')
   findOne(@Param('email') email: string, @Request() _req) {
-    // Optional: Add logic to allow user to only fetch their own profile
-    // if (req.user.role !== UserRole.ADMIN && req.user.email !== email) {
-    //   throw new ForbiddenException('You can only view your own profile.');
-    // }
+    if (_req.user.role !== UserRole.ADMIN && _req.user.email !== email) {
+      throw new ForbiddenException('You can only view your own profile.');
+    }
     return this.usersService.findOne(email);
   }
 
@@ -179,10 +184,9 @@ export class UsersController {
   )
   @Patch(':id')
   update(@Param('id') id: string, @Body() body: any, @Request() _req) {
-    // Optional: Add logic to allow user to only update their own profile
-    // if (req.user.role !== UserRole.ADMIN && req.user.id !== id) {
-    //   throw new ForbiddenException('You can only update your own profile.');
-    // }
+    if (_req.user.role !== UserRole.ADMIN && _req.user.id !== id) {
+      throw new ForbiddenException('You can only update your own profile.');
+    }
     if (
       (body.role || typeof body.isActive === 'boolean') &&
       _req.user.role !== UserRole.ADMIN
@@ -204,10 +208,9 @@ export class UsersController {
   )
   @Patch('password/:id')
   changePassword(@Param('id') id: string, @Body() body: any, @Request() _req) {
-    // Optional: Add logic to allow user to only change their own password
-    // if (req.user.role !== UserRole.ADMIN && req.user.id !== id) {
-    //   throw new ForbiddenException('You can only change your own password.');
-    // }
+    if (_req.user.role !== UserRole.ADMIN && _req.user.id !== id) {
+      throw new ForbiddenException('You can only change your own password.');
+    }
     return this.usersService.changePassword(id, body.password);
   }
 

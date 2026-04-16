@@ -19,11 +19,28 @@ const LearningCenter = () => {
     : {};
 
   useEffect(() => {
+    let active = true;
     fetch(`${API_BASE}/academy`, { headers: authHeaders })
-      .then(r => r.json())
-      .then(setCourses)
+      .then(async (r) => {
+        if (!r.ok) throw new Error('Failed to load academy programs.');
+        return r.json();
+      })
+      .then((data) => {
+        if (!active) return;
+        const list = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data?.items)
+          ? data.items
+          : Array.isArray(data)
+          ? data
+          : [];
+        setCourses(list);
+      })
       .catch(() => showToast('Failed to load academy programs.', 'error'));
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [API_BASE, authToken]);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -37,7 +54,7 @@ const LearningCenter = () => {
         }
       })
       .catch(() => null);
-  }, []);
+  }, [API_BASE, authToken]);
 
   const handleJoin = async (event: React.MouseEvent, programId: string, isPremium: boolean) => {
     event.stopPropagation();

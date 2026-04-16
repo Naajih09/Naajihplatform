@@ -45,6 +45,11 @@ const routes = [
     layout: 'blank',
   },
   {
+    path: 'certificate/verify/:token',
+    element: <CertificateVerify />,
+    layout: 'blank',
+  },
+  {
     path: 'certificate/verify/:programId/:userId',
     element: <CertificateVerify />,
     layout: 'blank',

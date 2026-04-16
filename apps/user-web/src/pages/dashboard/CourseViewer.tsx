@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '../../components/Button';
 import { showToast } from '../../lib/utils';
+import { sanitizeHtml } from '../../lib/sanitizeHtml';
 
 const CourseViewer = () => {
   const { lessonId } = useParams();
@@ -37,6 +38,9 @@ const CourseViewer = () => {
         const res = await fetch(`${API_BASE}/academy/lesson/${lessonId}`, {
           headers: authHeaders,
         });
+        if (!res.ok) {
+          throw new Error(`Failed to load lesson (${res.status})`);
+        }
         const data = await res.json();
         setLesson(data);
       } catch (err) {
@@ -47,7 +51,7 @@ const CourseViewer = () => {
     };
 
     if (lessonId) fetchLesson();
-  }, [lessonId]);
+  }, [API_BASE, authToken, lessonId]);
 
   const handleComplete = async () => {
     setIsCompleting(true);
@@ -118,9 +122,11 @@ const CourseViewer = () => {
                         <h1 className="text-3xl font-black text-slate-900 dark:text-white">{lesson.title}</h1>
                         <div className="mt-8 prose dark:prose-invert max-w-none text-slate-600 dark:text-gray-400 leading-relaxed" 
                              dangerouslySetInnerHTML={{
-                               __html: isLockedContent
+                               __html: sanitizeHtml(
+                                 isLockedContent
                                  ? 'This lesson is locked. Join the program to access the content.'
                                  : lesson.content || 'No content provided.',
+                               ),
                              }}>
                         </div>
                     </div>

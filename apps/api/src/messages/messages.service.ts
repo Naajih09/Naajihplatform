@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { sanitizePlainText } from '../utils/sanitize';
 
 @Injectable()
 export class MessagesService {
@@ -19,7 +20,7 @@ export class MessagesService {
   }) {
     return this.databaseService.message.create({
       data: {
-        content: data.content || '',
+        content: sanitizePlainText(data.content),
         senderId: data.senderId,
         receiverId: data.receiverId,
         attachmentUrl: data.attachmentUrl,

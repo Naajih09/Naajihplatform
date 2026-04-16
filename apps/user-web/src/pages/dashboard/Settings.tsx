@@ -10,6 +10,22 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState('security');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [notificationPrefs, setNotificationPrefs] = useState(() => {
+    try {
+      const stored = localStorage.getItem('notificationPreferences');
+      return stored ? JSON.parse(stored) : {
+        email: true,
+        messages: true,
+        opportunities: true,
+      };
+    } catch {
+      return {
+        email: true,
+        messages: true,
+        opportunities: true,
+      };
+    }
+  });
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
     show: false,
     message: '',
@@ -23,6 +39,10 @@ const Settings = () => {
   const authHeaders = authToken
     ? { Authorization: `Bearer ${authToken}` }
     : {};
+
+  React.useEffect(() => {
+    localStorage.setItem('notificationPreferences', JSON.stringify(notificationPrefs));
+  }, [notificationPrefs]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -122,7 +142,42 @@ const Settings = () => {
                         <Bell className="text-primary" size={24} />
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white">Preferences</h3>
                     </div>
-                    <p className="text-slate-500 dark:text-gray-500 text-sm">Email notifications are enabled by default.</p>
+                    <p className="text-slate-500 dark:text-gray-500 text-sm">
+                      Your notification preferences are saved on this device for now.
+                    </p>
+                    <div className="space-y-3">
+                      {[
+                        { key: 'email', label: 'Email alerts', desc: 'Get updates by email.' },
+                        { key: 'messages', label: 'Message alerts', desc: 'Get notified when someone sends a message.' },
+                        { key: 'opportunities', label: 'Opportunity alerts', desc: 'Get notified about pitch and opportunity activity.' },
+                      ].map((item) => (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() =>
+                            setNotificationPrefs((prev: any) => ({
+                              ...prev,
+                              [item.key]: !prev[item.key],
+                            }))
+                          }
+                          className="w-full flex items-center justify-between gap-4 rounded-xl border border-slate-200 dark:border-gray-800 px-4 py-4 text-left hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                        >
+                          <div>
+                            <p className="font-bold text-slate-900 dark:text-white">{item.label}</p>
+                            <p className="text-xs text-slate-500 dark:text-gray-500">{item.desc}</p>
+                          </div>
+                          <span
+                            className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
+                              notificationPrefs[item.key]
+                                ? 'bg-primary text-black'
+                                : 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-gray-400'
+                            }`}
+                          >
+                            {notificationPrefs[item.key] ? 'On' : 'Off'}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                 </div>
             )}
         </div>

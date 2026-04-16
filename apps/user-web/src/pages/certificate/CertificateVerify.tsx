@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { CheckCircle, XCircle, ShieldCheck } from 'lucide-react';
 
 const CertificateVerify = () => {
-  const { programId, userId } = useParams();
+  const { token, programId, userId } = useParams();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -11,12 +11,16 @@ const CertificateVerify = () => {
 
   useEffect(() => {
     const fetchVerification = async () => {
-      if (!programId || !userId) return;
+      if (!token && (!programId || !userId)) return;
       setLoading(true);
       try {
-        const res = await fetch(
-          `${API_BASE}/academy/public/verify?programId=${programId}&userId=${userId}`,
-        );
+        const query = token
+          ? `token=${encodeURIComponent(token)}`
+          : `programId=${encodeURIComponent(programId || '')}&userId=${encodeURIComponent(userId || '')}`;
+        const res = await fetch(`${API_BASE}/academy/public/verify?${query}`);
+        if (!res.ok) {
+          throw new Error(`Verification failed (${res.status})`);
+        }
         const result = await res.json();
         setData(result);
       } catch (error) {
@@ -27,7 +31,7 @@ const CertificateVerify = () => {
     };
 
     fetchVerification();
-  }, [programId, userId]);
+  }, [API_BASE, token, programId, userId]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center text-gray-500">Verifying certificate...</div>;

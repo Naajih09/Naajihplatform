@@ -34,16 +34,16 @@ const Landing = () => {
           <div>
             <h4 className="text-slate-900 dark:text-white font-bold mb-6">Platform</h4>
             <ul className="space-y-4 text-sm text-slate-500">
-                <li className="hover:text-primary cursor-pointer">Browse Projects</li>
-                <li className="hover:text-primary cursor-pointer">How it Works</li>
-                <li className="hover:text-primary cursor-pointer">Success Stories</li>
+                <li><a href="#how-it-works" className="hover:text-primary">How it Works</a></li>
+                <li><a href="#benefits" className="hover:text-primary">Benefits</a></li>
+                <li><Link to="/signup" className="hover:text-primary">Browse Opportunities</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-slate-900 dark:text-white font-bold mb-6">Legal</h4>
             <ul className="space-y-4 text-sm text-slate-500">
-                <li className="hover:text-primary cursor-pointer">Sharia Certification</li>
+                <li className="text-slate-500">Sharia Certification</li>
                 <li>
                   <Link to="/privacy" className="hover:text-primary">
                     Privacy Policy

@@ -3,12 +3,64 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MailerService } from '../mailer/mailer.service';
 
 @Injectable()
 export class AcademyService {
+  private getCertificateVerificationSecret() {
+    return (
+      process.env.CERTIFICATE_VERIFICATION_SECRET ||
+      process.env.JWT_SECRET ||
+      'naajihbiz-certificate-verification-secret'
+    );
+  }
+
+  private createCertificateVerificationToken(
+    programId: string,
+    userId: string,
+  ) {
+    const payload = `${programId}:${userId}`;
+    const signature = crypto
+      .createHmac('sha256', this.getCertificateVerificationSecret())
+      .update(payload)
+      .digest('hex');
+
+    return Buffer.from(`${payload}:${signature}`, 'utf-8').toString(
+      'base64url',
+    );
+  }
+
+  private parseCertificateVerificationToken(token: string) {
+    try {
+      const decoded = Buffer.from(token, 'base64url').toString('utf-8');
+      const [programId, userId, signature] = decoded.split(':');
+      if (!programId || !userId || !signature) {
+        return null;
+      }
+
+      const expectedSignature = crypto
+        .createHmac('sha256', this.getCertificateVerificationSecret())
+        .update(`${programId}:${userId}`)
+        .digest('hex');
+
+      const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+      const actualBuffer = Buffer.from(signature, 'hex');
+      if (
+        expectedBuffer.length !== actualBuffer.length ||
+        !crypto.timingSafeEqual(expectedBuffer, actualBuffer)
+      ) {
+        return null;
+      }
+
+      return { programId, userId };
+    } catch {
+      return null;
+    }
+  }
+
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly notificationsService: NotificationsService,
@@ -123,6 +175,41 @@ export class AcademyService {
 
   // 4️⃣ MARK LESSON COMPLETE
   async completeLesson(userId: string, lessonId: string) {
+    const lesson = await this.databaseService.lesson.findUnique({
+      where: { id: lessonId },
+      select: {
+        id: true,
+        module: {
+          select: {
+            unlockDate: true,
+            programId: true,
+          },
+        },
+      },
+    });
+
+    if (!lesson?.module?.programId) {
+      throw new NotFoundException('Lesson not found.');
+    }
+
+    const isUnlocked =
+      !lesson.module.unlockDate ||
+      new Date(lesson.module.unlockDate) <= new Date();
+
+    const enrollment = await this.databaseService.programEnrollment.findFirst({
+      where: {
+        userId,
+        programId: lesson.module.programId,
+        status: 'APPROVED',
+      },
+    });
+
+    if (!isUnlocked || !enrollment) {
+      throw new ForbiddenException(
+        'Program enrollment and unlocked lesson access are required.',
+      );
+    }
+
     const progress = await this.databaseService.userLessonProgress.upsert({
       where: { userId_lessonId: { userId, lessonId } },
       update: { isCompleted: true },
@@ -913,6 +1000,10 @@ export class AcademyService {
       achievedAt: achieved.achievedAt,
       recipient: fullName || 'Learner',
       userId,
+      verificationToken: this.createCertificateVerificationToken(
+        program.id,
+        userId,
+      ),
     };
   }
 
@@ -962,6 +1053,16 @@ export class AcademyService {
       achievedAt: achieved.achievedAt,
       recipient: fullName || 'Learner',
     };
+  }
+
+  async verifyCertificateByToken(token: string) {
+    const parsed = this.parseCertificateVerificationToken(token);
+
+    if (!parsed) {
+      return null;
+    }
+
+    return this.verifyCertificate(parsed.programId, parsed.userId);
   }
 
   // 8️⃣ SEED PROGRAMS + MODULES + LESSONS
@@ -1111,7 +1212,7 @@ export class AcademyService {
       color: rgb(0.4, 0.4, 0.4),
     });
 
-    const verificationUrl = `${process.env.APP_BASE_URL || 'http://localhost:3001'}/certificate/verify/${certificate.program.id}/${certificate.userId}`;
+    const verificationUrl = `${process.env.APP_BASE_URL || 'http://localhost:3001'}/certificate/verify/${certificate.verificationToken}`;
     page.drawText('Verify certificate:', {
       x: 60,
       y: 90,

@@ -34,6 +34,7 @@ function DashboardHome() {
 
   // FIX: Removed <any[]>
   const [courses, setCourses] = useState([]);
+  const [certificateCount, setCertificateCount] = useState(0);
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [joiningId, setJoiningId] = useState(null);
@@ -46,8 +47,18 @@ function DashboardHome() {
 if (isAspirant) {
   // If Aspirant, fetch Programs
   const res = await fetch(`${API_BASE}/academy`, { headers: authHeaders });
+  if (!res.ok) {
+    throw new Error(`Failed to load academy programs (${res.status})`);
+  }
   const data = await res.json();
-  setCourses(data); // "courses" actually refers to Programs here
+  const list = Array.isArray(data?.data)
+    ? data.data
+    : Array.isArray(data?.items)
+    ? data.items
+    : Array.isArray(data)
+    ? data
+    : [];
+  setCourses(list); // "courses" actually refers to Programs here
 } else {
   // If Entrepreneur/Investor, fetch Stats
   const res = await fetch(`${API_BASE}/users/stats/${user.id}`, { headers: authHeaders });
@@ -76,6 +87,62 @@ if (isAspirant) {
       })
       .catch(() => null);
   }, [authToken, user?.email]);
+
+  useEffect(() => {
+    if (!isAspirant || !authToken || !Array.isArray(courses) || courses.length === 0) {
+      setCertificateCount(0);
+      return;
+    }
+
+    let active = true;
+
+    const loadCertificates = async () => {
+      try {
+        const results = await Promise.all(
+          courses.map(async (course) => {
+            const enrollment = course.enrollments?.[0];
+            const enrollmentStatus = enrollment?.status;
+            const isEnrolled = enrollmentStatus === 'APPROVED';
+            const totalLessons = course.modules?.reduce(
+              (sum, mod) => sum + (mod.lessons?.length || 0),
+              0,
+            );
+            const completedLessons = course.modules?.reduce(
+              (sum, mod) =>
+                sum +
+                (mod.lessons?.filter((lesson) => lesson.progress?.length > 0)
+                  .length || 0),
+              0,
+            );
+
+            if (!isEnrolled || totalLessons === 0 || completedLessons < totalLessons) {
+              return false;
+            }
+
+            const res = await fetch(`${API_BASE}/academy/certificate/${course.id}`, {
+              headers: authHeaders,
+            });
+            return res.ok;
+          }),
+        );
+
+        if (active) {
+          setCertificateCount(results.filter(Boolean).length);
+        }
+      } catch (error) {
+        console.error('Failed to load certificates', error);
+        if (active) {
+          setCertificateCount(0);
+        }
+      }
+    };
+
+    loadCertificates();
+
+    return () => {
+      active = false;
+    };
+  }, [courses, isAspirant, authToken, API_BASE]);
 
   const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
   const hasPremium =
@@ -168,7 +235,7 @@ if (isAspirant) {
               <div className="size-12 bg-purple-500/20 rounded-full flex items-center justify-center text-purple-500"><Award size={24} /></div>
               <div>
                 <p className="text-xs text-slate-500 font-bold uppercase">Certificates</p>
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white">0</h3>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white">{certificateCount}</h3>
               </div>
             </div>
           </div>
@@ -290,11 +357,22 @@ if (isAspirant) {
             </div>
             <div className="mt-8">
               <div className="flex justify-between items-end mb-2">
-                <p className="text-white text-2xl font-black">{stats.isVerified ? '100%' : '20%'}</p>
-                <p className="text-neutral-muted text-xs">{stats.isVerified ? 'Fully Verified' : 'Upload Documents to verify'}</p>
+                <p className="text-white text-2xl font-black">
+                  {stats.isVerified ? '100%' : user.emailVerified ? '60%' : '20%'}
+                </p>
+                <p className="text-neutral-muted text-xs">
+                  {stats.isVerified
+                    ? 'Fully verified'
+                    : user.emailVerified
+                    ? 'Identity review in progress'
+                    : 'Verify your email and identity'}
+                </p>
               </div>
               <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                <div className="bg-primary h-full rounded-full" style={{ width: stats.isVerified ? '100%' : '20%' }}></div>
+                <div
+                  className="bg-primary h-full rounded-full"
+                  style={{ width: stats.isVerified ? '100%' : user.emailVerified ? '60%' : '20%' }}
+                ></div>
               </div>
             </div>
           </div>

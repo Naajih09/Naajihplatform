@@ -10,6 +10,7 @@ import {
   UserRole,
 } from '@prisma/client';
 import { DatabaseService } from '../database/database.service';
+import { sanitizePlainText, sanitizeStringArray } from '../utils/sanitize';
 
 @Injectable()
 export class CommunityService {
@@ -136,9 +137,9 @@ export class CommunityService {
     return this.databaseService.communityPost.create({
       data: {
         userId,
-        title: data.title,
-        body: data.body,
-        tags: data.tags ?? [],
+        title: sanitizePlainText(data.title),
+        body: sanitizePlainText(data.body),
+        tags: sanitizeStringArray(data.tags),
         status,
       },
       include: {
@@ -185,7 +186,7 @@ export class CommunityService {
       data: {
         userId,
         postId,
-        body,
+        body: sanitizePlainText(body),
         status,
       },
       include: {
@@ -315,7 +316,7 @@ export class CommunityService {
         reporterId,
         targetType,
         targetId,
-        reason,
+        reason: sanitizePlainText(reason),
       },
     });
   }

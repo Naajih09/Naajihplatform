@@ -232,15 +232,15 @@ const Verification = () => {
         <div className="space-y-6">
           <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6 relative overflow-hidden shadow-sm">
              <ShieldCheck className="absolute top-4 right-4 text-primary/10" size={100} />
-             <h3 className="font-bold text-lg mb-4 relative z-10 text-slate-900 dark:text-white">Why Verify?</h3>
+              <h3 className="font-bold text-lg mb-4 relative z-10 text-slate-900 dark:text-white">Why Verify?</h3>
              <ul className="space-y-4 relative z-10">
                {[
-                 { title: 'Trust & Credibility', desc: 'Get the Blue Badge.' },
-                 { title: 'Higher Visibility', desc: 'Appear 3x more in search.' },
-                 { title: 'Unlimited Funding', desc: 'Remove transaction limits.' }
+                 { title: 'Trust & Credibility', desc: 'Helps other users know your account has been reviewed.' },
+                 { title: 'Clearer Reviews', desc: 'Makes it easier for admins and partners to review your profile.' },
+                 { title: 'Full Access', desc: 'Unlocks the platform features that require verified identity.' }
                ].map(item => (
-                 <li key={item.title} className="flex gap-3">
-                   <div className="size-8 bg-primary/10 rounded flex items-center justify-center text-primary shrink-0"><CheckCircle size={16}/></div>
+                   <li key={item.title} className="flex gap-3">
+                     <div className="size-8 bg-primary/10 rounded flex items-center justify-center text-primary shrink-0"><CheckCircle size={16}/></div>
                    <div>
                      <p className="text-sm font-bold text-slate-900 dark:text-white">{item.title}</p>
                      <p className="text-xs text-slate-500 dark:text-gray-500">{item.desc}</p>

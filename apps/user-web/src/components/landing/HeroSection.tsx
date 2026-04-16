@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { TrendingUp, Wallet } from 'lucide-react';
+import { TrendingUp, Wallet, ShieldCheck, Users, Rocket } from 'lucide-react';
 
 const HeroSection = () => {
   return (
@@ -32,11 +32,26 @@ const HeroSection = () => {
         <div className="relative">
           <div className="absolute -top-20 -right-20 w-80 h-80 bg-primary/10 blur-[120px] rounded-full"></div>
           <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-deep-slate aspect-[4/5] flex items-end p-8">
-             <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-deep-slate/50 to-transparent"></div>
-             <div className="relative z-10">
-                <div className="text-primary font-bold mb-2 text-sm uppercase">Impact Story</div>
-                <h3 className="text-xl font-bold text-white mb-2">"NaajihBiz helped us scale our Agri-tech startup without the burden of interest-based loans."</h3>
-                <p className="text-gray-400 text-sm">— Musa J., Founder of GreenLagos</p>
+             <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-deep-slate/60 to-transparent"></div>
+             <div className="relative z-10 w-full space-y-4">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
+                  What you get
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  {[
+                    { icon: ShieldCheck, title: 'Trusted profiles', text: 'People can review verified business details before they connect.' },
+                    { icon: Users, title: 'One place to manage', text: 'Founders, investors, and learners use the same account space.' },
+                    { icon: Rocket, title: 'Ready to start', text: 'Pitch, connect, verify, and upgrade from one simple flow.' },
+                  ].map((item) => (
+                    <div key={item.title} className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+                      <div className="flex items-center gap-3 mb-2">
+                        <item.icon size={18} className="text-primary" />
+                        <h3 className="text-sm font-bold text-white">{item.title}</h3>
+                      </div>
+                      <p className="text-sm text-gray-400">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
              </div>
           </div>
         </div>

@@ -1,7 +1,9 @@
-import { MapPin, BadgeCheck, CheckCircle, User as UserIcon } from "lucide-react";
+import { MapPin, BadgeCheck, CheckCircle, User as UserIcon, MessageCircle, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function EntrepreneurProfile() {
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const profile = user?.entrepreneurProfile || user?.investorProfile || {};
   const profileAvatar = profile.avatarUrl || user.avatarUrl || '';
@@ -46,6 +48,20 @@ export default function EntrepreneurProfile() {
   const bio = profile.businessName
     ? `Building ${profile.businessName} with a focus on ${profile.industry || 'sustainable growth'}.`
     : 'Complete your profile to showcase your business story to investors.';
+
+  const handleContact = () => {
+    navigate('/dashboard/messages');
+  };
+
+  const handleShareProfile = async () => {
+    const profileUrl = `${window.location.origin}/dashboard/profile`;
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      window.alert('Profile link copied to clipboard.');
+    } catch {
+      window.alert(profileUrl);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background-dark text-white px-6 md:px-10 py-8">
@@ -111,11 +127,17 @@ export default function EntrepreneurProfile() {
               </div>
 
               <div className="flex gap-3 w-full md:w-auto">
-                <button className="px-6 py-2 bg-white/5 border border-white/10 rounded-lg text-sm font-bold">
-                  Contact
+                <button
+                  onClick={handleContact}
+                  className="px-6 py-2 bg-white/5 border border-white/10 rounded-lg text-sm font-bold flex items-center gap-2"
+                >
+                  <MessageCircle size={16} /> Contact
                 </button>
-                <button className="px-6 py-2 bg-primary text-black rounded-lg text-sm font-bold">
-                  Share Profile
+                <button
+                  onClick={handleShareProfile}
+                  className="px-6 py-2 bg-primary text-black rounded-lg text-sm font-bold flex items-center gap-2"
+                >
+                  <Share2 size={16} /> Share Profile
                 </button>
               </div>
             </div>

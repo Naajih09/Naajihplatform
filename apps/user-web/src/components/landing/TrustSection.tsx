@@ -28,13 +28,24 @@ const TrustSection = () => {
             </div>
           </div>
           <div className="relative mt-8 lg:mt-0">
-            <div className="rounded-2xl shadow-2xl bg-gray-800 w-full aspect-video flex items-center justify-center text-gray-500">
-               <span className="text-xs">Trust Visual</span>
+            <div className="rounded-2xl shadow-2xl bg-[#121214] border border-white/5 p-6 md:p-8">
+              <div className="grid grid-cols-1 gap-4">
+                {[
+                  { title: 'Verified profiles', value: 'Founders and investors can show the essentials clearly.' },
+                  { title: 'Active opportunities', value: 'Open pitches are easy to browse and review.' },
+                  { title: 'Simple onboarding', value: 'Profile, verification, and subscription live in one flow.' },
+                ].map((item) => (
+                  <div key={item.title} className="rounded-xl border border-white/5 bg-white/5 p-4">
+                    <h4 className="text-sm font-bold text-white mb-1">{item.title}</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">{item.value}</p>
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="absolute -bottom-6 -left-6 md:-bottom-10 md:-left-10 bg-primary p-6 md:p-8 rounded-2xl text-background-dark max-w-[240px] md:max-w-[280px]">
               <span className="material-symbols-outlined text-4xl mb-4 block">verified_user</span>
-              <h4 className="text-xl font-900 mb-2">Certified Compliance</h4>
-              <p className="text-sm font-bold opacity-80">Our Sharia Supervisory Board audits every transaction model monthly.</p>
+              <h4 className="text-xl font-900 mb-2">Built for trust</h4>
+              <p className="text-sm font-bold opacity-80">Every profile, pitch, and payment step is designed to feel clear and dependable.</p>
             </div>
           </div>
         </div>

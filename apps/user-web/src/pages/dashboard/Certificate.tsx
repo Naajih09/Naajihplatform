@@ -32,6 +32,9 @@ const Certificate = () => {
           setCertificate(null);
           return;
         }
+        if (!res.ok) {
+          throw new Error(`Failed to load certificate (${res.status})`);
+        }
         const data = await res.json();
         setCertificate(data);
       } catch (err) {
@@ -42,7 +45,7 @@ const Certificate = () => {
     };
 
     fetchCertificate();
-  }, [programId]);
+  }, [API_BASE, authToken, programId]);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -56,7 +59,7 @@ const Certificate = () => {
         }
       })
       .catch(() => null);
-  }, []);
+  }, [API_BASE, authToken]);
 
   if (loading) {
     return <div className="text-center py-20 text-gray-500">Loading certificate...</div>;
@@ -89,7 +92,7 @@ const Certificate = () => {
     );
   }
 
-  const verificationUrl = `${window.location.origin}/certificate/verify/${certificate.program?.id}/${certificate.userId}`;
+  const verificationUrl = `${window.location.origin}/certificate/verify/${certificate.verificationToken}`;
 
   return (
     <div className="max-w-4xl mx-auto pb-20 space-y-6">

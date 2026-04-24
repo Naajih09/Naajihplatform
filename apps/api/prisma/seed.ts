@@ -3,29 +3,49 @@ import 'dotenv/config';
 import { ConnectionStatus, PrismaClient, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+let seedPrisma = new PrismaClient();
 
 async function main() {
   const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@naajih.com';
   const adminPassword = process.env.ADMIN_PASSWORD ?? 'Password123!';
   const password = await bcrypt.hash(adminPassword, 10);
+  const databaseUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL or DIRECT_URL must be set for seeding.');
+  }
+
+  seedPrisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: databaseUrl,
+      },
+    },
+  });
 
   console.log('Seeding users...');
 
   // 1. Admin
-  const admin = await prisma.user.upsert({
+  const admin = await seedPrisma.user.upsert({
     where: { email: adminEmail },
-    update: {},
+    update: {
+      password,
+      role: UserRole.ADMIN,
+      isVerified: true,
+      emailVerified: true,
+      isActive: true,
+    },
     create: {
       email: adminEmail,
       password,
       role: UserRole.ADMIN,
       isVerified: true,
+      emailVerified: true,
     },
   });
 
   // 2. Investor
-  const investor = await prisma.user.upsert({
+  const investor = await seedPrisma.user.upsert({
     where: { email: 'investor@naajih.com' },
     update: {},
     create: {
@@ -47,7 +67,7 @@ async function main() {
   });
 
   // 3. Entrepreneur
-  const entrepreneur = await prisma.user.upsert({
+  const entrepreneur = await seedPrisma.user.upsert({
     where: { email: 'entrepreneur@naajih.com' },
     update: {},
     create: {
@@ -69,7 +89,7 @@ async function main() {
   });
 
   // 4. Aspiring Business Owner
-  const aspirant = await prisma.user.upsert({
+  const aspirant = await seedPrisma.user.upsert({
     where: { email: 'aspirant@naajih.com' },
     update: {},
     create: {
@@ -83,7 +103,7 @@ async function main() {
   console.log('Seeding opportunity (Pitch)...');
 
   // 5. Pitch for Entrepreneur
-  const pitch = await prisma.pitch.create({
+  const pitch = await seedPrisma.pitch.create({
     data: {
       userId: entrepreneur.id,
       title: 'Solar for All',
@@ -101,7 +121,7 @@ async function main() {
   console.log('Seeding connection...');
 
   // 6. Connection between Investor and Entrepreneur
-  await prisma.connection.upsert({
+  await seedPrisma.connection.upsert({
     where: {
       senderId_receiverId: {
         senderId: investor.id,
@@ -125,5 +145,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    await seedPrisma.$disconnect();
   });

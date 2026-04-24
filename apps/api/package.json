@@ -18,7 +18,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -45,7 +46,6 @@
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
     "fuse.js": "^7.0.0",
-    "i": "^0.3.7",
     "nest-winston": "^1.9.4",
     "nodemailer": "^7.0.10",
     "passport": "^0.7.0",
@@ -100,7 +100,7 @@
     "typescript-eslint": "^8.20.0"
   },
   "jest": {
-    "moduleFileExtensions": [
+    "moduleFileExtensions":[
       "js",
       "json",
       "ts"
@@ -110,7 +110,7 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
-    "collectCoverageFrom": [
+    "collectCoverageFrom":[
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",

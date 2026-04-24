@@ -115,6 +115,7 @@ export class UsersService {
         email,
         password: hashedPassword,
         role: UserRole.ADMIN,
+        isVerified: true,
         emailVerified: true,
         entrepreneurProfile: { create: { firstName, lastName } },
       },

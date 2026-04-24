@@ -36,8 +36,17 @@ const Login = () => {
 
       login(accessToken, user.role);
       navigate('/admin/dashboard', { replace: true });
-    } catch (error) {
-      setErrorMessage('Invalid email or password. Please try again.');
+    } catch (error: any) {
+      const backendMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message;
+
+      setErrorMessage(
+        typeof backendMessage === 'string' && backendMessage.trim()
+          ? backendMessage
+          : 'Invalid email or password. Please try again.',
+      );
     } finally {
       setIsSubmitting(false);
     }

@@ -25,7 +25,7 @@ export class AuthService {
 
     if (
       process.env.REQUIRE_EMAIL_VERIFICATION === 'true' &&
-      !user.emailVerified
+      !(user.emailVerified || user.isVerified)
     ) {
       throw new UnauthorizedException('Email not verified');
     }

@@ -186,9 +186,6 @@ importers:
       fuse.js:
         specifier: ^7.0.0
         version: 7.1.0
-      i:
-        specifier: ^0.3.7
-        version: 0.3.7
       nest-winston:
         specifier: ^1.9.4
         version: 1.10.2(@nestjs/common@11.1.16(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(winston@3.19.0)
@@ -4678,10 +4675,6 @@ packages:
     resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
     engines: {node: '>=18'}
     hasBin: true
-
-  i@0.3.7:
-    resolution: {integrity: sha512-FYz4wlXgkQwIPqhzC5TdNMLSE5+GS1IIDJZY/1ZiEPCT2S3COUVZeT5OW4BmW4r5LHLQuOosSwsvnroG9GR59Q==}
-    engines: {node: '>=0.4'}
 
   iconv-lite@0.7.2:
     resolution: {integrity: sha512-im9DjEDQ55s9fL4EYzOAv0yMqmMBSZp6G0VvFyTMPKWxiSBHUj9NW/qqLmXUwXrrM7AvqSlTCfvqRb0cM8yYqw==}
@@ -11392,8 +11385,6 @@ snapshots:
   human-signals@2.1.0: {}
 
   husky@9.1.7: {}
-
-  i@0.3.7: {}
 
   iconv-lite@0.7.2:
     dependencies:

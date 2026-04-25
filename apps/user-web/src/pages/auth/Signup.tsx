@@ -4,6 +4,7 @@ import {
   Rocket, Wallet, GraduationCap, ArrowRight, CheckCircle, 
   AlertCircle, Eye, EyeOff, ChevronRight, Lock, ShieldCheck, BadgeDollarSign
 } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/api-base';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const Signup = () => {
     message: '',
     type: 'success',
   });
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   
   const [formData, setFormData] = useState({
     fullName: '',

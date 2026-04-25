@@ -4,6 +4,7 @@ import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import Button from '../../components/Button';
 import { useAppDispatch } from '@/store/store';
 import { setAuth, setToken, setUser } from '@/store/slices/auth-slice';
+import { getApiBaseUrl } from '@/lib/api-base';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

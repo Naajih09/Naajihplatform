@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getApiBaseUrl } from '@/lib/api-base';
 
 type PitchAccessState = {
   loading: boolean;
@@ -27,7 +28,7 @@ export const usePitchAccess = () => {
       localStorage.getItem('accessToken') ||
       localStorage.getItem('access_token') ||
       '';
-    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+    const apiBase = getApiBaseUrl();
 
     if (!user?.id || !authToken) {
       setState((prev) => ({ ...prev, loading: false }));

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { getApiBaseUrl } from '@/lib/api-base';
 
 export const useSocket = (userId: string) => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -9,7 +10,7 @@ export const useSocket = (userId: string) => {
       return;
     }
 
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || getApiBaseUrl().replace(/\/api$/, '');
     const nextSocket = io(socketUrl, {
       transports: ['websocket'],
     });

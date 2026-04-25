@@ -19,6 +19,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppDispatch } from '@/store/store';
 import { logout, setAuth, setToken, setUser } from '@/store/slices/auth-slice';
+import { getApiBaseUrl } from '@/lib/api-base';
 
 interface DashboardLayoutProps {
   children?: React.ReactNode; 
@@ -54,7 +55,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
     const refreshUser = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}/users/${email}`, {
+        const res = await fetch(`${getApiBaseUrl()}/users/${email}`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         if (!res.ok) return;

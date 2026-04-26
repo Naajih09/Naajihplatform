@@ -1,6 +1,7 @@
 import { ArrowLeft, FileText, Loader2, Mic, MoreVertical, Paperclip, Search, Send, StopCircle, User } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useSocket } from '../../hooks/useSocket';
+import { getApiBaseUrl } from '../../lib/api-base';
 
 const Messages = () => {
   const [partners, setPartners] = useState<any[]>([]);
@@ -26,7 +27,7 @@ const Messages = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   const authToken =
     localStorage.getItem('access_token') ||
     localStorage.getItem('accessToken') ||
@@ -46,16 +47,20 @@ const Messages = () => {
         const res = await fetch(`${API_BASE}/messages/partners`, {
           headers: authHeaders,
         });
+        if (!res.ok) {
+          throw new Error(`Failed to load partners (${res.status})`);
+        }
         const data = await res.json();
-        setPartners(data);
+        setPartners(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error("Failed to load partners");
+        console.error('Failed to load partners', error);
+        setPartners([]);
       } finally {
         setLoading(false);
       }
     };
     fetchPartners();
-  }, [user.id]);
+  }, [API_BASE, authHeaders, user.id]);
 
   // --- FETCH CONVERSATION & SOCKET LISTENERS ---
   useEffect(() => {
@@ -67,14 +72,20 @@ const Messages = () => {
           `${API_BASE}/messages/conversation/${activeChat.id}`,
           { headers: authHeaders }
         );
+        if (!res.ok) {
+          throw new Error(`Failed to load conversation (${res.status})`);
+        }
         const data = await res.json();
-        setMessages(data);
+        setMessages(Array.isArray(data) ? data : []);
         scrollToBottom();
-      } catch (error) { console.error(error); }
+      } catch (error) {
+        console.error(error);
+        setMessages([]);
+      }
     };
     
     fetchMessages();
-  }, [activeChat, user.id]);
+  }, [API_BASE, activeChat, authHeaders, user.id]);
 
   // Listen for incoming messages
   useEffect(() => {
@@ -200,7 +211,27 @@ const Messages = () => {
   };
 
   const getPartnerDetails = (connection: any) => {
+    if (!connection) {
+      return {
+        id: '',
+        name: 'Unknown User',
+        role: 'USER',
+        initial: 'U',
+        avatarUrl: '',
+      };
+    }
+
     const otherUser = connection.senderId === user.id ? connection.receiver : connection.sender;
+    if (!otherUser) {
+      return {
+        id: connection.id || '',
+        name: 'Unknown User',
+        role: 'USER',
+        initial: 'U',
+        avatarUrl: '',
+      };
+    }
+
     const profile = otherUser.entrepreneurProfile || otherUser.investorProfile || {};
     return {
       id: otherUser.id,
@@ -212,7 +243,7 @@ const Messages = () => {
   };
 
   // --- FILTER LOGIC ---
-  const filteredPartners = partners.filter(p => {
+  const filteredPartners = (Array.isArray(partners) ? partners : []).filter(p => {
     const details = getPartnerDetails(p);
     return details.name.toLowerCase().includes(searchQuery.toLowerCase());
   });

@@ -45,6 +45,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const lastName = profile.lastName || user.lastName || '';
   const role = user.role || 'Guest';
   const profileAvatar = profile.avatarUrl || user.avatarUrl || '';
+  const welcomeKey = user.id || user.email ? `naajihbiz:welcome-seen:${user.id || user.email}` : '';
+  const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
+    if (!welcomeKey) return false;
+    const seen = localStorage.getItem(welcomeKey);
+    if (seen) return false;
+    localStorage.setItem(welcomeKey, 'true');
+    return true;
+  });
 
   useEffect(() => {
     const currentUser = authUser || (userString ? JSON.parse(userString) : null);
@@ -113,6 +121,37 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <div className="flex h-screen bg-[#f8fafc] dark:bg-[#111113] text-slate-900 dark:text-white font-sans overflow-hidden transition-colors duration-300">
+      {showWelcomeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-[#151518]">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              Welcome
+            </p>
+            <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+              Welcome to NaajihBiz
+            </h2>
+            <p className="mt-3 text-sm text-slate-600 dark:text-gray-400">
+              Start by creating or exploring opportunities
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Link
+                to="/dashboard/create-pitch"
+                onClick={() => setShowWelcomeModal(false)}
+                className="inline-flex flex-1 items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-black transition hover:brightness-110"
+              >
+                Create Opportunity
+              </Link>
+              <Link
+                to="/dashboard/opportunities"
+                onClick={() => setShowWelcomeModal(false)}
+                className="inline-flex flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-900 transition hover:bg-slate-50 dark:border-gray-700 dark:bg-[#1d1d20] dark:text-white dark:hover:bg-white/5"
+              >
+                Explore Opportunities
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* MOBILE OVERLAY */}
       {isMobileMenuOpen && (

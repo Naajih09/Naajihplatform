@@ -12,7 +12,8 @@ export const useSocket = (userId: string) => {
 
     const socketUrl = import.meta.env.VITE_SOCKET_URL || getApiBaseUrl().replace(/\/api$/, '');
     const nextSocket = io(socketUrl, {
-      transports: ['websocket'],
+      path: '/socket.io',
+      reconnection: true,
     });
 
     // eslint-disable-next-line react-hooks/set-state-in-effect

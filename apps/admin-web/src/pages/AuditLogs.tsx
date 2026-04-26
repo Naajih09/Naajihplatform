@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { CheckCircle, Filter, Loader2, Search, XCircle } from 'lucide-react';
+import EmptyState from '../components/EmptyState';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
@@ -84,6 +85,7 @@ const AuditLogs = () => {
   }, [fetchLogs]);
 
   const safePage = Math.min(currentPage, totalPages);
+  const hasFilters = searchQuery.trim() !== '' || actionFilter !== 'ALL' || Boolean(dateFrom) || Boolean(dateTo);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 relative">
@@ -179,15 +181,26 @@ const AuditLogs = () => {
                 {logs.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-6 py-10">
-                      <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center dark:border-white/10 dark:bg-white/[0.03]">
-                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm dark:bg-[#151518] dark:text-gray-400">
-                          0
-                        </div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">No audit activity found</h3>
-                        <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-gray-400">
-                          Audit events will show here after admins perform actions such as approvals, updates, or moderation.
-                        </p>
-                      </div>
+                      <EmptyState
+                        title={hasFilters ? 'No audit activity matches this view' : 'No audit activity yet'}
+                        description={
+                          hasFilters
+                            ? 'Try clearing the search or date filters to surface more events.'
+                            : 'Audit events will show here after admins perform actions such as approvals, updates, or moderation.'
+                        }
+                        actionLabel={hasFilters ? 'Clear filters' : 'Refresh logs'}
+                        onAction={() => {
+                          if (hasFilters) {
+                            setSearchQuery('');
+                            setActionFilter('ALL');
+                            setDateFrom('');
+                            setDateTo('');
+                            setCurrentPage(1);
+                          } else {
+                            fetchLogs();
+                          }
+                        }}
+                      />
                     </td>
                   </tr>
                 ) : (

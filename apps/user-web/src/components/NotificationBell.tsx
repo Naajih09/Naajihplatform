@@ -1,5 +1,6 @@
 import { Bell, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useSocket } from '../hooks/useSocket';
 import { getApiBaseUrl } from '../lib/api-base';
 
@@ -105,8 +106,14 @@ const NotificationBell = () => {
 
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="p-8 text-center text-slate-500 dark:text-gray-500 text-sm">
-                No notifications yet
+              <div className="p-6 text-center text-slate-500 dark:text-gray-500 text-sm space-y-3">
+                <p>No notifications yet</p>
+                <Link
+                  to="/dashboard/opportunities"
+                  className="inline-flex items-center rounded-xl bg-primary px-3 py-2 text-xs font-bold text-black transition hover:brightness-110"
+                >
+                  Explore opportunities
+                </Link>
               </div>
             ) : (
               notifications.map((notif) => (

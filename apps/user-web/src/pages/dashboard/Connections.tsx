@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { UserCheck, UserPlus, X, Loader2 } from 'lucide-react';
-import Button from '../../components/Button';
-import { useNavigate } from 'react-router-dom'; // <--- Import this
+import { UserCheck, X, Loader2 } from 'lucide-react';
+import EmptyState from '../../components/EmptyState';
 
 const Connections = () => {
   const [pending, setPending] = useState<any[]>([]);
@@ -14,7 +13,6 @@ const Connections = () => {
   });
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const navigate = useNavigate(); // <--- Init navigation
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
   const authToken =
     localStorage.getItem('accessToken') ||
@@ -101,20 +99,12 @@ const Connections = () => {
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-slate-500 dark:text-gray-500 uppercase tracking-widest">My Connections ({friends.length})</h3>
             {friends.length === 0 ? (
-              <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-2xl p-8 text-center">
-                  <UserPlus size={32} className="text-slate-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Grow your Network</h3>
-                  <p className="text-slate-500 dark:text-gray-400 max-w-sm mx-auto mb-6">You haven't connected with anyone yet. Browse opportunities to find partners.</p>
-                  
-                  {/* FIX: NOW WORKS */}
-                  <Button 
-                    className="bg-primary text-black font-bold"
-                    onClick={() => navigate('/dashboard/opportunities')}
-                  >
-                    Browse Opportunities
-                  </Button>
-                  
-              </div>
+              <EmptyState
+                title="No connections yet"
+                description="You haven't connected with anyone yet. Browse opportunities to find partners and start building your network."
+                actionLabel="Browse opportunities"
+                actionTo="/dashboard/opportunities"
+              />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {friends.map((conn) => {

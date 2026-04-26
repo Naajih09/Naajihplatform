@@ -13,6 +13,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
+import EmptyState from '../../components/EmptyState';
 import { usePitchAccess } from '../../hooks/usePitchAccess';
 
 const Opportunities = () => {
@@ -65,6 +66,12 @@ const Opportunities = () => {
     minTicket: '',
     maxTicket: ''
   });
+  const hasFilters =
+    Boolean(searchTerm.trim()) ||
+    activeCategory !== 'All' ||
+    filters.stage !== 'All' ||
+    Boolean(filters.minTicket) ||
+    Boolean(filters.maxTicket);
 
   const fetchPitches = async () => {
     setLoading(true);
@@ -230,21 +237,25 @@ const Opportunities = () => {
       {loading ? (
          <div className="text-center py-20 text-slate-500 animate-pulse">Loading opportunities...</div>
       ) : pitches.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm dark:border-white/10 dark:bg-[#151518]">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-gray-400">
-            0
-          </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">No opportunities match this view</h3>
-          <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-gray-400">
-            Try a broader search or remove your category filter to see more founder pitches.
-          </p>
-          <button
-            onClick={() => { setSearchTerm(''); setActiveCategory('All'); }}
-            className="mt-4 inline-flex items-center rounded-xl bg-primary px-4 py-2 text-sm font-bold text-black transition hover:brightness-110"
-          >
-            Clear filters
-          </button>
-        </div>
+        hasFilters ? (
+          <EmptyState
+            title="No opportunities match this view"
+            description="Try a broader search or remove your filters to see more founder pitches."
+            actionLabel="Clear filters"
+            onAction={() => {
+              setSearchTerm('');
+              setActiveCategory('All');
+              setFilters({ stage: 'All', minTicket: '', maxTicket: '' });
+            }}
+          />
+        ) : (
+          <EmptyState
+            title="No opportunities yet"
+            description="Founders will see published pitches here once someone creates the first opportunity."
+            actionLabel={user.role === 'ENTREPRENEUR' ? 'Create your first opportunity' : 'Explore community'}
+            actionTo={user.role === 'ENTREPRENEUR' ? '/dashboard/create-pitch' : '/dashboard/community'}
+          />
+        )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pitches.map((pitch) => (

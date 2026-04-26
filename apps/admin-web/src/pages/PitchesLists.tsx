@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AlertOctagon, Loader2, CheckCircle, XCircle, Search, Eye, X, Clock } from 'lucide-react';
+import EmptyState from '../components/EmptyState';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
@@ -19,6 +20,7 @@ const PitchesList = () => {
   // Modal & Toast
   const[selectedPitch, setSelectedPitch] = useState<any | null>(null);
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({ show: false, message: '', type: 'success' });
+  const hasFilters = searchQuery.trim() !== '' || categoryFilter !== 'ALL' || statusFilter !== 'ALL';
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ show: true, message, type });
@@ -188,16 +190,26 @@ const PitchesList = () => {
       {loading ? <div className="text-center py-20 text-slate-500 dark:text-gray-400"><Loader2 className="animate-spin inline mr-2"/> Loading Pitches...</div> : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
            {pitches.length === 0 ? (
-             <div className="col-span-full py-10 text-center text-slate-500 dark:text-gray-500 admin-surface">
-               <div className="mx-auto max-w-lg rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center dark:border-white/10 dark:bg-white/[0.03]">
-                 <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm dark:bg-[#151518] dark:text-gray-400">
-                   0
-                 </div>
-                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">No pitches match this view</h3>
-                 <p className="mt-2 text-sm text-slate-500 dark:text-gray-400">
-                   Change the search term or moderation filters to find the pitch records you want to review.
-                 </p>
-               </div>
+             <div className="col-span-full admin-surface">
+               <EmptyState
+                 title={hasFilters ? 'No pitches match this view' : 'No pitches yet'}
+                 description={
+                   hasFilters
+                     ? 'Change the search term or moderation filters to find the pitch records you want to review.'
+                     : 'Pitch submissions will appear here once founders publish them.'
+                 }
+                 actionLabel={hasFilters ? 'Clear filters' : 'Refresh pitches'}
+                 onAction={() => {
+                   if (hasFilters) {
+                     setSearchQuery('');
+                     setCategoryFilter('ALL');
+                     setStatusFilter('ALL');
+                     setCurrentPage(1);
+                   } else {
+                     fetchPitches();
+                   }
+                 }}
+               />
              </div>
            ) : pitches.map((pitch) => {
              const ask = pitch.fundingAsk ? parseInt(pitch.fundingAsk) : 0;

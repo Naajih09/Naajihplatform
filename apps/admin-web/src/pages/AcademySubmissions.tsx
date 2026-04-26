@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { CheckCircle, XCircle, ClipboardCheck, Filter } from 'lucide-react';
 import api from '../utils/api';
+import EmptyState from '../components/EmptyState';
 
 const statusOptions = ['ALL', 'PENDING', 'SUBMITTED', 'APPROVED', 'REJECTED'] as const;
 type SubmissionFilter = (typeof statusOptions)[number];
@@ -121,16 +122,13 @@ const AcademySubmissions = () => {
       {loading ? (
         <div className="text-slate-500 dark:text-gray-400">Loading submissions...</div>
       ) : submissions.length === 0 ? (
-        <div className="admin-surface rounded-2xl p-6 text-slate-500 dark:text-gray-400">
-          <div className="mx-auto max-w-lg rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center dark:border-white/10 dark:bg-white/[0.03]">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm dark:bg-[#151518] dark:text-gray-400">
-              0
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No submissions found</h3>
-            <p className="mt-2 text-sm text-slate-500 dark:text-gray-400">
-              Try a different status or program filter. Student task submissions will appear here once they are sent in.
-            </p>
-          </div>
+        <div className="admin-surface">
+          <EmptyState
+            title="No submissions found"
+            description="Try a different status or program filter. Student task submissions will appear here once they are sent in."
+            actionLabel="Refresh submissions"
+            onAction={fetchSubmissions}
+          />
         </div>
       ) : (
         <div className="space-y-4">

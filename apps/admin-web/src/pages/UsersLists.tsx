@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Trash2, Shield, ShieldAlert, Loader2, Search, Filter, Eye, CheckCircle, XCircle, X } from 'lucide-react';
+import EmptyState from '../components/EmptyState';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
@@ -174,6 +175,7 @@ const UsersList = () => {
   };
 
   const safePage = Math.min(currentPage, totalPages);
+  const hasFilters = searchQuery.trim() !== '' || roleFilter !== 'ALL' || sortBy !== 'date';
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 relative">
@@ -274,15 +276,25 @@ const UsersList = () => {
                 {users.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-10">
-                      <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center dark:border-white/10 dark:bg-white/[0.03]">
-                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm dark:bg-[#151518] dark:text-gray-400">
-                          0
-                        </div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">No users match this view</h3>
-                        <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-gray-400">
-                          Adjust the search query, role filter, or sort option to surface the accounts you want to manage.
-                        </p>
-                      </div>
+                      <EmptyState
+                        title={hasFilters ? 'No users match this view' : 'No users yet'}
+                        description={
+                          hasFilters
+                            ? 'Adjust the search query, role filter, or sort option to surface the accounts you want to manage.'
+                            : 'User accounts will appear here once people start signing up on the platform.'
+                        }
+                        actionLabel={hasFilters ? 'Reset filters' : 'Refresh users'}
+                        onAction={() => {
+                          if (hasFilters) {
+                            setSearchQuery('');
+                            setRoleFilter('ALL');
+                            setSortBy('date');
+                            setCurrentPage(1);
+                          } else {
+                            fetchUsers();
+                          }
+                        }}
+                      />
                     </td>
                   </tr>
                 ) : (

@@ -2,6 +2,8 @@ import { Award, BookOpen, Calendar, ChevronRight, Network, PlayCircle, Rocket, S
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
+import EmptyState from '../../components/EmptyState';
+import OnboardingChecklist from '../../components/OnboardingChecklist';
 import { showToast } from '../../lib/utils';
 import { getApiBaseUrl } from '../../lib/api-base';
 
@@ -218,6 +220,41 @@ if (isAspirant) {
         </div>
       </div>
 
+      {/* Value section */}
+      <section className="rounded-3xl border border-slate-200 dark:border-gray-800 bg-gradient-to-br from-white via-white to-slate-50 dark:from-[#151518] dark:via-[#151518] dark:to-[#1d1d20] p-6 md:p-8 shadow-sm">
+        <div className="max-w-3xl">
+          <p className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-primary">
+            <Rocket size={14} />
+            Halal business network
+          </p>
+          <h3 className="mt-4 text-2xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+            Connect with entrepreneurs, investors, and real opportunities
+          </h3>
+          <p className="mt-3 max-w-2xl text-sm md:text-base text-slate-600 dark:text-neutral-muted">
+            Discover vetted founders, practical learning, and funding-ready opportunities in one place so you can grow with confidence.
+          </p>
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <Link
+              to="/dashboard/create-pitch"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-black shadow-lg shadow-primary/20 transition hover:brightness-110"
+            >
+              Create Opportunity
+              <ChevronRight size={16} />
+            </Link>
+            <Link
+              to="/dashboard/opportunities"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-900 transition hover:bg-slate-50 dark:border-gray-700 dark:bg-[#1d1d20] dark:text-white dark:hover:bg-white/5"
+            >
+              Explore Opportunities
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="mt-6">
+        <OnboardingChecklist />
+      </div>
+
       {/* --- CONDITIONAL VIEW --- */}
 
       {isAspirant ? (
@@ -243,7 +280,14 @@ if (isAspirant) {
 
           {/* Course Grid */}
           <h3 className="text-xl font-bold text-slate-900 dark:text-white">Recommended Courses</h3>
-          {loading ? <div className="text-center py-10 text-gray-500">Loading Academy...</div> : (
+          {loading ? <div className="text-center py-10 text-gray-500">Loading Academy...</div> : courses.length === 0 ? (
+            <EmptyState
+              title="No academy programs yet"
+              description="We will show learning programs here as soon as they are available for your account."
+              actionLabel="Explore community"
+              actionTo="/dashboard/community"
+            />
+          ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {courses.map(course => {
                 const totalLessons = course.modules?.reduce(

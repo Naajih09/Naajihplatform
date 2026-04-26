@@ -1,5 +1,6 @@
 import { CheckCircle, ExternalLink, FileText, Loader2, XCircle, ChevronLeft, ChevronRight, X, Search } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import EmptyState from '../components/EmptyState';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
@@ -45,6 +46,7 @@ const Verification = () => {
 
   // Toast State
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({ show: false, message: '', type: 'success' });
+  const hasFilters = searchQuery.trim() !== '' || statusFilter !== 'PENDING';
 
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ show: true, message, type });
@@ -173,14 +175,25 @@ const Verification = () => {
       {loading ? (
         <div className="text-slate-500 dark:text-gray-400 text-center py-20"><Loader2 className="animate-spin inline mr-2"/> Loading queue...</div>
       ) : requests.length === 0 ? (
-        <div className="admin-surface p-10 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-gray-400">
-            0
-          </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Verification queue is clear</h3>
-          <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-gray-400">
-            There are no verification requests for this filter right now. Try changing status or search terms if you expected results.
-          </p>
+        <div className="admin-surface">
+          <EmptyState
+            title={hasFilters ? 'No verification requests match this view' : 'Verification queue is clear'}
+            description={
+              hasFilters
+                ? 'Try changing status or search terms if you expected results.'
+                : 'There are no verification requests right now. New requests will appear here for review.'
+            }
+            actionLabel={hasFilters ? 'Clear filters' : 'Refresh queue'}
+            onAction={() => {
+              if (hasFilters) {
+                setSearchQuery('');
+                setStatusFilter('PENDING');
+                setCurrentPage(1);
+              } else {
+                fetchRequests();
+              }
+            }}
+          />
         </div>
       ) : (
         <div className="admin-surface overflow-hidden flex flex-col min-h-[500px]">

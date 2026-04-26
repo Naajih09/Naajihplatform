@@ -1,6 +1,7 @@
 import { BadgeCheck, Briefcase, Building2, Filter, Loader2, Search, TrendingUp, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import EmptyState from '../../components/EmptyState';
 
 export default function InvestorDashboard() {
   const [pitches, setPitches] = useState([]);
@@ -111,6 +112,7 @@ export default function InvestorDashboard() {
 
   const visiblePitches = pitches.filter(matchesSearch);
   const visibleRecommended = recommended.filter(matchesSearch);
+  const hasFilters = filter !== 'All' || Boolean(searchQuery.trim());
 
   const toggleSavedPitch = (pitchId: string) => {
     setSavedPitchIds((prev) =>
@@ -258,15 +260,24 @@ export default function InvestorDashboard() {
               <Loader2 className="animate-spin text-primary" size={32} />
             </div>
           ) : visiblePitches.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center dark:border-white/10 dark:bg-[#1d1d20]">
-                <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/5">
-                  <Briefcase className="text-slate-400 dark:text-white/30" size={24} />
-                </div>
-                <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">No deals found</h3>
-                <p className="mx-auto max-w-md text-sm text-slate-500 dark:text-gray-500">
-                  No active pitches match the current filters. Broaden the stage, sector, or search terms to uncover more deals.
-                </p>
-            </div>
+            hasFilters ? (
+              <EmptyState
+                title="No deals found"
+                description="No active pitches match the current filters. Broaden the stage, sector, or search terms to uncover more deals."
+                actionLabel="Clear filters"
+                onAction={() => {
+                  setFilter('All');
+                  setSearchQuery('');
+                }}
+              />
+            ) : (
+              <EmptyState
+                title="No opportunities yet"
+                description="We will show founders and opportunities here as soon as they are published."
+                actionLabel="Explore community"
+                actionTo="/dashboard/community"
+              />
+            )
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {visiblePitches.map((pitch: any) => (

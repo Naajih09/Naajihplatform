@@ -1,6 +1,7 @@
 import { MessageSquare, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Button from '../../components/Button';
+import EmptyState from '../../components/EmptyState';
 import { showToast } from '../../lib/utils';
 import { Navigate } from 'react-router-dom';
 
@@ -438,15 +439,12 @@ const Community = () => {
         {loading ? (
           <div className="text-center text-slate-500">Loading community posts...</div>
         ) : posts.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center dark:border-white/10 dark:bg-[#151518]">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-gray-400">
-              0
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No community posts yet</h3>
-            <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-gray-400">
-              Start the conversation with a question, insight, or lesson from your learning journey.
-            </p>
-          </div>
+          <EmptyState
+            title="No community posts yet"
+            description="Start the conversation with a question, insight, or lesson from your learning journey."
+            actionLabel="Create your first post"
+            onAction={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          />
         ) : (
           posts.map((post) => {
             const details = postDetails[post.id];

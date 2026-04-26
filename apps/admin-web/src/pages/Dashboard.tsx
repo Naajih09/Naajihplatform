@@ -252,9 +252,16 @@ const Dashboard = () => {
               ) : pendingVerifications.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-8 text-center text-gray-500">
-                    <span className="inline-block rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-center text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
-                      No pending verifications. New KYC requests will appear here.
-                    </span>
+                    <div className="mx-auto inline-flex flex-col items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 py-4 text-center text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
+                      <span>No pending verifications. New KYC requests will appear here.</span>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/admin/verification')}
+                        className="inline-flex items-center rounded-xl bg-primary px-4 py-2 font-bold text-black transition hover:brightness-110"
+                      >
+                        Review verification queue
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -317,8 +324,15 @@ const Dashboard = () => {
                 {loading ? (
                   <div className="text-xs text-gray-500">Loading audit activity...</div>
                 ) : auditLogs.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-xs text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
-                    No recent activity yet. Admin actions and system events will appear here.
+                  <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-xs text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
+                    <div>No recent activity yet. Admin actions and system events will appear here.</div>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/admin/audit')}
+                      className="mt-3 inline-flex items-center rounded-xl bg-primary px-4 py-2 font-bold text-black transition hover:brightness-110"
+                    >
+                      Open audit log
+                    </button>
                   </div>
                 ) : (
                   auditLogs.map((log) => (
@@ -346,8 +360,15 @@ const Dashboard = () => {
                 {loading ? (
                   <div className="text-xs text-gray-500">Loading categories...</div>
                 ) : investmentBreakdown.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-xs text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
-                    No pitch categories yet. Category distribution will appear after founders publish pitches.
+                  <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-xs text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
+                    <div>No pitch categories yet. Category distribution will appear after founders publish pitches.</div>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/admin/pitches')}
+                      className="mt-3 inline-flex items-center rounded-xl bg-primary px-4 py-2 font-bold text-black transition hover:brightness-110"
+                    >
+                      Review pitches
+                    </button>
                   </div>
                 ) : (
                   investmentBreakdown.map((item, index) => (
@@ -376,9 +397,16 @@ const Dashboard = () => {
             </div>
           ) : insights.length === 0 ? (
             <div className="py-8 text-center text-gray-500">
-              <span className="inline-block rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
-                No activity data yet. This chart will populate as platform usage increases.
-              </span>
+              <div className="inline-flex flex-col items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-400">
+                <span>No activity data yet. This chart will populate as platform usage increases.</span>
+                <button
+                  type="button"
+                  onClick={() => navigate('/admin/users')}
+                  className="inline-flex items-center rounded-xl bg-primary px-4 py-2 font-bold text-black transition hover:brightness-110"
+                >
+                  View users
+                </button>
+              </div>
             </div>
           ) : (
             <div className="h-72">

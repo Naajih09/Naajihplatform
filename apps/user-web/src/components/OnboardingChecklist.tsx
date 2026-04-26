@@ -51,26 +51,22 @@ export default function OnboardingChecklist() {
   const profile = user.entrepreneurProfile || user.investorProfile || {};
   const storageKey = `onboarding-checklist:${user.id || 'guest'}`;
 
-  const [completed, setCompleted] = useState<ChecklistState>(() => ({
-    ...defaultState,
-    profile: Boolean(profile.firstName && profile.lastName),
-  }));
-
-  useEffect(() => {
+  const [completed, setCompleted] = useState<ChecklistState>(() => {
     try {
       const stored = localStorage.getItem(storageKey);
-      if (!stored) return;
-
-      const parsed = JSON.parse(stored) as Partial<ChecklistState>;
-      setCompleted((prev) => ({
-        ...prev,
+      const parsed = stored ? (JSON.parse(stored) as Partial<ChecklistState>) : {};
+      return {
+        ...defaultState,
         ...parsed,
-        profile: prev.profile || Boolean(profile.firstName && profile.lastName),
-      }));
+        profile: Boolean(profile.firstName && profile.lastName) || Boolean(parsed.profile),
+      };
     } catch {
-      // Ignore malformed local state and keep the defaults.
+      return {
+        ...defaultState,
+        profile: Boolean(profile.firstName && profile.lastName),
+      };
     }
-  }, [profile.firstName, profile.lastName, storageKey]);
+  });
 
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(completed));

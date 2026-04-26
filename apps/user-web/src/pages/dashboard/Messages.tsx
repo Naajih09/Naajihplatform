@@ -18,6 +18,7 @@ const Messages = () => {
   
   // --- NEW: Search State ---
   const [searchQuery, setSearchQuery] = useState('');
+  const [sending, setSending] = useState(false);
 
   // File Upload State
   const [isUploading, setIsUploading] = useState(false);
@@ -147,12 +148,13 @@ const Messages = () => {
     };
 
     // Optimistic Update
+    setSending(true);
     setMessages(prev => [...prev, messageData]);
     scrollToBottom();
     setInputText('');
 
     try {
-      await fetch(`${API_BASE}/messages`, {
+      const res = await fetch(`${API_BASE}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
@@ -162,10 +164,16 @@ const Messages = () => {
           attachmentUrl: url,
         }),
       });
+      if (!res.ok) {
+        throw new Error(`Failed to send message (${res.status})`);
+      }
       socket.emit('send_message', messageData);
+      setToast({ show: true, message: 'Message sent.', type: 'success' });
     } catch (error) {
       setToast({ show: true, message: 'Failed to send message.', type: 'error' });
+      setMessages((prev) => prev.filter((msg) => msg !== messageData));
     }
+    setSending(false);
   };
 
   const handleTextSubmit = (e: React.FormEvent) => {
@@ -389,8 +397,8 @@ const Messages = () => {
 
                         <input value={inputText} onChange={(e) => setInputText(e.target.value)} className="flex-1 bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:border-primary focus:outline-none" placeholder="Type a message..." disabled={isUploading} aria-label="Message input"/>
                         
-                        <button type="submit" className="bg-primary text-black p-3 rounded-xl hover:brightness-110 disabled:opacity-50" disabled={isUploading || (!inputText && !isRecording)} aria-label="Send">
-                            {isUploading ? <Loader2 className="animate-spin" size={18}/> : <Send size={18} />}
+                        <button type="submit" className="bg-primary text-black p-3 rounded-xl hover:brightness-110 disabled:opacity-50" disabled={isUploading || sending || (!inputText && !isRecording)} aria-label="Send">
+                            {isUploading || sending ? <Loader2 className="animate-spin" size={18}/> : <Send size={18} />}
                         </button>
                     </form>
                 )}

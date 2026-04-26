@@ -6,6 +6,7 @@ const Connections = () => {
   const [pending, setPending] = useState<any[]>([]);
   const [friends, setFriends] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
     show: false,
     message: '',
@@ -41,16 +42,20 @@ const Connections = () => {
   };
 
   const handleResponse = async (id: string, status: 'ACCEPTED' | 'REJECTED') => {
+    setActionLoadingId(id);
     try {
-      await fetch(`${API_BASE}/connections/${id}`, {
+      const res = await fetch(`${API_BASE}/connections/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({ status })
       });
+      if (!res.ok) throw new Error(`Failed to update connection (${res.status})`);
       fetchData();
       setToast({ show: true, message: status === 'ACCEPTED' ? 'Connection accepted.' : 'Request rejected.', type: 'success' });
     } catch (error) {
       setToast({ show: true, message: 'Action failed.', type: 'error' });
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
@@ -87,8 +92,12 @@ const Connections = () => {
                       <p className="text-xs text-primary font-bold uppercase">{req.sender.role}</p>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => handleResponse(req.id, 'ACCEPTED')} className="p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-black transition-all" aria-label="Accept"><UserCheck size={18} /></button>
-                      <button onClick={() => handleResponse(req.id, 'REJECTED')} className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all" aria-label="Reject"><X size={18} /></button>
+                      <button onClick={() => handleResponse(req.id, 'ACCEPTED')} disabled={actionLoadingId === req.id} className="p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-black transition-all disabled:opacity-50" aria-label="Accept">
+                        {actionLoadingId === req.id ? <Loader2 size={18} className="animate-spin" /> : <UserCheck size={18} />}
+                      </button>
+                      <button onClick={() => handleResponse(req.id, 'REJECTED')} disabled={actionLoadingId === req.id} className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all disabled:opacity-50" aria-label="Reject">
+                        {actionLoadingId === req.id ? <Loader2 size={18} className="animate-spin" /> : <X size={18} />}
+                      </button>
                     </div>
                   </div>
                 ))}

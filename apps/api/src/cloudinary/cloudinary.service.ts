@@ -8,6 +8,14 @@ import { Readable } from 'stream';
 
 @Injectable()
 export class CloudinaryService {
+  private getResourceType(file: Express.Multer.File): 'image' | 'raw' {
+    if (file.mimetype.startsWith('image/')) {
+      return 'image';
+    }
+
+    return 'raw';
+  }
+
   async uploadFile(
     file: Express.Multer.File,
     folder = 'naajih-uploads',
@@ -19,7 +27,7 @@ export class CloudinaryService {
     return new Promise((resolve, reject) => {
       const upload = cloudinary.uploader.upload_stream(
         {
-          resource_type: 'auto',
+          resource_type: this.getResourceType(file),
           folder,
           timeout: 60000, // <--- ADD THIS: Wait 60 seconds (default is shorter)
         },

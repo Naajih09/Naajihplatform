@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Added navigation
 import { Briefcase, Globe, Loader2, MapPin, UploadCloud, Verified, ShieldCheck, Edit3, X, Sparkles, Layers3, BadgeCheck } from 'lucide-react';
 import Button from '../../components/Button';
+import { getApiBaseUrl } from '../../lib/api-base';
 import { useAppDispatch } from '../../store/store';
 import { setUser as setAuthUser } from '../../store/slices/auth-slice';
 
@@ -27,7 +28,7 @@ const Profile = () => {
     message: '',
     type: 'success',
   });
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   const authToken =
     localStorage.getItem('accessToken') ||
     localStorage.getItem('access_token') ||

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Bell, Lock, Trash2 } from 'lucide-react';
 import Button from '../../components/Button';
 import { useNavigate } from 'react-router-dom';
+import { getApiBaseUrl } from '../../lib/api-base';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ const Settings = () => {
     message: '',
     type: 'success',
   });
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   const authToken =
     localStorage.getItem('accessToken') ||
     localStorage.getItem('access_token') ||

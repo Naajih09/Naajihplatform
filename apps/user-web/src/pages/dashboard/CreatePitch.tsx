@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lightbulb, UploadCloud, CheckCircle, Loader2 } from 'lucide-react';
 import Button from '../../components/Button';
 import { usePitchAccess } from '../../hooks/usePitchAccess';
+import { getApiBaseUrl } from '../../lib/api-base';
 
 const CreatePitch = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const CreatePitch = () => {
     message: '',
     type: 'success',
   });
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   
   const [formData, setFormData] = useState({
     title: '', tagline: '', problemStatement: '', solution: '', 

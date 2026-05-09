@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { CheckCircle, XCircle, ShieldCheck } from 'lucide-react';
+import { getApiBaseUrl } from '../../lib/api-base';
 
 const CertificateVerify = () => {
   const { token, programId, userId } = useParams();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
 
   useEffect(() => {
     const fetchVerification = async () => {

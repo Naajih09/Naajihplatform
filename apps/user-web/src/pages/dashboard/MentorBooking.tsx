@@ -2,6 +2,7 @@ import { Calendar, ExternalLink, Video } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
+import { getApiBaseUrl } from '../../lib/api-base';
 import { showToast } from '../../lib/utils';
 
 const MentorBooking = () => {
@@ -10,7 +11,7 @@ const MentorBooking = () => {
     'https://calendly.com/naajihbiz/office-hours';
   const [subscription, setSubscription] = useState<any>(null);
   const navigate = useNavigate();
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAspirant = user?.role === 'ASPIRING_BUSINESS_OWNER';
   const authToken =

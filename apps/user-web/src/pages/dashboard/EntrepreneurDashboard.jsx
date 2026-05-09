@@ -1,13 +1,14 @@
 import { MapPin, BadgeCheck, CheckCircle, User as UserIcon, MessageCircle, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getApiBaseUrl } from "../../lib/api-base";
 
 export default function EntrepreneurProfile() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const profile = user?.entrepreneurProfile || user?.investorProfile || {};
   const profileAvatar = profile.avatarUrl || user.avatarUrl || '';
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   const authToken =
     localStorage.getItem('accessToken') ||
     localStorage.getItem('access_token') ||

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PlayCircle, BookOpen, Clock, BarChart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
+import { getApiBaseUrl } from '../../lib/api-base';
 import { showToast } from '../../lib/utils';
 
 const LearningCenter = () => {
@@ -9,7 +10,7 @@ const LearningCenter = () => {
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [subscription, setSubscription] = useState<any>(null);
   const navigate = useNavigate();
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   const authToken =
     localStorage.getItem('accessToken') ||
     localStorage.getItem('access_token') ||

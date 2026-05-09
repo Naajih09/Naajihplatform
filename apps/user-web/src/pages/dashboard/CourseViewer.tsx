@@ -2,8 +2,9 @@ import { CheckCircle, ChevronLeft, Clock, FileText, PlayCircle } from 'lucide-re
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '../../components/Button';
-import { showToast } from '../../lib/utils';
+import { getApiBaseUrl } from '../../lib/api-base';
 import { sanitizeHtml } from '../../lib/sanitizeHtml';
+import { showToast } from '../../lib/utils';
 
 const CourseViewer = () => {
   const { lessonId } = useParams();
@@ -12,7 +13,7 @@ const CourseViewer = () => {
   const [loading, setLoading] = useState(true);
   const [isCompleting, setIsCompleting] = useState(false);
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   const authToken =
     localStorage.getItem('accessToken') ||
     localStorage.getItem('access_token') ||

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, MapPin, Calendar, CheckCircle, UserPlus, Loader2, Edit3, Trash2, Save, X } from 'lucide-react';
 import Button from '../../components/Button';
+import { getApiBaseUrl } from '../../lib/api-base';
 
 const PitchDetails = () => {
   const { id } = useParams();
@@ -20,7 +21,7 @@ const PitchDetails = () => {
   const [editForm, setEditForm] = useState<any>({});
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   const authToken =
     localStorage.getItem('accessToken') ||
     localStorage.getItem('access_token') ||

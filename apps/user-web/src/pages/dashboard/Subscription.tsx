@@ -1,6 +1,7 @@
 import { Check, Info, Shield, Wallet, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { getApiBaseUrl } from '../../lib/api-base';
 
 export default function Subscription() {
   const [loading, setLoading] = useState(false);
@@ -12,7 +13,7 @@ export default function Subscription() {
     type: 'success',
   });
   const [subscription, setSubscription] = useState<any>(null);
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   const subscriptionAmount = Number(import.meta.env.VITE_SUBSCRIPTION_AMOUNT_NGN || 15000);
   const trialDays = Number(import.meta.env.VITE_TRIAL_DAYS || 14);
   const estimatedAnnualValue = subscriptionAmount * 10;

@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '../../components/Button';
+import { getApiBaseUrl } from '../../lib/api-base';
 import { showToast } from '../../lib/utils';
 
 const AcademyDashboard = () => {
@@ -25,7 +26,7 @@ const AcademyDashboard = () => {
   const [submittingTaskId, setSubmittingTaskId] = useState<string | null>(null);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   const authToken =
     localStorage.getItem('accessToken') ||
     localStorage.getItem('access_token') ||

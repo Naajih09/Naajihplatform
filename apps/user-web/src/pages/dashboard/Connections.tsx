@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { UserCheck, X, Loader2 } from 'lucide-react';
 import EmptyState from '../../components/EmptyState';
+import { getApiBaseUrl } from '../../lib/api-base';
 
 const Connections = () => {
   const [pending, setPending] = useState<any[]>([]);
@@ -14,7 +15,7 @@ const Connections = () => {
   });
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   const authToken =
     localStorage.getItem('accessToken') ||
     localStorage.getItem('access_token') ||

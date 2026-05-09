@@ -2,11 +2,12 @@ import { MessageSquare, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Button from '../../components/Button';
 import EmptyState from '../../components/EmptyState';
+import { getApiBaseUrl } from '../../lib/api-base';
 import { showToast } from '../../lib/utils';
 import { Navigate } from 'react-router-dom';
 
 const Community = () => {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   const authToken =
     localStorage.getItem('accessToken') ||
     localStorage.getItem('access_token') ||

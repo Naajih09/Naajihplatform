@@ -2,6 +2,7 @@ import { BadgeCheck, Briefcase, Building2, Filter, Loader2, Search, TrendingUp, 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import EmptyState from '../../components/EmptyState';
+import { getApiBaseUrl } from '../../lib/api-base';
 
 export default function InvestorDashboard() {
   const [pitches, setPitches] = useState([]);
@@ -18,7 +19,7 @@ export default function InvestorDashboard() {
       return [];
     }
   });
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const API_BASE = getApiBaseUrl();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const authToken =
     localStorage.getItem('accessToken') ||

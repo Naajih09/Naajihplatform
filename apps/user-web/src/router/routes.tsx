@@ -1,31 +1,73 @@
 import { lazy } from 'react';
+import type { ComponentType } from 'react';
+
+const chunkReloadKey = 'naajihbiz:chunk-reload-attempted';
+
+const isChunkLoadError = (error: unknown) => {
+  if (!(error instanceof Error)) return false;
+
+  return (
+    error.name === 'ChunkLoadError' ||
+    error.message.includes('Failed to fetch dynamically imported module') ||
+    error.message.includes('Importing a module script failed') ||
+    error.message.includes('Expected a JavaScript-or-Wasm module script') ||
+    error.message.includes('Loading chunk')
+  );
+};
+
+const lazyWithReload = <T extends { default: ComponentType<any> }>(
+  loader: () => Promise<T>,
+) =>
+  lazy(() =>
+    loader()
+      .then((module) => {
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.removeItem(chunkReloadKey);
+        }
+        return module;
+      })
+      .catch((error) => {
+        if (
+          typeof window !== 'undefined' &&
+          typeof sessionStorage !== 'undefined' &&
+          isChunkLoadError(error) &&
+          sessionStorage.getItem(chunkReloadKey) !== 'true'
+        ) {
+          sessionStorage.setItem(chunkReloadKey, 'true');
+          window.location.reload();
+          return new Promise<T>(() => {});
+        }
+
+        throw error;
+      }),
+  );
 
 // --- Public Pages ---
-const HomePage = lazy(() => import('../pages/landing'));
-const Login = lazy(() => import('../pages/auth/Login'));
-const Signup = lazy(() => import('../pages/auth/Signup'));
-const CertificateVerify = lazy(() => import('../pages/certificate/CertificateVerify'));
-const Terms = lazy(() => import('../pages/legal/Terms'));
-const Privacy = lazy(() => import('../pages/legal/Privacy'));
+const HomePage = lazyWithReload(() => import('../pages/landing'));
+const Login = lazyWithReload(() => import('../pages/auth/Login'));
+const Signup = lazyWithReload(() => import('../pages/auth/Signup'));
+const CertificateVerify = lazyWithReload(() => import('../pages/certificate/CertificateVerify'));
+const Terms = lazyWithReload(() => import('../pages/legal/Terms'));
+const Privacy = lazyWithReload(() => import('../pages/legal/Privacy'));
 
 // --- Dashboard Pages ---
-const DashboardHome = lazy(() => import('../pages/dashboard/DashboardHome'));
-const Opportunities = lazy(() => import('../pages/dashboard/Opportunities'));
-const PitchDetails = lazy(() => import('../pages/dashboard/PitchDetails')); 
-const Profile = lazy(() => import('../pages/dashboard/Profile'));
-const InvestorDashboard = lazy(() => import('../pages/dashboard/InvestorDashboard'));
-const Subscription = lazy(() => import('../pages/dashboard/Subscription'));
-const CreatePitch = lazy(() => import('../pages/dashboard/CreatePitch'));
-const Connections = lazy(() => import('../pages/dashboard/Connections'));
-const Messages = lazy(() => import('../pages/dashboard/Messages').then(module => ({ default: module.default })));
-const Settings = lazy(() => import('../pages/dashboard/Settings'));
-const Verification = lazy(() => import('../pages/dashboard/Verification'));
-const LearningCenter = lazy(() => import('../pages/dashboard/LearningCenter'));
-const CourseViewer = lazy(() => import('../pages/dashboard/CourseViewer'));
-const AcademyDashboard = lazy(() => import('../pages/dashboard/AcademyDashboard'));
-const Certificate = lazy(() => import('../pages/dashboard/Certificate'));
-const Community = lazy(() => import('../pages/dashboard/Community'));
-const MentorBooking = lazy(() => import('../pages/dashboard/MentorBooking'));
+const DashboardHome = lazyWithReload(() => import('../pages/dashboard/DashboardHome'));
+const Opportunities = lazyWithReload(() => import('../pages/dashboard/Opportunities'));
+const PitchDetails = lazyWithReload(() => import('../pages/dashboard/PitchDetails'));
+const Profile = lazyWithReload(() => import('../pages/dashboard/Profile'));
+const InvestorDashboard = lazyWithReload(() => import('../pages/dashboard/InvestorDashboard'));
+const Subscription = lazyWithReload(() => import('../pages/dashboard/Subscription'));
+const CreatePitch = lazyWithReload(() => import('../pages/dashboard/CreatePitch'));
+const Connections = lazyWithReload(() => import('../pages/dashboard/Connections'));
+const Messages = lazyWithReload(() => import('../pages/dashboard/Messages').then(module => ({ default: module.default })));
+const Settings = lazyWithReload(() => import('../pages/dashboard/Settings'));
+const Verification = lazyWithReload(() => import('../pages/dashboard/Verification'));
+const LearningCenter = lazyWithReload(() => import('../pages/dashboard/LearningCenter'));
+const CourseViewer = lazyWithReload(() => import('../pages/dashboard/CourseViewer'));
+const AcademyDashboard = lazyWithReload(() => import('../pages/dashboard/AcademyDashboard'));
+const Certificate = lazyWithReload(() => import('../pages/dashboard/Certificate'));
+const Community = lazyWithReload(() => import('../pages/dashboard/Community'));
+const MentorBooking = lazyWithReload(() => import('../pages/dashboard/MentorBooking'));
 
 const routes = [
   // --- Public Routes ---

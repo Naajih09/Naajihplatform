@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { CheckCircle, ShieldCheck, XCircle } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+import api from '../utils/api';
 
 const Settings = () => {
   const token = localStorage.getItem('accessToken') || '';
@@ -35,22 +34,10 @@ const Settings = () => {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/users/password/${payload.sub}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ password: newPassword }),
-      });
-
-      if (res.ok) {
-        setNewPassword('');
-        setConfirmPassword('');
-        showToast('Password updated successfully.', 'success');
-      } else {
-        showToast('Failed to update password.', 'error');
-      }
+      await api.patch(`/users/password/${payload.sub}`, { password: newPassword });
+      setNewPassword('');
+      setConfirmPassword('');
+      showToast('Password updated successfully.', 'success');
     } catch (err) {
       showToast('Network error occurred.', 'error');
     }

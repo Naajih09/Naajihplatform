@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { CheckCircle, Filter, Loader2, Search, XCircle } from 'lucide-react';
 import EmptyState from '../components/EmptyState';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+import api from '../utils/api';
 
 type AuditAction =
   | 'VERIFICATION_STATUS_UPDATED'
@@ -56,7 +55,6 @@ const AuditLogs = () => {
   const fetchLogs = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
       const params = new URLSearchParams();
       params.set('page', String(currentPage));
       params.set('pageSize', String(pageSize));
@@ -65,10 +63,8 @@ const AuditLogs = () => {
       if (dateFrom) params.set('dateFrom', dateFrom);
       if (dateTo) params.set('dateTo', dateTo);
 
-      const res = await fetch(`${API_BASE}/api/audit?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const res = await api.get(`/audit?${params.toString()}`);
+      const data = res.data;
       const list = (data.data as AuditLog[]) || (data as AuditLog[]) || [];
       setLogs(list);
       setTotalItems(data.meta?.total ?? list.length);

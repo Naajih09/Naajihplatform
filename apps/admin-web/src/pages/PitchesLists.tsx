@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AlertOctagon, Loader2, CheckCircle, XCircle, Search, Eye, X, Clock } from 'lucide-react';
 import EmptyState from '../components/EmptyState';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+import api from '../utils/api';
 
 const PitchesList = () => {
   const [pitches, setPitches] = useState<any[]>([]);
@@ -30,7 +29,6 @@ const PitchesList = () => {
   const fetchPitches = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
       const params = new URLSearchParams();
       if (searchQuery) params.set('search', searchQuery);
       if (categoryFilter !== 'ALL') params.set('category', categoryFilter);
@@ -38,10 +36,8 @@ const PitchesList = () => {
       params.set('page', String(currentPage));
       params.set('pageSize', String(pageSize));
 
-      const res = await fetch(`${API_BASE}/api/pitches/admin?${params.toString()}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
+      const res = await api.get(`/pitches/admin?${params.toString()}`);
+      const data = res.data;
       const list = data.data || data || [];
       setPitches(list);
       setTotalItems(data.meta?.total ?? list.length);
@@ -65,19 +61,10 @@ const PitchesList = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Remove this pitch entirely from the platform? This cannot be undone.")) return;
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_BASE}/api/pitches/${id}`, { 
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` } 
-      });
-      
-      if (res.ok) {
-        showToast("Pitch removed successfully.", "success");
-        setPitches(pitches.filter(p => p.id !== id));
-        if (selectedPitch?.id === id) setSelectedPitch(null);
-      } else {
-        showToast("Failed to delete. Check Auth.", "error");
-      }
+      await api.delete(`/pitches/${id}`);
+      showToast("Pitch removed successfully.", "success");
+      setPitches(pitches.filter(p => p.id !== id));
+      if (selectedPitch?.id === id) setSelectedPitch(null);
     } catch (err) {
       showToast("Network error", "error");
     }
@@ -85,24 +72,10 @@ const PitchesList = () => {
 
   const handleStatusUpdate = async (id: string, newStatus: 'APPROVED' | 'REJECTED') => {
     try {
-      const token = localStorage.getItem('accessToken');
-      // Assumes your backend has a PATCH /api/pitches/:id endpoint capable of updating status
-      const res = await fetch(`${API_BASE}/api/pitches/${id}`, {
-        method: 'PATCH',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      if (res.ok) {
-        showToast(`Pitch ${newStatus.toLowerCase()} successfully.`, "success");
-        setPitches(pitches.map(p => p.id === id ? { ...p, status: newStatus } : p));
-        if (selectedPitch?.id === id) setSelectedPitch({ ...selectedPitch, status: newStatus });
-      } else {
-        showToast("Failed to update status", "error");
-      }
+      await api.patch(`/pitches/${id}`, { status: newStatus });
+      showToast(`Pitch ${newStatus.toLowerCase()} successfully.`, "success");
+      setPitches(pitches.map(p => p.id === id ? { ...p, status: newStatus } : p));
+      if (selectedPitch?.id === id) setSelectedPitch({ ...selectedPitch, status: newStatus });
     } catch (err) {
       showToast("Network error", "error");
     }

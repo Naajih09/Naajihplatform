@@ -38,16 +38,6 @@ export class AcademyController {
     return this.academyService.findAll(req.user.id);
   }
 
-  @Get(':id')
-  @Roles(
-    UserRole.ASPIRING_BUSINESS_OWNER,
-    UserRole.ENTREPRENEUR,
-    UserRole.INVESTOR,
-  )
-  findOne(@Param('id') id: string, @Request() req) {
-    return this.academyService.findOne(id, req.user.id);
-  }
-
   @Post('lesson/:lessonId/complete')
   @Roles(
     UserRole.ASPIRING_BUSINESS_OWNER,
@@ -140,6 +130,16 @@ export class AcademyController {
       'attachment; filename="certificate.pdf"',
     );
     return res.send(pdf);
+  }
+
+  @Get(':id')
+  @Roles(
+    UserRole.ASPIRING_BUSINESS_OWNER,
+    UserRole.ENTREPRENEUR,
+    UserRole.INVESTOR,
+  )
+  findOne(@Param('id') id: string, @Request() req) {
+    return this.academyService.findOne(id, req.user.id);
   }
 
   @Post('seed')

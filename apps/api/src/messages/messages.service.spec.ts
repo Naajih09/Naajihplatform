@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { DatabaseService } from '../database/database.service';
 import { MessagesService } from './messages.service';
 
 describe('MessagesService', () => {
@@ -6,7 +7,7 @@ describe('MessagesService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [MessagesService],
+      providers: [MessagesService, { provide: DatabaseService, useValue: {} }],
     }).compile();
 
     service = module.get<MessagesService>(MessagesService);

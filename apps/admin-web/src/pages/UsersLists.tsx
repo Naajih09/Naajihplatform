@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Trash2, Shield, ShieldAlert, Loader2, Search, Filter, Eye, CheckCircle, XCircle, X } from 'lucide-react';
 import EmptyState from '../components/EmptyState';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+import api from '../utils/api';
 
 const UsersList = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -30,7 +29,6 @@ const UsersList = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
       const params = new URLSearchParams();
       if (searchQuery) params.set('search', searchQuery);
       if (roleFilter !== 'ALL') params.set('role', roleFilter);
@@ -38,13 +36,8 @@ const UsersList = () => {
       params.set('page', String(currentPage));
       params.set('pageSize', String(pageSize));
 
-      const res = await fetch(`${API_BASE}/api/users?${params.toString()}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) {
-        throw new Error(`Failed to load users (${res.status})`);
-      }
-      const data = await res.json();
+      const res = await api.get(`/users?${params.toString()}`);
+      const data = res.data;
       const list = Array.isArray(data?.data)
         ? data.data
         : Array.isArray(data?.items)
@@ -75,18 +68,9 @@ const UsersList = () => {
     if (!window.confirm("Are you sure you want to BAN and DELETE this user? This cannot be undone.")) return;
 
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_BASE}/api/users/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (res.ok) {
-        showToast("User has been banned and removed.", "success");
-        setUsers(users.filter(u => u.id !== id));
-      } else {
-        showToast("Failed to delete user", "error");
-      }
+      await api.delete(`/users/${id}`);
+      showToast("User has been banned and removed.", "success");
+      setUsers(users.filter(u => u.id !== id));
     } catch (err) {
       showToast("Network error occurred", "error");
     }
@@ -94,24 +78,11 @@ const UsersList = () => {
 
   const handleStatusToggle = async (user: any) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_BASE}/api/users/${user.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ isActive: !user.isActive }),
-      });
-
-      if (res.ok) {
-        showToast(`User ${user.isActive ? 'deactivated' : 'activated'} successfully.`, 'success');
-        setUsers(users.map(u => u.id === user.id ? { ...u, isActive: !u.isActive } : u));
-        if (viewUser?.id === user.id) {
-          setViewUser({ ...viewUser, isActive: !viewUser.isActive });
-        }
-      } else {
-        showToast('Failed to update user status', 'error');
+      await api.patch(`/users/${user.id}`, { isActive: !user.isActive });
+      showToast(`User ${user.isActive ? 'deactivated' : 'activated'} successfully.`, 'success');
+      setUsers(users.map(u => u.id === user.id ? { ...u, isActive: !u.isActive } : u));
+      if (viewUser?.id === user.id) {
+        setViewUser({ ...viewUser, isActive: !viewUser.isActive });
       }
     } catch (err) {
       showToast('Network error occurred', 'error');
@@ -126,23 +97,10 @@ const UsersList = () => {
     }
 
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_BASE}/api/users/${viewUser.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ role: roleDraft }),
-      });
-
-      if (res.ok) {
-        showToast('Role updated successfully.', 'success');
-        setUsers(users.map(u => u.id === viewUser.id ? { ...u, role: roleDraft } : u));
-        setViewUser({ ...viewUser, role: roleDraft });
-      } else {
-        showToast('Failed to update role', 'error');
-      }
+      await api.patch(`/users/${viewUser.id}`, { role: roleDraft });
+      showToast('Role updated successfully.', 'success');
+      setUsers(users.map(u => u.id === viewUser.id ? { ...u, role: roleDraft } : u));
+      setViewUser({ ...viewUser, role: roleDraft });
     } catch (err) {
       showToast('Network error occurred', 'error');
     }
@@ -154,21 +112,8 @@ const UsersList = () => {
     if (!newPassword) return;
 
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_BASE}/api/users/password/${viewUser.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ password: newPassword }),
-      });
-
-      if (res.ok) {
-        showToast('Password reset successfully.', 'success');
-      } else {
-        showToast('Failed to reset password', 'error');
-      }
+      await api.patch(`/users/password/${viewUser.id}`, { password: newPassword });
+      showToast('Password reset successfully.', 'success');
     } catch (err) {
       showToast('Network error occurred', 'error');
     }

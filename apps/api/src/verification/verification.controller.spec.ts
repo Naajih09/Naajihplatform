@@ -8,7 +8,7 @@ describe('VerificationController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [VerificationController],
-      providers: [VerificationService],
+      providers: [{ provide: VerificationService, useValue: {} }],
     }).compile();
 
     controller = module.get<VerificationController>(VerificationController);

@@ -1,8 +1,7 @@
 import { CheckCircle, ExternalLink, FileText, Loader2, XCircle, ChevronLeft, ChevronRight, X, Search } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import EmptyState from '../components/EmptyState';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+import api from '../utils/api';
 
 interface VerificationProfile {
   firstName?: string;
@@ -56,16 +55,13 @@ const Verification = () => {
   const fetchRequests = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
       const params = new URLSearchParams();
       params.set('page', String(currentPage));
       params.set('pageSize', String(pageSize));
       if (searchQuery) params.set('search', searchQuery);
       if (statusFilter) params.set('status', statusFilter);
-      const res = await fetch(`${API_BASE}/api/verification/admin/pending?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const res = await api.get(`/verification/admin/pending?${params.toString()}`);
+      const data = res.data;
       const list = (data.data as VerificationRequest[]) || (data as VerificationRequest[]) || [];
       setRequests(list);
       setTotalItems(data.meta?.total ?? list.length);
@@ -98,24 +94,11 @@ const Verification = () => {
 
   const executeAction = async (id: string, status: 'APPROVED' | 'REJECTED', reason?: string) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_BASE}/api/verification/admin/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status, rejectionReason: reason }),
-      });
-
-      if (res.ok) {
-        showToast(`Request ${status} successfully!`, 'success');
-        fetchRequests();
-      } else {
-        showToast('Action failed to save.', 'error');
-      }
+      await api.patch(`/verification/admin/${id}`, { status, rejectionReason: reason });
+      showToast(`Request ${status} successfully!`, 'success');
+      fetchRequests();
     } catch {
-      showToast('Network error occurred.', 'error');
+      showToast('Action failed to save.', 'error');
     }
   };
 

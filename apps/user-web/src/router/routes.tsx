@@ -46,6 +46,8 @@ const lazyWithReload = <T extends { default: ComponentType<any> }>(
 const HomePage = lazyWithReload(() => import('../pages/landing'));
 const Login = lazyWithReload(() => import('../pages/auth/Login'));
 const Signup = lazyWithReload(() => import('../pages/auth/Signup'));
+const ForgotPassword = lazyWithReload(() => import('../pages/auth/ForgotPassword'));
+const ResetPassword = lazyWithReload(() => import('../pages/auth/ResetPassword'));
 const CertificateVerify = lazyWithReload(() => import('../pages/certificate/CertificateVerify'));
 const Terms = lazyWithReload(() => import('../pages/legal/Terms'));
 const Privacy = lazyWithReload(() => import('../pages/legal/Privacy'));
@@ -84,6 +86,16 @@ const routes = [
   {
     path: 'signup',
     element: <Signup />,
+    layout: 'blank',
+  },
+  {
+    path: 'forgot-password',
+    element: <ForgotPassword />,
+    layout: 'blank',
+  },
+  {
+    path: 'reset-password',
+    element: <ResetPassword />,
     layout: 'blank',
   },
   {

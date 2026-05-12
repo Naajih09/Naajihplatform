@@ -23,6 +23,8 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AdminCreateUserDto } from './dto/admin-create-user.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -48,6 +50,16 @@ export class UsersController {
   async login(@Body() body: any) {
     // Consider creating a LoginUserDto for email/password
     return this.authService.login(body.email, body.password);
+  }
+
+  @Post('forgot-password')
+  forgotPassword(@Body() body: ForgotPasswordDto) {
+    return this.usersService.requestPasswordReset(body.email);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() body: ResetPasswordDto) {
+    return this.usersService.resetPassword(body.token, body.password);
   }
 
   // 2b. ADMIN CREATE (Internal use only, protected by shared secret)

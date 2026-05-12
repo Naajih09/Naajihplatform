@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle, ShieldCheck, XCircle } from 'lucide-react';
+import { CheckCircle, Eye, EyeOff, ShieldCheck, XCircle } from 'lucide-react';
 import api from '../utils/api';
 
 const Settings = () => {
@@ -7,6 +7,8 @@ const Settings = () => {
   const payload = parseJwt(token);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
     show: false,
     message: '',
@@ -75,21 +77,41 @@ const Settings = () => {
         <form onSubmit={handlePasswordChange} className="space-y-4">
           <div>
             <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2">New Password</label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="admin-input w-full px-3 py-2"
-            />
+            <div className="relative">
+              <input
+                type={showNewPassword ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="admin-input w-full px-3 py-2 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword((current) => !current)}
+                className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-800 dark:text-gray-500 dark:hover:text-white"
+                aria-label={showNewPassword ? 'Hide new password' : 'Show new password'}
+              >
+                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           <div>
             <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2">Confirm Password</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="admin-input w-full px-3 py-2"
-            />
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="admin-input w-full px-3 py-2 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((current) => !current)}
+                className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-800 dark:text-gray-500 dark:hover:text-white"
+                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           <button
             type="submit"

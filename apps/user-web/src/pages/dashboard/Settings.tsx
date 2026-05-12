@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Lock, Trash2 } from 'lucide-react';
+import { Bell, Eye, EyeOff, Lock, Trash2 } from 'lucide-react';
 import Button from '../../components/Button';
 import { useNavigate } from 'react-router-dom';
 import { getApiBaseUrl } from '../../lib/api-base';
@@ -10,6 +10,7 @@ const Settings = () => {
   
   const [activeTab, setActiveTab] = useState('security');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notificationPrefs, setNotificationPrefs] = useState(() => {
     try {
@@ -125,11 +126,21 @@ const Settings = () => {
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">New Password</label>
-                        <input 
-                            type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-                            className="w-full p-3 bg-slate-100 dark:bg-[#151518] border border-slate-200 dark:border-gray-700 rounded-xl text-slate-900 dark:text-white focus:border-primary focus:outline-none"
-                            placeholder="Enter new password"
-                        />
+                        <div className="relative">
+                            <input 
+                                type={showPassword ? 'text' : 'password'} required value={password} onChange={(e) => setPassword(e.target.value)}
+                                className="w-full p-3 pr-12 bg-slate-100 dark:bg-[#151518] border border-slate-200 dark:border-gray-700 rounded-xl text-slate-900 dark:text-white focus:border-primary focus:outline-none"
+                                placeholder="Enter new password"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((current) => !current)}
+                                className="absolute right-3 top-3 text-slate-400 hover:text-slate-700 dark:hover:text-white"
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
+                        </div>
                     </div>
                     <div className="flex justify-end">
                         <Button type="submit" isLoading={loading} className="bg-slate-900 text-white dark:bg-white dark:text-black font-bold">Update Password</Button>

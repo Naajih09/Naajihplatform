@@ -8,7 +8,11 @@ import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
 import { DatabaseService } from '../database/database.service';
 import { MailerService } from '../mailer/mailer.service';
-import { verificationEmail } from '../mailer/templates';
+import {
+  passwordResetEmail,
+  verificationEmail,
+  welcomeEmail,
+} from '../mailer/templates';
 
 interface CreateUserDto {
   email: string;
@@ -33,6 +37,22 @@ export class UsersService {
   private getTrialDurationDays() {
     const days = Number(process.env.TRIAL_DURATION_DAYS || 14);
     return Number.isFinite(days) && days > 0 ? days : 14;
+  }
+
+  private getPasswordResetTtlMinutes() {
+    const minutes = Number(process.env.PASSWORD_RESET_TTL_MINUTES || 30);
+    return Number.isFinite(minutes) && minutes > 0 ? minutes : 30;
+  }
+
+  private hashToken(token: string) {
+    return crypto.createHash('sha256').update(token).digest('hex');
+  }
+
+  private getFrontendUrl() {
+    return (process.env.FRONTEND_URL || 'http://localhost:3001').replace(
+      /\/+$/,
+      '',
+    );
   }
 
   private async issueEmailVerification(userId: string, email: string) {
@@ -60,6 +80,28 @@ export class UsersService {
     );
 
     return { verifyUrl, emailed };
+  }
+
+  private async sendWelcomeEmail(user: {
+    email: string;
+    role: UserRole;
+    entrepreneurProfile?: { firstName: string | null } | null;
+    investorProfile?: { firstName: string | null } | null;
+  }) {
+    const firstName =
+      user.entrepreneurProfile?.firstName ||
+      user.investorProfile?.firstName ||
+      'there';
+
+    return this.mailerService.sendMail(
+      user.email,
+      'Welcome to NaajihBiz',
+      welcomeEmail({
+        firstName,
+        role: user.role,
+        dashboardUrl: `${this.getFrontendUrl()}/dashboard`,
+      }),
+    );
   }
 
   // 1. SIGNUP (Create User + Profile + Hash Password)
@@ -95,7 +137,10 @@ export class UsersService {
       include: { entrepreneurProfile: true, investorProfile: true },
     });
 
-    await this.issueEmailVerification(newUser.id, newUser.email);
+    await Promise.all([
+      this.issueEmailVerification(newUser.id, newUser.email),
+      this.sendWelcomeEmail(newUser),
+    ]);
 
     const { password: _, ...result } = newUser;
     return result;
@@ -291,6 +336,77 @@ export class UsersService {
     });
 
     return { status: 'ok', message: 'Email verified' };
+  }
+
+  async requestPasswordReset(email: string) {
+    const genericResponse = {
+      status: 'ok',
+      message:
+        'If an account exists for that email, a password reset link has been sent.',
+    };
+
+    const user = await this.databaseService.user.findUnique({
+      where: { email },
+      select: { id: true, email: true, isActive: true },
+    });
+
+    if (!user || user.isActive === false) {
+      return genericResponse;
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const resetUrl = `${this.getFrontendUrl()}/reset-password?token=${token}`;
+    const expires = new Date(
+      Date.now() + this.getPasswordResetTtlMinutes() * 60 * 1000,
+    );
+
+    await this.databaseService.user.update({
+      where: { id: user.id },
+      data: {
+        passwordResetToken: this.hashToken(token),
+        passwordResetExpires: expires,
+      },
+    });
+
+    const emailed = await this.mailerService.sendMail(
+      user.email,
+      'Reset your NaajihBiz password',
+      passwordResetEmail(resetUrl, this.getPasswordResetTtlMinutes()),
+    );
+
+    return {
+      ...genericResponse,
+      emailed,
+      ...(process.env.NODE_ENV === 'production' ? {} : { resetUrl }),
+    };
+  }
+
+  async resetPassword(token: string, password: string) {
+    const user = await this.databaseService.user.findFirst({
+      where: {
+        passwordResetToken: this.hashToken(token),
+        passwordResetExpires: { gt: new Date() },
+        isActive: true,
+      },
+      select: { id: true },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired reset link');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await this.databaseService.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+      },
+    });
+
+    return { status: 'ok', message: 'Password reset successfully' };
   }
 
   // 5. UPDATE PROFILE

@@ -4,6 +4,12 @@ type BaseEmailParams = {
   contentHtml: string;
 };
 
+type WelcomeEmailParams = {
+  firstName: string;
+  role: string;
+  dashboardUrl: string;
+};
+
 const baseEmail = ({ title, preheader, contentHtml }: BaseEmailParams) => {
   const safePreheader = preheader || title;
   return `
@@ -39,4 +45,53 @@ export const notificationEmail = (message: string) =>
     title: 'Naajih Notification',
     preheader: message,
     contentHtml: `<p>${message}</p>`,
+  });
+
+const roleWelcomeCopy: Record<string, { label: string; body: string; next: string }> = {
+  ENTREPRENEUR: {
+    label: 'Entrepreneur',
+    body: 'Your founder workspace is ready. You can shape your profile, prepare your pitch, and connect with Sharia-compliant investors.',
+    next: 'Start by completing your business profile and creating your first pitch.',
+  },
+  INVESTOR: {
+    label: 'Investor',
+    body: 'Your investor workspace is ready. You can discover vetted opportunities, review founder profiles, and build an ethical portfolio.',
+    next: 'Start by setting your investment focus so we can surface better matches.',
+  },
+  ASPIRING_BUSINESS_OWNER: {
+    label: 'Aspiring Business Owner',
+    body: 'Your learning workspace is ready. You can use Naajih Academy, mentorship, and founder resources to move from idea to launch.',
+    next: 'Start in the learning center and build your foundation step by step.',
+  },
+};
+
+export const welcomeEmail = ({
+  firstName,
+  role,
+  dashboardUrl,
+}: WelcomeEmailParams) => {
+  const copy = roleWelcomeCopy[role] || roleWelcomeCopy.ENTREPRENEUR;
+
+  return baseEmail({
+    title: `Welcome to NaajihBiz, ${firstName}`,
+    preheader: `Your ${copy.label} account is ready`,
+    contentHtml: `
+      <p>Assalamu alaikum ${firstName},</p>
+      <p>Welcome to NaajihBiz. You joined as an <strong>${copy.label}</strong>.</p>
+      <p>${copy.body}</p>
+      <p>${copy.next}</p>
+      <p><a href="${dashboardUrl}" style="color:#fbbf24;">Go to your dashboard</a></p>
+    `,
+  });
+};
+
+export const passwordResetEmail = (resetUrl: string, minutes: number) =>
+  baseEmail({
+    title: 'Reset your NaajihBiz password',
+    preheader: 'Use this secure link to create a new password',
+    contentHtml: `
+      <p>We received a request to reset your NaajihBiz password.</p>
+      <p><a href="${resetUrl}" style="color:#fbbf24;">Reset your password</a></p>
+      <p>This link expires in ${minutes} minutes. If you did not request this, you can ignore this email.</p>
+    `,
   });

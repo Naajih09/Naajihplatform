@@ -13,6 +13,7 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
     show: false,
     message: '',
@@ -51,7 +52,7 @@ const Signup = () => {
     // Split Full Name safely
     const nameParts = formData.fullName.split(' ');
     const firstName = nameParts[0] || 'User';
-    const lastName = nameParts.slice(1).join(' ') || '';
+    const lastName = nameParts.slice(1).join(' ') || firstName;
 
     const roleMapping: Record<string, string> = {
       ENTREPRENEUR: 'ENTREPRENEUR',
@@ -213,7 +214,7 @@ const Signup = () => {
                     <div className="flex flex-col gap-2">
                         <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Password</label>
                         <div className="relative">
-                            <input aria-label="Password" name="password" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="********" type={showPassword ? "text" : "password"}/>
+                            <input aria-label="Password" name="password" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 pl-4 pr-11 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="********" type={showPassword ? "text" : "password"}/>
                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-slate-400 hover:text-white" aria-label="Toggle password visibility">
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
@@ -221,7 +222,12 @@ const Signup = () => {
                     </div>
                     <div className="flex flex-col gap-2">
                         <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Confirm</label>
-                        <input aria-label="Confirm Password" name="confirmPassword" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="********" type="password"/>
+                        <div className="relative">
+                            <input aria-label="Confirm Password" name="confirmPassword" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 pl-4 pr-11 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="********" type={showConfirmPassword ? "text" : "password"}/>
+                            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-3 text-slate-400 hover:text-white" aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}>
+                                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
+                        </div>
                     </div>
                 </div>
 

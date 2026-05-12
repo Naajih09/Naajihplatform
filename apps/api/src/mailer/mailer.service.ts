@@ -31,7 +31,16 @@ export class MailerService {
     }
 
     const from = process.env.SMTP_FROM || 'NaajihBiz <noreply@naajihbiz.com>';
-    await transporter.sendMail({ from, to, subject, html });
-    return true;
+    try {
+      await transporter.sendMail({ from, to, subject, html });
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Email failed for ${to}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return false;
+    }
   }
 }

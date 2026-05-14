@@ -55,6 +55,13 @@ export class UsersService {
     );
   }
 
+  private shouldExposePasswordResetLink() {
+    return (
+      process.env.NODE_ENV !== 'production' ||
+      process.env.PASSWORD_RESET_EXPOSE_LINK === 'true'
+    );
+  }
+
   private async issueEmailVerification(userId: string, email: string) {
     const token = crypto.randomBytes(32).toString('hex');
     const expires = new Date(
@@ -377,7 +384,7 @@ export class UsersService {
     return {
       ...genericResponse,
       emailed,
-      ...(process.env.NODE_ENV === 'production' ? {} : { resetUrl }),
+      ...(this.shouldExposePasswordResetLink() ? { resetUrl } : {}),
     };
   }
 

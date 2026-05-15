@@ -58,6 +58,8 @@ Backend (apps/api/.env):
 - `SMTP_FROM`
 - `PASSWORD_RESET_TTL_MINUTES`
 - `PASSWORD_RESET_EXPOSE_LINK`
+- `BETA_TEST_MODE`
+- `ENABLE_SWAGGER`
 - `APP_BASE_URL`
 - `CERT_LOGO_URL`
 - `PAYSTACK_SECRET_KEY`
@@ -71,7 +73,7 @@ Backend (apps/api/.env):
 
 For Gmail delivery, set `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_USER` to the Gmail address, and `SMTP_PASS` to a Gmail app password.
 
-For temporary beta testing without a verified email domain, `PASSWORD_RESET_EXPOSE_LINK=true` returns the reset link in the forgot-password response. Turn it off before production use.
+For temporary beta testing without a verified email domain, set both `BETA_TEST_MODE=true` and `PASSWORD_RESET_EXPOSE_LINK=true` to return the reset link in the forgot-password response. Turn both off before production use.
 
 Frontend (apps/user-web/.env, apps/admin-web/.env):
 - `VITE_API_BASE_URL`

@@ -39,7 +39,7 @@ async function bootstrap() {
   app.setGlobalPrefix(process.env.API_PREFIX || 'api');
   app.useGlobalPipes(new ValidationPipe());
 
-  const corsOrigins = [
+  const localCorsOrigins = [
     'http://localhost:3001',
     'http://localhost:5173',
     'http://localhost:5174',
@@ -54,10 +54,15 @@ async function bootstrap() {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
+  const corsOrigins =
+    process.env.NODE_ENV === 'production'
+      ? [process.env.FRONTEND_URL, ...extraOrigins].filter(Boolean)
+      : [...localCorsOrigins, process.env.FRONTEND_URL, ...extraOrigins].filter(
+          Boolean,
+        );
+
   app.enableCors({
-    origin: [...corsOrigins, process.env.FRONTEND_URL, ...extraOrigins].filter(
-      Boolean,
-    ),
+    origin: corsOrigins,
     credentials: true,
   });
 
@@ -79,17 +84,26 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-
-  SwaggerModule.setup('api/docs', app, document);
+  if (
+    process.env.NODE_ENV !== 'production' ||
+    process.env.ENABLE_SWAGGER === 'true'
+  ) {
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   const port = process.env.PORT || 3000;
 
   await app.listen(port); // sticking to 3000 specifically for now
 
   console.log(`App is running on http://localhost:${port}/api`);
-  console.log(
-    `Api documentation is running on http://localhost:${port}/api/docs`,
-  );
+  if (
+    process.env.NODE_ENV !== 'production' ||
+    process.env.ENABLE_SWAGGER === 'true'
+  ) {
+    console.log(
+      `Api documentation is running on http://localhost:${port}/api/docs`,
+    );
+  }
 }
 void bootstrap();

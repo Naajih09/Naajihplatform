@@ -5,6 +5,14 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy'; // <--- Ensure this file exists!
 
+const getJwtSecret = () => {
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET must be set in production.');
+  }
+  return 'DEV_ONLY_NAAJIH_JWT_SECRET';
+};
+
 @Global()
 @Module({
   imports: [
@@ -12,8 +20,7 @@ import { JwtStrategy } from './jwt.strategy'; // <--- Ensure this file exists!
     PassportModule.register({ defaultStrategy: 'jwt' }), // <--- Explicitly set default
     JwtModule.register({
       global: true,
-      secret:
-        process.env.JWT_SECRET || 'DO_NOT_SHARE_THIS_SECRET_KEY_NAAJIH_2026',
+      secret: getJwtSecret(),
       signOptions: { expiresIn: '7d' },
     }),
   ],

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import {
   v2 as cloudinary,
-  UploadApiResponse,
   UploadApiErrorResponse,
+  UploadApiResponse,
 } from 'cloudinary';
 import { Readable } from 'stream';
 
@@ -20,28 +20,34 @@ export class CloudinaryService {
     file: Express.Multer.File,
     folder = 'naajih-uploads',
   ): Promise<UploadApiResponse | UploadApiErrorResponse> {
-    console.log(
-      `🚀 Starting upload for: ${file.originalname} (Size: ${file.size} bytes)`,
-    );
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Starting upload (${file.size} bytes)`);
+    }
 
     return new Promise((resolve, reject) => {
       const upload = cloudinary.uploader.upload_stream(
         {
           resource_type: this.getResourceType(file),
           folder,
-          timeout: 60000, // <--- ADD THIS: Wait 60 seconds (default is shorter)
+          timeout: 60000,
         },
         (error, result) => {
           if (error) {
-            console.error('❌ Cloudinary Error:', error);
-            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+            console.error(
+              'Cloudinary upload failed:',
+              error instanceof Error ? error.message : 'Unknown error',
+            );
             return reject(
               error instanceof Error
                 ? error
                 : new Error('Cloudinary upload failed'),
             );
           }
-          console.log('✅ Upload Success:', result?.secure_url);
+
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('Upload success');
+          }
+
           resolve(result);
         },
       );

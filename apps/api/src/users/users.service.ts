@@ -58,7 +58,8 @@ export class UsersService {
   private shouldExposePasswordResetLink() {
     return (
       process.env.NODE_ENV !== 'production' ||
-      process.env.PASSWORD_RESET_EXPOSE_LINK === 'true'
+      (process.env.BETA_TEST_MODE === 'true' &&
+        process.env.PASSWORD_RESET_EXPOSE_LINK === 'true')
     );
   }
 

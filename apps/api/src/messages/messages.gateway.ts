@@ -11,9 +11,17 @@ import { Server, Socket } from 'socket.io';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MessagesService } from './messages.service';
 
+const websocketCorsOrigin =
+  process.env.NODE_ENV === 'production'
+    ? (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || '')
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean)
+    : '*';
+
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: websocketCorsOrigin,
   },
 })
 export class MessagesGateway
@@ -28,11 +36,15 @@ export class MessagesGateway
   ) {}
 
   handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Client connected: ${client.id}`);
+    }
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Client disconnected: ${client.id}`);
+    }
   }
 
   @SubscribeMessage('join_room')
@@ -41,7 +53,9 @@ export class MessagesGateway
     @ConnectedSocket() client: Socket,
   ) {
     void client.join(data.userId);
-    console.log(`User ${data.userId} joined room`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`User ${data.userId} joined room`);
+    }
   }
 
   @SubscribeMessage('send_message')

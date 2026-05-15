@@ -5,6 +5,14 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UsersService } from '../../users/users.service';
 import { User, UserRole } from '@prisma/client'; // <-- FIXED: Changed 'Role' to 'UserRole'
 
+const getJwtSecret = () => {
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET must be set in production.');
+  }
+  return 'DEV_ONLY_NAAJIH_JWT_SECRET';
+};
+
 // Define the shape of your JWT payload
 export interface JwtPayload {
   sub: string; // Typically the user ID
@@ -18,8 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey:
-        process.env.JWT_SECRET || 'DO_NOT_SHARE_THIS_SECRET_KEY_NAAJIH_2026',
+      secretOrKey: getJwtSecret(),
     });
   }
 

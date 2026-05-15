@@ -15,10 +15,6 @@ export class AuthService {
     const user = await this.usersService.findOne(email);
 
     // 2. Validate User & Password
-    // Note: If you have plain text passwords in DB right now, temporary use:
-    // if (!user || user.password !== pass) {
-
-    // Ideally, use bcrypt:
     if (!user || user.isActive === false) {
       throw new UnauthorizedException('Invalid Credentials');
     }
@@ -31,8 +27,7 @@ export class AuthService {
     }
 
     if (
-      !(await bcrypt.compare(pass, user.password).catch(() => false)) &&
-      user.password !== pass
+      !(await bcrypt.compare(pass, user.password).catch(() => false))
     ) {
       throw new UnauthorizedException('Invalid Credentials');
     }

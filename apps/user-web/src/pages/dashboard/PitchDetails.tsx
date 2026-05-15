@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, MapPin, Calendar, CheckCircle, UserPlus, Loader2, Edit3, Trash2, Save, X } from 'lucide-react';
 import Button from '../../components/Button';
 import { getApiBaseUrl } from '../../lib/api-base';
+import { formatNaira, formatPercent } from '../../lib/format-money';
 
 const PitchDetails = () => {
   const { id } = useParams();
@@ -225,7 +226,7 @@ const PitchDetails = () => {
                   // FIX 5: Added aria-label
                   <input aria-label="Edit Funding Ask" type="number" className={inputStyle} value={editForm.fundingAsk} onChange={e => setEditForm({...editForm, fundingAsk: e.target.value})} />
               ) : (
-                  <p className="text-3xl font-black text-slate-900 dark:text-white">NGN {parseInt(pitch.fundingAsk).toLocaleString()}</p>
+                  <p className="text-3xl font-black text-slate-900 dark:text-white">{formatNaira(pitch.fundingAsk)}</p>
               )}
            </div>
 
@@ -235,7 +236,7 @@ const PitchDetails = () => {
                   // FIX 6: Added aria-label
                   <input aria-label="Edit Equity" className={inputStyle} value={editForm.equityOffer} onChange={e => setEditForm({...editForm, equityOffer: e.target.value})} />
               ) : (
-                  <p className="text-3xl font-black text-primary">{pitch.equityOffer}%</p>
+                  <p className="text-3xl font-black text-primary">{formatPercent(pitch.equityOffer)}</p>
               )}
            </div>
 

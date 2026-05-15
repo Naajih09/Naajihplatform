@@ -16,6 +16,7 @@ import Button from '../../components/Button';
 import EmptyState from '../../components/EmptyState';
 import { usePitchAccess } from '../../hooks/usePitchAccess';
 import { getApiBaseUrl } from '../../lib/api-base';
+import { formatNaira, formatPercent } from '../../lib/format-money';
 
 const Opportunities = () => {
   const [pitches, setPitches] = useState<any[]>([]);
@@ -293,13 +294,13 @@ const Opportunities = () => {
                 <div>
                     <p className="text-[10px] uppercase text-slate-500 font-bold">Ask</p>
                     <div className="flex items-center gap-1 text-slate-900 dark:text-white font-bold">
-                        <DollarSign size={14} className="text-primary"/> NGN {parseInt(pitch.fundingAsk).toLocaleString()}
+                        <DollarSign size={14} className="text-primary"/> {formatNaira(pitch.fundingAsk)}
                     </div>
                 </div>
                 <div>
                     <p className="text-[10px] uppercase text-slate-500 font-bold">Equity</p>
                     <div className="flex items-center gap-1 text-slate-900 dark:text-white font-bold">
-                        <TrendingUp size={14} className="text-primary"/> {pitch.equityOffer}%
+                        <TrendingUp size={14} className="text-primary"/> {formatPercent(pitch.equityOffer)}
                     </div>
                 </div>
               </div>
@@ -489,7 +490,7 @@ const CreatePitchModal = ({ onClose, onSuccess, apiBase, authHeaders }: any) => 
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div><label className={labelStyle}>Funding Ask (NGN)</label><input name="fundingAsk" type="number" required className={inputStyle} onChange={handleChange} aria-label="Funding Ask" /></div>
-            <div><label className={labelStyle}>Equity Offer (%)</label><input name="equityOffer" type="text" required className={inputStyle} onChange={handleChange} aria-label="Equity Offer" /></div>
+            <div><label className={labelStyle}>Equity Offer (%)</label><input name="equityOffer" type="number" min="0" max="100" step="0.01" required className={inputStyle} onChange={handleChange} aria-label="Equity Offer" /></div>
           </div>
           <div className="pt-4">
             <Button type="submit" className="w-full bg-primary text-neutral-dark font-bold hover:brightness-110" isLoading={submitting}>Submit Pitch</Button>

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import EmptyState from '../../components/EmptyState';
 import { getApiBaseUrl } from '../../lib/api-base';
+import { formatNaira, formatPercent, getNumericValue } from '../../lib/format-money';
 
 export default function InvestorDashboard() {
   const [pitches, setPitches] = useState([]);
@@ -39,7 +40,7 @@ export default function InvestorDashboard() {
           setPitches(list);
 
           const asks = list
-            .map((pitch: any) => Number(pitch.fundingAsk))
+            .map((pitch: any) => getNumericValue(pitch.fundingAsk))
             .filter((value: number) => Number.isFinite(value) && value > 0);
           const avg = asks.length > 0 ? Math.round(asks.reduce((sum: number, v: number) => sum + v, 0) / asks.length) : 0;
           setAvgTicket(avg);
@@ -215,11 +216,11 @@ export default function InvestorDashboard() {
                     <div className="grid grid-cols-2 gap-4 mb-6 py-4 border-y border-slate-200 dark:border-white/5">
                       <div>
                         <p className="text-[10px] uppercase text-slate-500 dark:text-gray-500 mb-1">Funding Ask</p>
-                        <p className="font-bold text-slate-900 dark:text-white">NGN {pitch.fundingAsk?.toLocaleString() || '0'}</p>
+                        <p className="font-bold text-slate-900 dark:text-white">{formatNaira(pitch.fundingAsk, '--')}</p>
                       </div>
                       <div>
                         <p className="text-[10px] uppercase text-slate-500 dark:text-gray-500 mb-1">Equity Offered</p>
-                        <p className="font-bold text-slate-900 dark:text-white">{pitch.equityOffer || '0'}%</p>
+                        <p className="font-bold text-slate-900 dark:text-white">{formatPercent(pitch.equityOffer, '--')}</p>
                       </div>
                     </div>
 
@@ -300,11 +301,11 @@ export default function InvestorDashboard() {
                         <div className="grid grid-cols-2 gap-4 mb-6 py-4 border-y border-slate-200 dark:border-white/5">
                             <div>
                                 <p className="text-[10px] uppercase text-slate-500 dark:text-gray-500 mb-1">Funding Ask</p>
-                                <p className="font-bold text-slate-900 dark:text-white">NGN {pitch.fundingAsk?.toLocaleString() || '0'}</p>
+                                <p className="font-bold text-slate-900 dark:text-white">{formatNaira(pitch.fundingAsk, '--')}</p>
                             </div>
                             <div>
                                 <p className="text-[10px] uppercase text-slate-500 dark:text-gray-500 mb-1">Equity Offered</p>
-                                <p className="font-bold text-slate-900 dark:text-white">{pitch.equityOffer || '0'}%</p>
+                                <p className="font-bold text-slate-900 dark:text-white">{formatPercent(pitch.equityOffer, '--')}</p>
                             </div>
                         </div>
 

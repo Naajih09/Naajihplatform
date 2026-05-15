@@ -173,7 +173,7 @@ const CreatePitch = () => {
           </div>
           <div className='p-6 bg-slate-100 dark:bg-black/30 rounded-xl border border-slate-200 dark:border-gray-800 grid grid-cols-1 md:grid-cols-2 gap-6'>
             <div><label className={labelStyles}>Ask (NGN)</label><input name="fundingAsk" type="number" required onChange={handleChange} className={inputStyles} aria-label="Funding Ask" /></div>
-            <div><label className={labelStyles}>Equity (%)</label><input name="equityOffer" type="text" required onChange={handleChange} className={inputStyles} aria-label="Equity Offer" /></div>
+            <div><label className={labelStyles}>Equity (%)</label><input name="equityOffer" type="number" min="0" max="100" step="0.01" required onChange={handleChange} className={inputStyles} aria-label="Equity Offer" /></div>
           </div>
           <Button type='submit' className='w-full bg-primary text-neutral-dark font-bold hover:brightness-110' isLoading={loading}>Post Pitch</Button>
         </form>

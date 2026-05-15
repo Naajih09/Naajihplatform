@@ -14,6 +14,46 @@ export class PitchesService {
     private readonly auditService: AuditService,
   ) {}
 
+  private normalizeNumericString(value: unknown, field: string) {
+    const rawValue =
+      typeof value === 'number'
+        ? String(value)
+        : typeof value === 'string'
+          ? value.trim()
+          : '';
+    const cleaned = rawValue.replace(/,/g, '');
+    const parsed = Number(cleaned);
+
+    if (!cleaned || !Number.isFinite(parsed) || parsed < 0) {
+      throw new BadRequestException(`${field} must be a valid number.`);
+    }
+
+    return String(parsed);
+  }
+
+  private normalizePitchMoneyFields<T extends Record<string, any>>(data: T) {
+    const normalized: Record<string, any> = { ...data };
+
+    if ('fundingAsk' in normalized) {
+      normalized.fundingAsk = this.normalizeNumericString(
+        normalized.fundingAsk,
+        'Funding ask',
+      );
+    }
+
+    if ('equityOffer' in normalized) {
+      const equityOffer = Number(
+        this.normalizeNumericString(normalized.equityOffer, 'Equity offer'),
+      );
+      if (equityOffer > 100) {
+        throw new BadRequestException('Equity offer cannot exceed 100%.');
+      }
+      normalized.equityOffer = String(equityOffer);
+    }
+
+    return normalized as T;
+  }
+
   // 1. CREATE A PITCH
   async create(data: Prisma.PitchCreateInput, userId: string) {
     const user = await this.prisma.user.findUnique({
@@ -50,7 +90,7 @@ export class PitchesService {
 
     return this.prisma.pitch.create({
       data: {
-        ...data,
+        ...this.normalizePitchMoneyFields(data),
         user: {
           connect: { id: userId },
         },
@@ -213,9 +253,10 @@ export class PitchesService {
 
   // 4. UPDATE PITCH
   async update(id: string, data: any, actorId?: string) {
+    const updateData = this.normalizePitchMoneyFields(data);
     const updated = await this.prisma.pitch.update({
       where: { id },
-      data,
+      data: updateData,
       include: {
         user: {
           select: { id: true, email: true },
@@ -223,14 +264,14 @@ export class PitchesService {
       },
     });
 
-    if (data?.status) {
+    if (updateData?.status) {
       await this.auditService.log({
         action: 'PITCH_STATUS_UPDATED',
         entityType: 'Pitch',
         entityId: id,
         actorId,
         metadata: {
-          status: data.status,
+          status: updateData.status,
           pitchTitle: updated.title,
           ownerId: updated.user?.id,
           ownerEmail: updated.user?.email,

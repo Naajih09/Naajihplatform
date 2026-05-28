@@ -14,12 +14,13 @@ export default function Subscription() {
   });
   const [subscription, setSubscription] = useState<any>(null);
   const API_BASE = getApiBaseUrl();
-  const subscriptionAmount = Number(import.meta.env.VITE_SUBSCRIPTION_AMOUNT_NGN || 15000);
   const trialDays = Number(import.meta.env.VITE_TRIAL_DAYS || 14);
-  const estimatedAnnualValue = subscriptionAmount * 10;
   const pitchLimitReason = searchParams.get('reason') === 'pitch-limit';
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAspirant = user?.role === 'ASPIRING_BUSINESS_OWNER';
+  const defaultSubscriptionAmount = Number(import.meta.env.VITE_SUBSCRIPTION_AMOUNT_NGN || 15000);
+  const subscriptionAmount = isAspirant ? 5000 : defaultSubscriptionAmount;
+  const estimatedAnnualValue = subscriptionAmount * 10;
   const authToken =
     localStorage.getItem('accessToken') ||
     localStorage.getItem('access_token') ||

@@ -2,7 +2,7 @@ import { Check, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-type ChecklistKey = 'profile' | 'opportunity' | 'explore' | 'message';
+type ChecklistKey = 'profile' | 'opportunity' | 'explore' | 'message' | 'learning' | 'community' | 'mentor';
 
 type ChecklistState = Record<ChecklistKey, boolean>;
 
@@ -11,14 +11,19 @@ const defaultState: ChecklistState = {
   opportunity: false,
   explore: false,
   message: false,
+  learning: false,
+  community: false,
+  mentor: false,
 };
 
-const steps: Array<{
+type ChecklistStep = {
   key: ChecklistKey;
   label: string;
   description: string;
   path: string;
-}> = [
+};
+
+const defaultSteps: ChecklistStep[] = [
   {
     key: 'profile',
     label: 'Complete profile',
@@ -45,9 +50,38 @@ const steps: Array<{
   },
 ];
 
+const aspiringOwnerSteps: ChecklistStep[] = [
+  {
+    key: 'profile',
+    label: 'Complete profile',
+    description: 'Set up your learner profile so mentors can understand your goals.',
+    path: '/dashboard/profile',
+  },
+  {
+    key: 'learning',
+    label: 'Start your first lesson',
+    description: 'Begin with business foundations before moving toward pitch creation.',
+    path: '/dashboard/learning-center',
+  },
+  {
+    key: 'community',
+    label: 'Join the community',
+    description: 'Ask questions, share progress, and learn with other aspiring owners.',
+    path: '/dashboard/community',
+  },
+  {
+    key: 'mentor',
+    label: 'Book mentor guidance',
+    description: 'Get support when you are ready to shape your business idea.',
+    path: '/dashboard/mentors',
+  },
+];
+
 export default function OnboardingChecklist() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAspirant = user.role === 'ASPIRING_BUSINESS_OWNER';
+  const steps = isAspirant ? aspiringOwnerSteps : defaultSteps;
   const profile = user.entrepreneurProfile || user.investorProfile || {};
   const storageKey = `onboarding-checklist:${user.id || 'guest'}`;
 

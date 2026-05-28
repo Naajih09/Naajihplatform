@@ -225,27 +225,31 @@ if (isAspirant) {
         <div className="max-w-3xl">
           <p className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-primary">
             <Rocket size={14} />
-            Halal business network
+            {isAspirant ? 'Naajih Academy' : 'Halal business network'}
           </p>
           <h3 className="mt-4 text-2xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-            Connect with entrepreneurs, investors, and real opportunities
+            {isAspirant
+              ? 'Learn the foundations before launching your business'
+              : 'Connect with entrepreneurs, investors, and real opportunities'}
           </h3>
           <p className="mt-3 max-w-2xl text-sm md:text-base text-slate-600 dark:text-neutral-muted">
-            Discover vetted founders, practical learning, and funding-ready opportunities in one place so you can grow with confidence.
+            {isAspirant
+              ? 'Build your idea step by step through courses, community support, and mentor guidance designed for aspiring business owners.'
+              : 'Discover vetted founders, practical learning, and funding-ready opportunities in one place so you can grow with confidence.'}
           </p>
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
             <Link
-              to="/dashboard/create-pitch"
+              to={isAspirant ? '/dashboard/learning-center' : '/dashboard/create-pitch'}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-black shadow-lg shadow-primary/20 transition hover:brightness-110"
             >
-              Create Opportunity
+              {isAspirant ? 'Continue Learning' : 'Create Opportunity'}
               <ChevronRight size={16} />
             </Link>
             <Link
-              to="/dashboard/opportunities"
+              to={isAspirant ? '/dashboard/community' : '/dashboard/opportunities'}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-900 transition hover:bg-slate-50 dark:border-gray-700 dark:bg-[#1d1d20] dark:text-white dark:hover:bg-white/5"
             >
-              Explore Opportunities
+              {isAspirant ? 'Visit Community' : 'Explore Opportunities'}
             </Link>
           </div>
         </div>
@@ -429,19 +433,19 @@ if (isAspirant) {
         <div className="bg-primary p-8 rounded-3xl relative overflow-hidden group">
           <div className="relative z-10">
             <h3 className="text-2xl font-black text-neutral-dark mb-2">
-              {isAspirant ? "Start Your Business" : pitchLimitReached ? "Upgrade to keep posting" : "Ready to expand?"}
+              {isAspirant ? "Continue your learning path" : pitchLimitReached ? "Upgrade to keep posting" : "Ready to expand?"}
             </h3>
             <p className="text-neutral-dark/70 font-medium mb-6 max-w-sm">
               {isAspirant
-                ? "Have you completed your courses? Create your first pitch now."
+                ? "Work through your courses and mentor guidance first. When your idea is ready, you can move into pitch creation with more confidence."
                 : pitchLimitReached
                 ? `You have reached the free plan limit. ${pitchLimitText}. Upgrade to Premium to post unlimited pitches.`
                 : "Connect with over 500+ certified halal investors."}
             </p>
 
-            <Link to={pitchLimitReached ? "/dashboard/subscription?reason=pitch-limit" : "/dashboard/create-pitch"} className="inline-block">
+            <Link to={isAspirant ? "/dashboard/learning-center" : pitchLimitReached ? "/dashboard/subscription?reason=pitch-limit" : "/dashboard/create-pitch"} className="inline-block">
               <button className="bg-neutral-dark text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-neutral-dark/90 transition-all flex items-center gap-2">
-                {pitchLimitReached ? "Upgrade Now" : "Launch New Pitch"} <ChevronRight size={16} />
+                {isAspirant ? "Go to Learning Center" : pitchLimitReached ? "Upgrade Now" : "Launch New Pitch"} <ChevronRight size={16} />
               </button>
             </Link>
             {user.role === 'ENTREPRENEUR' && (

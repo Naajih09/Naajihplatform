@@ -8,7 +8,7 @@ import * as crypto from 'crypto';
 import axios from 'axios';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { PaymentProvider, PaymentStatus } from '@prisma/client';
+import { PaymentProvider, PaymentStatus, UserRole } from '@prisma/client';
 import { Cron } from '@nestjs/schedule';
 
 @Injectable()
@@ -88,6 +88,11 @@ export class PaymentsService {
     return Number.isFinite(amount) && amount > 0 ? amount : null;
   }
 
+  private get aspiringOwnerSubscriptionAmountNgn() {
+    const amount = Number(process.env.ASPIRING_OWNER_SUBSCRIPTION_AMOUNT_NGN || 5000);
+    return Number.isFinite(amount) && amount > 0 ? amount : 5000;
+  }
+
   private get subscriptionDurationDays() {
     const days = Number(process.env.SUBSCRIPTION_DURATION_DAYS || 30);
     return Number.isFinite(days) && days > 0 ? days : 30;
@@ -103,6 +108,7 @@ export class PaymentsService {
     email: string,
     amount: number,
     userId?: string,
+    userRole?: UserRole,
   ) {
     if (!email || !userId) {
       throw new BadRequestException('Authenticated user is required');
@@ -111,7 +117,12 @@ export class PaymentsService {
       throw new BadRequestException('Invalid amount');
     }
 
-    if (this.subscriptionAmountNgn && amount !== this.subscriptionAmountNgn) {
+    const expectedAmount =
+      userRole === UserRole.ASPIRING_BUSINESS_OWNER
+        ? this.aspiringOwnerSubscriptionAmountNgn
+        : this.subscriptionAmountNgn;
+
+    if (expectedAmount && amount !== expectedAmount) {
       throw new BadRequestException('Invalid subscription amount');
     }
 

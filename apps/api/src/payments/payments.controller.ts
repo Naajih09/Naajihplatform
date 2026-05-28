@@ -30,6 +30,7 @@ export class PaymentsController {
       req.user.email,
       data.amount,
       req.user.id,
+      req.user.role,
     );
   }
 

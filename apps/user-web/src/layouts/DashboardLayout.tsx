@@ -12,7 +12,7 @@ import {
     Video,
     Zap
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import NotificationBell from '../components/NotificationBell';
 import ThemeToggle from '../components/ThemeToggle';
@@ -25,6 +25,22 @@ interface DashboardLayoutProps {
   children?: React.ReactNode; 
 }
 
+const decodeJwtPayload = (token: string) => {
+  const base64Url = token.split('.')[1] || '';
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+  return JSON.parse(atob(padded));
+};
+
+const isExpiredToken = (token: string) => {
+  try {
+    const payload = decodeJwtPayload(token);
+    return typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now();
+  } catch {
+    return true;
+  }
+};
+
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isAuth, user: authUser } = useAuth();
@@ -35,9 +51,20 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     localStorage.getItem('accessToken') ||
     localStorage.getItem('access_token') ||
     '';
+  const hasValidAuthToken = Boolean(authToken && !isExpiredToken(authToken));
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('access_token');
+    dispatch(setToken(null));
+    dispatch(setAuth(false));
+    dispatch(logout());
+    navigate('/login');
+  }, [dispatch, navigate]);
   
   // 1. GET USER & EXTRACT NAME SAFELY
   const profile = user.entrepreneurProfile || user.investorProfile || {};
@@ -55,9 +82,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   });
 
   useEffect(() => {
+    if (authToken && !hasValidAuthToken) {
+      handleLogout();
+      return;
+    }
+
     const currentUser = authUser || (userString ? JSON.parse(userString) : null);
     const email = currentUser?.email;
-    if (!authToken || !email) return;
+    if (!hasValidAuthToken || !email) return;
 
     let cancelled = false;
 
@@ -81,17 +113,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     return () => {
       cancelled = true;
     };
-  }, [authUser?.email, authToken, dispatch]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('access_token');
-    dispatch(setToken(null));
-    dispatch(setAuth(false));
-    dispatch(logout());
-    navigate('/login');
-  };
+  }, [authUser, userString, authToken, hasValidAuthToken, dispatch, handleLogout]);
 
   const isAspirant = user.role === 'ASPIRING_BUSINESS_OWNER';
 
@@ -114,7 +136,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         { label: 'Upgrade Plan', path: '/dashboard/subscription', icon: Zap, badge: 'PRO' },
       ];
 
-  if (!isAuth) {
+  if (!isAuth || !hasValidAuthToken) {
     const returnUrl = encodeURIComponent(location.pathname);
     return <Navigate to={`/login?returnUrl=${returnUrl}`} replace />;
   }

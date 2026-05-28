@@ -1,7 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { json } from 'express';
+import { json, urlencoded } from 'express';
 import 'dotenv/config';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './utils/all-expection.filter';
@@ -10,6 +10,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const { httpAdapter } = app.get(HttpAdapterHost);
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.set('trust proxy', 1);
 
   app.use((req: any, res: any, next: () => void) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -29,16 +31,16 @@ async function bootstrap() {
   // Capture raw body for webhook signature verification
   app.use(
     json({
+      limit: process.env.JSON_BODY_LIMIT || '1mb',
       verify: (req: any, _res, buf) => {
         req.rawBody = buf;
       },
     }),
   );
+  app.use(urlencoded({ extended: true, limit: process.env.FORM_BODY_LIMIT || '1mb' }));
 
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
   app.setGlobalPrefix(process.env.API_PREFIX || 'api');
-  app.useGlobalPipes(new ValidationPipe());
-
   const localCorsOrigins = [
     'http://localhost:3001',
     'http://localhost:5173',
@@ -69,7 +71,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: false,
+      forbidNonWhitelisted: true,
       transform: true,
       transformOptions: {
         enableImplicitConversion: true,

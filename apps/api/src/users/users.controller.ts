@@ -15,6 +15,7 @@ import {
   Query,
   ForbiddenException,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { UsersService } from './users.service';
 import { AuthService } from '../auth/auth.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -34,6 +35,7 @@ export class UsersController {
   ) {}
 
   // 1. SIGN UP (Public endpoint, no guards)
+  @Throttle({ short: { limit: 5, ttl: 60000 } })
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     // Use DTO for validation
@@ -46,23 +48,27 @@ export class UsersController {
   }
 
   // 2. LOG IN (Public endpoint, no guards)
+  @Throttle({ short: { limit: 5, ttl: 60000 } })
   @Post('login')
   async login(@Body() body: any) {
     // Consider creating a LoginUserDto for email/password
     return this.authService.login(body.email, body.password);
   }
 
+  @Throttle({ short: { limit: 3, ttl: 60000 } })
   @Post('forgot-password')
   forgotPassword(@Body() body: ForgotPasswordDto) {
     return this.usersService.requestPasswordReset(body.email);
   }
 
+  @Throttle({ short: { limit: 5, ttl: 60000 } })
   @Post('reset-password')
   resetPassword(@Body() body: ResetPasswordDto) {
     return this.usersService.resetPassword(body.token, body.password);
   }
 
   // 2b. ADMIN CREATE (Internal use only, protected by shared secret)
+  @Throttle({ short: { limit: 2, ttl: 60000 } })
   @Post('admin/seed')
   async createAdmin(
     @Body() body: AdminCreateUserDto,
@@ -144,6 +150,7 @@ export class UsersController {
     UserRole.INVESTOR,
     UserRole.ASPIRING_BUSINESS_OWNER,
   )
+  @Throttle({ short: { limit: 3, ttl: 60000 } })
   @Post('verify-email/request')
   requestVerification(@Request() req) {
     return this.usersService.requestEmailVerification(req.user.id);
@@ -162,6 +169,7 @@ export class UsersController {
   }
 
   // 5c. VERIFY EMAIL TOKEN (Public)
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
   @Get('verify-email')
   verifyEmail(@Query('token') token?: string) {
     if (!token) {
@@ -183,7 +191,7 @@ export class UsersController {
     if (_req.user.role !== UserRole.ADMIN && _req.user.email !== email) {
       throw new ForbiddenException('You can only view your own profile.');
     }
-    return this.usersService.findOne(email);
+    return this.usersService.findPublicByEmail(email);
   }
 
   // 6. UPDATE PROFILE (Protected: User can update their own, Admin can update any)

@@ -7,6 +7,7 @@ import * as crypto from 'crypto';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MailerService } from '../mailer/mailer.service';
+import { AppCacheService } from '../cache/app-cache.service';
 
 @Injectable()
 export class AcademyService {
@@ -65,67 +66,89 @@ export class AcademyService {
     private readonly databaseService: DatabaseService,
     private readonly notificationsService: NotificationsService,
     private readonly mailerService: MailerService,
+    private readonly cache: AppCacheService,
   ) {}
+
+  private clearAcademyCache(userId?: string) {
+    this.cache.deleteByPrefix('academy:');
+    this.cache.deleteByPrefix('academy-admin:');
+    this.cache.deleteByPrefix('certificate:');
+    if (userId) {
+      this.cache.deleteByPrefix(`academy-user:${userId}:`);
+    }
+  }
 
   // 1️⃣ GET ALL PROGRAMS (With optional progress count)
   async findAll(userId?: string) {
-    const programs = await this.databaseService.program.findMany({
-      include: {
-        enrollments: userId
-          ? {
-              where: { userId },
-              select: { id: true, enrolledAt: true, status: true },
-            }
-          : false,
-        modules: {
+    return this.cache.getOrSet(
+      userId ? `academy-user:${userId}:programs` : 'academy:programs',
+      userId ? 30 : 300,
+      async () => {
+        const programs = await this.databaseService.program.findMany({
           include: {
-            lessons: {
-              include: {
-                progress: userId ? { where: { userId } } : false,
-              },
-            },
-          },
-        },
-      },
-    });
-    return this.addProgramComputedFields(programs);
-  }
-
-  // 2️⃣ GET ONE PROGRAM (With lessons + progress)
-  async findOne(programId: string, userId: string) {
-    const program = await this.databaseService.program.findUnique({
-      where: { id: programId },
-      include: {
-        enrollments: {
-          where: { userId },
-          select: { id: true, enrolledAt: true, status: true },
-        },
-        modules: {
-          orderBy: { order: 'asc' },
-          include: {
-            lessons: {
-              orderBy: { order: 'asc' },
-              include: {
-                progress: { where: { userId } },
-              },
-            },
-            tasks: {
-              orderBy: { dueDate: 'asc' },
-              include: {
-                submissions: {
+            enrollments: userId
+              ? {
                   where: { userId },
-                  orderBy: { submittedAt: 'desc' },
-                  take: 1,
+                  select: { id: true, enrolledAt: true, status: true },
+                }
+              : false,
+            modules: {
+              include: {
+                lessons: {
+                  include: {
+                    progress: userId ? { where: { userId } } : false,
+                  },
                 },
               },
             },
           },
-        },
+        });
+        return this.addProgramComputedFields(programs);
       },
-    });
-    return program
-      ? (this.addProgramComputedFields([program])[0] ?? program)
-      : program;
+    );
+  }
+
+  // 2️⃣ GET ONE PROGRAM (With lessons + progress)
+  async findOne(programId: string, userId: string) {
+    return this.cache.getOrSet(
+      `academy-user:${userId}:program:${programId}`,
+      30,
+      async () => {
+        const program = await this.databaseService.program.findUnique({
+          where: { id: programId },
+          include: {
+            enrollments: {
+              where: { userId },
+              select: { id: true, enrolledAt: true, status: true },
+            },
+            modules: {
+              orderBy: { order: 'asc' },
+              include: {
+                lessons: {
+                  orderBy: { order: 'asc' },
+                  include: {
+                    progress: { where: { userId } },
+                  },
+                },
+                tasks: {
+                  orderBy: { dueDate: 'asc' },
+                  include: {
+                    submissions: {
+                      where: { userId },
+                      orderBy: { submittedAt: 'desc' },
+                      take: 1,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+        return program
+          ? (this.addProgramComputedFields([program])[0] ?? program)
+          : program;
+      },
+    );
   }
 
   // 3️⃣ GET ONE LESSON
@@ -219,6 +242,7 @@ export class AcademyService {
       userId,
       lessonId,
     );
+    this.clearAcademyCache(userId);
     return { progress, milestone };
   }
 
@@ -254,22 +278,26 @@ export class AcademyService {
       if (existing.status === 'APPROVED') {
         return existing;
       }
-      return this.databaseService.programEnrollment.update({
+      const enrollment = await this.databaseService.programEnrollment.update({
         where: { id: existing.id },
         data: {
           status: 'PENDING',
           reviewedAt: null,
         },
       });
+      this.clearAcademyCache(userId);
+      return enrollment;
     }
 
-    return this.databaseService.programEnrollment.create({
+    const enrollment = await this.databaseService.programEnrollment.create({
       data: {
         userId,
         programId,
         status: 'PENDING',
       },
     });
+    this.clearAcademyCache(userId);
+    return enrollment;
   }
 
   // 6️⃣ SUBMIT TASK (assignment upload/link)
@@ -294,7 +322,7 @@ export class AcademyService {
       throw new ForbiddenException('Program access required.');
     }
 
-    return this.databaseService.userTaskSubmission.create({
+    const submission = await this.databaseService.userTaskSubmission.create({
       data: {
         userId,
         taskId,
@@ -302,6 +330,8 @@ export class AcademyService {
         status: 'SUBMITTED',
       },
     });
+    this.clearAcademyCache(userId);
+    return submission;
   }
 
   // 7️⃣ GET USER MILESTONES
@@ -315,33 +345,37 @@ export class AcademyService {
 
   // ---------------- ADMIN ACADEMY MANAGEMENT ----------------
   async adminListPrograms() {
-    return this.databaseService.program.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        _count: { select: { modules: true } },
-        modules: {
-          orderBy: { order: 'asc' },
-          include: {
-            _count: { select: { lessons: true, tasks: true } },
+    return this.cache.getOrSet('academy-admin:programs', 60, () =>
+      this.databaseService.program.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: {
+          _count: { select: { modules: true } },
+          modules: {
+            orderBy: { order: 'asc' },
+            include: {
+              _count: { select: { lessons: true, tasks: true } },
+            },
           },
         },
-      },
-    });
+      }),
+    );
   }
 
   async adminGetProgram(id: string) {
-    return this.databaseService.program.findUnique({
-      where: { id },
-      include: {
-        modules: {
-          orderBy: { order: 'asc' },
-          include: {
-            lessons: { orderBy: { order: 'asc' } },
-            tasks: { orderBy: { dueDate: 'asc' } },
+    return this.cache.getOrSet(`academy-admin:program:${id}`, 60, () =>
+      this.databaseService.program.findUnique({
+        where: { id },
+        include: {
+          modules: {
+            orderBy: { order: 'asc' },
+            include: {
+              lessons: { orderBy: { order: 'asc' } },
+              tasks: { orderBy: { dueDate: 'asc' } },
+            },
           },
         },
-      },
-    });
+      }),
+    );
   }
 
   async adminCreateProgram(body: {
@@ -350,7 +384,7 @@ export class AcademyService {
     cohort?: string;
     isPremium?: boolean;
   }) {
-    return this.databaseService.program.create({
+    const program = await this.databaseService.program.create({
       data: {
         title: body.title,
         description: body.description ?? '',
@@ -358,6 +392,8 @@ export class AcademyService {
         isPremium: Boolean(body.isPremium),
       },
     });
+    this.clearAcademyCache();
+    return program;
   }
 
   async adminUpdateProgram(
@@ -369,7 +405,7 @@ export class AcademyService {
       isPremium?: boolean;
     },
   ) {
-    return this.databaseService.program.update({
+    const program = await this.databaseService.program.update({
       where: { id },
       data: {
         title: body.title,
@@ -378,6 +414,8 @@ export class AcademyService {
         isPremium: body.isPremium,
       },
     });
+    this.clearAcademyCache();
+    return program;
   }
 
   async adminDeleteProgram(id: string) {
@@ -446,6 +484,7 @@ export class AcademyService {
       });
     });
 
+    this.clearAcademyCache();
     return { message: 'Program deleted successfully.' };
   }
 
@@ -453,7 +492,7 @@ export class AcademyService {
     programId: string,
     body: { title: string; order?: number; unlockDate?: string },
   ) {
-    return this.databaseService.module.create({
+    const module = await this.databaseService.module.create({
       data: {
         programId,
         title: body.title,
@@ -461,13 +500,15 @@ export class AcademyService {
         unlockDate: body.unlockDate ? new Date(body.unlockDate) : null,
       },
     });
+    this.clearAcademyCache();
+    return module;
   }
 
   async adminUpdateModule(
     id: string,
     body: { title?: string; order?: number; unlockDate?: string | null },
   ) {
-    return this.databaseService.module.update({
+    const module = await this.databaseService.module.update({
       where: { id },
       data: {
         title: body.title,
@@ -480,6 +521,8 @@ export class AcademyService {
               : undefined,
       },
     });
+    this.clearAcademyCache();
+    return module;
   }
 
   async adminCreateLesson(
@@ -493,7 +536,7 @@ export class AcademyService {
       duration?: number;
     },
   ) {
-    return this.databaseService.lesson.create({
+    const lesson = await this.databaseService.lesson.create({
       data: {
         moduleId,
         title: body.title,
@@ -504,6 +547,8 @@ export class AcademyService {
         duration: body.duration ?? 300,
       },
     });
+    this.clearAcademyCache();
+    return lesson;
   }
 
   async adminUpdateLesson(
@@ -517,7 +562,7 @@ export class AcademyService {
       duration?: number;
     },
   ) {
-    return this.databaseService.lesson.update({
+    const lesson = await this.databaseService.lesson.update({
       where: { id },
       data: {
         title: body.title,
@@ -528,13 +573,15 @@ export class AcademyService {
         duration: body.duration,
       },
     });
+    this.clearAcademyCache();
+    return lesson;
   }
 
   async adminCreateTask(
     moduleId: string,
     body: { title: string; description?: string; dueDate?: string },
   ) {
-    return this.databaseService.task.create({
+    const task = await this.databaseService.task.create({
       data: {
         moduleId,
         title: body.title,
@@ -542,13 +589,15 @@ export class AcademyService {
         dueDate: body.dueDate ? new Date(body.dueDate) : null,
       },
     });
+    this.clearAcademyCache();
+    return task;
   }
 
   async adminUpdateTask(
     id: string,
     body: { title?: string; description?: string; dueDate?: string | null },
   ) {
-    return this.databaseService.task.update({
+    const task = await this.databaseService.task.update({
       where: { id },
       data: {
         title: body.title,
@@ -561,6 +610,8 @@ export class AcademyService {
               : undefined,
       },
     });
+    this.clearAcademyCache();
+    return task;
   }
 
   async adminImportLessons(moduleId: string, csvText: string) {
@@ -606,6 +657,7 @@ export class AcademyService {
       created++;
     }
 
+    this.clearAcademyCache();
     return { created, failed, errors };
   }
 
@@ -646,6 +698,7 @@ export class AcademyService {
       created++;
     }
 
+    this.clearAcademyCache();
     return { created, failed, errors };
   }
 
@@ -680,6 +733,7 @@ export class AcademyService {
       created++;
     }
 
+    this.clearAcademyCache();
     return { created, failed, errors };
   }
 
@@ -719,6 +773,7 @@ export class AcademyService {
       created++;
     }
 
+    this.clearAcademyCache();
     return { created, failed, errors };
   }
 
@@ -793,6 +848,7 @@ export class AcademyService {
       created++;
     }
 
+    this.clearAcademyCache();
     return { created, failed, errors };
   }
 
@@ -875,6 +931,7 @@ export class AcademyService {
         html,
       );
     }
+    this.clearAcademyCache(submission.userId);
     return submission;
   }
 
@@ -940,6 +997,7 @@ export class AcademyService {
         html,
       );
     }
+    this.clearAcademyCache(enrollment.userId);
     return enrollment;
   }
 

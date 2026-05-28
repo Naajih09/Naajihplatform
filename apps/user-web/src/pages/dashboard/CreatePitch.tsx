@@ -94,6 +94,7 @@ const CreatePitch = () => {
   const inputStyles = "w-full p-3 bg-slate-50 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded-xl text-slate-900 dark:text-white focus:border-primary focus:outline-none transition-colors placeholder:text-gray-400";
   const labelStyles = "block text-sm font-bold text-slate-600 dark:text-gray-400 mb-2";
   const showPitchLimitNotice = !pitchAccessLoading && !hasPremium;
+  const isAspiringOwner = user.role === 'ASPIRING_BUSINESS_OWNER';
 
   return (
     <div className='max-w-3xl mx-auto pb-20 font-sans'>
@@ -104,12 +105,19 @@ const CreatePitch = () => {
       )}
       {user.role && user.role !== 'ENTREPRENEUR' ? (
         <div className="bg-white dark:bg-[#1d1d20] rounded-2xl border border-slate-200 dark:border-gray-800 p-8 shadow-xl">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Pitch creation is for entrepreneurs</h2>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+            {isAspiringOwner ? 'Keep building your business foundation' : 'Pitch creation is for entrepreneurs'}
+          </h2>
           <p className="text-slate-500 dark:text-gray-400 mb-6">
-            Your current role does not allow pitch submissions. Switch to an entrepreneur account to create pitches.
+            {isAspiringOwner
+              ? 'You are still in the learning stage, so pitch submissions are not open for this account yet. Continue through the Learning Center to develop your idea before moving into pitch creation.'
+              : 'Your current role does not allow pitch submissions. Switch to an entrepreneur account to create pitches.'}
           </p>
-          <Button onClick={() => navigate('/dashboard/opportunities')} className="bg-primary text-neutral-dark font-bold">
-            Browse Opportunities
+          <Button
+            onClick={() => navigate(isAspiringOwner ? '/dashboard/learning-center' : '/dashboard/opportunities')}
+            className="bg-primary text-neutral-dark font-bold"
+          >
+            {isAspiringOwner ? 'Go to Learning Center' : 'Browse Opportunities'}
           </Button>
         </div>
       ) : !pitchAccessLoading && !canCreatePitch ? (

@@ -1,5 +1,5 @@
 import { ArrowLeft, FileText, Loader2, Mic, MoreVertical, Paperclip, Search, Send, StopCircle } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import EmptyState from '../../components/EmptyState';
 import { useSocket } from '../../hooks/useSocket';
 import { getApiBaseUrl } from '../../lib/api-base';
@@ -34,9 +34,10 @@ const Messages = () => {
     localStorage.getItem('access_token') ||
     localStorage.getItem('accessToken') ||
     '';
-  const authHeaders = authToken
-    ? { Authorization: `Bearer ${authToken}` }
-    : {};
+  const authHeaders = useMemo(
+    () => (authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    [authToken]
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // --- SOCKET HOOK ---
@@ -44,6 +45,12 @@ const Messages = () => {
 
   // --- FETCH PARTNERS ---
   useEffect(() => {
+    if (!authToken) {
+      setPartners([]);
+      setLoading(false);
+      return;
+    }
+
     const fetchPartners = async () => {
       try {
         const res = await fetch(`${API_BASE}/messages/partners`, {
@@ -62,11 +69,11 @@ const Messages = () => {
       }
     };
     fetchPartners();
-  }, [API_BASE, authHeaders, user.id]);
+  }, [API_BASE, authHeaders, authToken]);
 
   // --- FETCH CONVERSATION & SOCKET LISTENERS ---
   useEffect(() => {
-    if (!activeChat) return;
+    if (!activeChat || !authToken) return;
 
     const fetchMessages = async () => {
       try {
@@ -87,7 +94,7 @@ const Messages = () => {
     };
     
     fetchMessages();
-  }, [API_BASE, activeChat, authHeaders, user.id]);
+  }, [API_BASE, activeChat, authHeaders, authToken]);
 
   // Listen for incoming messages
   useEffect(() => {

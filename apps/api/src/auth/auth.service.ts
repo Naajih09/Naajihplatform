@@ -36,7 +36,14 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
     // 4. SANITIZE: Remove password from the object we send back
-    const { password: _password, ...safeUser } = user;
+    const {
+      password: _password,
+      emailVerificationToken: _emailVerificationToken,
+      emailVerificationExpires: _emailVerificationExpires,
+      passwordResetToken: _passwordResetToken,
+      passwordResetExpires: _passwordResetExpires,
+      ...safeUser
+    } = user;
 
     // 5. Return Safe Data + Token
     return {

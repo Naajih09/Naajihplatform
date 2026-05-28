@@ -40,6 +40,22 @@ are set:
 - `PAYSTACK_WEBHOOK_SECRET`
 - `OPAY_WEBHOOK_SECRET`
 
+## Performance and security settings
+
+The API uses short-lived caching for repeated dashboard, academy, and pitch
+reads. In local development it falls back to in-memory cache. In production,
+set `REDIS_URL` so cache entries are shared across running API instances.
+
+Useful env vars:
+
+- `REDIS_URL`: optional Redis connection string for shared cache.
+- `APP_CACHE_MAX_ENTRIES`: in-memory fallback entry limit, default `500`.
+- `JSON_BODY_LIMIT`: JSON request body limit, default `1mb`.
+- `FORM_BODY_LIMIT`: form request body limit, default `1mb`.
+
+Sensitive auth endpoints also have tighter rate limits for signup, login,
+password reset, and email verification.
+
 ## Compile and run the project
 
 ```bash

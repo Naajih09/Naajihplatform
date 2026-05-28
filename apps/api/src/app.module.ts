@@ -16,6 +16,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { PitchesModule } from './pitches/pitches.module';
 import { UsersModule } from './users/users.module';
 import { VerificationModule } from './verification/verification.module';
+import { AppCacheModule } from './cache/app-cache.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { VerificationModule } from './verification/verification.module';
       isGlobal: true,
     }),
     ScheduleModule.forRoot(),
+    AppCacheModule,
     DatabaseModule,
     ThrottlerModule.forRoot([
       {

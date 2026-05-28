@@ -6,13 +6,27 @@ import {
 import { PrismaService } from '../prisma.service';
 import { Prisma } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
+import { AppCacheService } from '../cache/app-cache.service';
 
 @Injectable()
 export class PitchesService {
   constructor(
     private prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly cache: AppCacheService,
   ) {}
+
+  private clearPitchCache(userId?: string) {
+    this.cache.deleteByPrefix('pitches:');
+    this.cache.deleteByPrefix('admin-pitches:');
+    this.cache.deleteByPrefix('admin-users:');
+    if (userId) {
+      this.cache.deleteByPrefix(`user:${userId}:`);
+      this.cache.deleteByPrefix(`pitches-recommended:${userId}:`);
+    } else {
+      this.cache.deleteByPrefix('pitches-recommended:');
+    }
+  }
 
   private normalizeNumericString(value: unknown, field: string) {
     const rawValue =
@@ -88,7 +102,7 @@ export class PitchesService {
       );
     }
 
-    return this.prisma.pitch.create({
+    const pitch = await this.prisma.pitch.create({
       data: {
         ...this.normalizePitchMoneyFields(data),
         user: {
@@ -96,6 +110,8 @@ export class PitchesService {
         },
       },
     });
+    this.clearPitchCache(userId);
+    return pitch;
   }
 
   // 2. GET ALL PITCHES (With Search & Filter)
@@ -176,13 +192,33 @@ export class PitchesService {
       ],
     };
 
-    const [total, data] = await Promise.all([
+    return this.cache.getOrSet(
+      AppCacheService.stableKey('pitches:list', {
+        search,
+        category,
+        status,
+        stage,
+        industry,
+        minTicket,
+        maxTicket,
+        page,
+        pageSize,
+      }),
+      30,
+      async () => {
+        const [total, data] = await Promise.all([
       this.prisma.pitch.count({ where }),
       this.prisma.pitch.findMany({
         where,
         include: {
           user: {
-            include: { entrepreneurProfile: true },
+            select: {
+              id: true,
+              email: true,
+              role: true,
+              isVerified: true,
+              entrepreneurProfile: true,
+            },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -191,26 +227,44 @@ export class PitchesService {
       }),
     ]);
 
-    return {
-      data,
-      meta: {
-        page,
-        pageSize,
-        total,
-        totalPages: Math.max(1, Math.ceil(total / pageSize)),
+        return {
+          data,
+          meta: {
+            page,
+            pageSize,
+            total,
+            totalPages: Math.max(1, Math.ceil(total / pageSize)),
+          },
+        };
       },
-    };
+    );
   }
   // 3. GET ONE PITCH (For Details View)
   async findOne(id: string) {
-    return this.prisma.pitch.findUnique({
-      where: { id },
-      include: { user: true },
-    });
+    return this.cache.getOrSet(`pitches:detail:${id}`, 30, () =>
+      this.prisma.pitch.findUnique({
+        where: { id },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              role: true,
+              isVerified: true,
+              isActive: true,
+              emailVerified: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
+      }),
+    );
   }
 
   // Admin stats (counts, funding total, category breakdown)
   async getAdminStats() {
+    return this.cache.getOrSet('admin-pitches:stats', 60, async () => {
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const pitches = await this.prisma.pitch.findMany({
       select: { fundingAsk: true, category: true },
@@ -249,6 +303,7 @@ export class PitchesService {
       investmentBreakdown,
       newPitchesLast7Days,
     };
+    });
   }
 
   // 4. UPDATE PITCH
@@ -279,14 +334,17 @@ export class PitchesService {
       });
     }
 
+    this.clearPitchCache(updated.user?.id);
     return updated;
   }
 
   // 5. DELETE PITCH
   async remove(id: string) {
-    return this.prisma.pitch.delete({
+    const deleted = await this.prisma.pitch.delete({
       where: { id },
     });
+    this.clearPitchCache(deleted.userId);
+    return deleted;
   }
 
   // 6. RECOMMENDED PITCHES (Simple industry/category match)
@@ -329,15 +387,23 @@ export class PitchesService {
           }
         : {};
 
-    return this.prisma.pitch.findMany({
-      where,
-      include: {
-        user: {
-          include: { entrepreneurProfile: true },
+    return this.cache.getOrSet(`pitches-recommended:${userId}:list`, 30, () =>
+      this.prisma.pitch.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              role: true,
+              isVerified: true,
+              entrepreneurProfile: true,
+            },
+          },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 20,
-    });
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+    );
   }
 }

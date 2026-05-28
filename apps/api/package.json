@@ -46,15 +46,16 @@
     "cloudinary": "^1.41.3",
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
-    "fuse.js": "^7.0.0",
     "express": "^5.2.1",
+    "fuse.js": "^7.0.0",
+    "ioredis": "^5.10.1",
     "nest-winston": "^1.9.4",
     "nodemailer": "^7.0.10",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
-    "pdf-lib": "^1.17.1",
     "passport-local": "^1.0.0",
+    "pdf-lib": "^1.17.1",
     "qs": "^6.11.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
@@ -102,7 +103,7 @@
     "typescript-eslint": "^8.20.0"
   },
   "jest": {
-    "moduleFileExtensions":[
+    "moduleFileExtensions": [
       "js",
       "json",
       "ts"
@@ -112,7 +113,7 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
-    "collectCoverageFrom":[
+    "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",

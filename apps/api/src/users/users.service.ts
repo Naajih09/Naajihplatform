@@ -8,6 +8,7 @@ import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
 import { DatabaseService } from '../database/database.service';
 import { MailerService } from '../mailer/mailer.service';
+import { AppCacheService } from '../cache/app-cache.service';
 import {
   passwordResetEmail,
   verificationEmail,
@@ -27,7 +28,29 @@ export class UsersService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly mailerService: MailerService,
+    private readonly cache: AppCacheService,
   ) {}
+
+  private clearUserCache(userId?: string) {
+    this.cache.deleteByPrefix('users:');
+    this.cache.deleteByPrefix('admin-users:');
+    if (userId) {
+      this.cache.deleteByPrefix(`user:${userId}:`);
+    }
+  }
+
+  private sanitizeUser<T extends Record<string, any> | null>(user: T) {
+    if (!user) return user;
+    const {
+      password: _password,
+      emailVerificationToken: _emailVerificationToken,
+      emailVerificationExpires: _emailVerificationExpires,
+      passwordResetToken: _passwordResetToken,
+      passwordResetExpires: _passwordResetExpires,
+      ...safeUser
+    } = user;
+    return safeUser;
+  }
 
   private getVerificationTtlHours() {
     const hours = Number(process.env.EMAIL_VERIFICATION_TTL_HOURS || 24);
@@ -151,6 +174,7 @@ export class UsersService {
     ]);
 
     const { password: _, ...result } = newUser;
+    this.clearUserCache(newUser.id);
     return result;
   }
 
@@ -176,6 +200,7 @@ export class UsersService {
     });
 
     const { password: _, ...result } = newUser;
+    this.clearUserCache(newUser.id);
     return result;
   }
 
@@ -211,6 +236,10 @@ export class UsersService {
     page?: string;
     pageSize?: string;
   }) {
+    return this.cache.getOrSet(
+      AppCacheService.stableKey('admin-users:list', query || {}),
+      30,
+      async () => {
     const page = Math.max(1, Number(query?.page) || 1);
     const pageSize = Math.min(100, Math.max(1, Number(query?.pageSize) || 20));
     const skip = (page - 1) * pageSize;
@@ -267,15 +296,17 @@ export class UsersService {
       }),
     ]);
 
-    return {
-      data,
-      meta: {
-        page,
-        pageSize,
-        total,
-        totalPages: Math.max(1, Math.ceil(total / pageSize)),
+        return {
+          data: data.map((user) => this.sanitizeUser(user)),
+          meta: {
+            page,
+            pageSize,
+            total,
+            totalPages: Math.max(1, Math.ceil(total / pageSize)),
+          },
+        };
       },
-    };
+    );
   }
 
   // 4. FIND ONE
@@ -288,6 +319,11 @@ export class UsersService {
         subscription: true,
       },
     });
+  }
+
+  async findPublicByEmail(email: string) {
+    const user = await this.findOne(email);
+    return this.sanitizeUser(user);
   }
 
   async requestEmailVerification(userId: string) {
@@ -343,6 +379,7 @@ export class UsersService {
       },
     });
 
+    this.clearUserCache(user.id);
     return { status: 'ok', message: 'Email verified' };
   }
 
@@ -444,16 +481,19 @@ export class UsersService {
       };
     }
 
-    return this.databaseService.user.update({
+    const user = await this.databaseService.user.update({
       where: { id },
       data: updateData,
       include: { entrepreneurProfile: true, investorProfile: true },
     });
+    this.clearUserCache(id);
+    return this.sanitizeUser(user);
   }
 
   // 6. DASHBOARD STATS
   async getDashboardStats(userId: string) {
-    const [activePitches, pendingConnections, user] = await Promise.all([
+    return this.cache.getOrSet(`user:${userId}:dashboard-stats`, 20, async () => {
+      const [activePitches, pendingConnections, user] = await Promise.all([
       this.databaseService.pitch.count({
         where: { userId },
       }),
@@ -484,20 +524,22 @@ export class UsersService {
       ? null
       : Math.max(0, pitchLimit - activePitches);
 
-    return {
-      activePitches,
-      pendingConnections,
-      isVerified: user?.isVerified || false,
-      hasPremium,
-      pitchLimit: hasPremium ? null : pitchLimit,
-      remainingPitchSlots,
-      canCreatePitch: hasPremium || activePitches < pitchLimit,
-      totalViews: 0,
-    };
+      return {
+        activePitches,
+        pendingConnections,
+        isVerified: user?.isVerified || false,
+        hasPremium,
+        pitchLimit: hasPremium ? null : pitchLimit,
+        remainingPitchSlots,
+        canCreatePitch: hasPremium || activePitches < pitchLimit,
+        totalViews: 0,
+      };
+    });
   }
 
   // Admin stats (platform overview)
   async getAdminStats() {
+    return this.cache.getOrSet('admin-users:stats', 60, async () => {
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const [totalUsers, activeUsers, verifiedUsers, roleCounts] =
       await Promise.all([
@@ -532,10 +574,12 @@ export class UsersService {
       newUsersLast7Days,
       newConnectionsLast7Days,
     };
+    });
   }
 
   // Admin insights (last 7 days time series)
   async getAdminInsights() {
+    return this.cache.getOrSet('admin-users:insights', 60, async () => {
     const days = 7;
     const today = new Date();
     const results: Array<{
@@ -578,15 +622,18 @@ export class UsersService {
     }
 
     return results;
+    });
   }
 
   // 7. CHANGE PASSWORD
   async changePassword(id: string, newPassword: string) {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    return this.databaseService.user.update({
+    const user = await this.databaseService.user.update({
       where: { id },
       data: { password: hashedPassword },
     });
+    this.clearUserCache(id);
+    return this.sanitizeUser(user);
   }
 
   // 8. DELETE ACCOUNT (The Nuclear Option - Fixed)
@@ -620,7 +667,9 @@ export class UsersService {
     } catch (e) {}
 
     // 5. Finally, Delete the User
-    return this.databaseService.user.delete({ where: { id } });
+    const deleted = await this.databaseService.user.delete({ where: { id } });
+    this.clearUserCache(id);
+    return this.sanitizeUser(deleted);
   }
 
   // 9. UPGRADE TO PREMIUM
@@ -630,17 +679,21 @@ export class UsersService {
     });
 
     if (sub) {
-      return this.databaseService.subscription.update({
+      const subscription = await this.databaseService.subscription.update({
         where: { userId },
         data: { plan: 'PREMIUM' },
       });
+      this.clearUserCache(userId);
+      return subscription;
     } else {
-      return this.databaseService.subscription.create({
+      const subscription = await this.databaseService.subscription.create({
         data: {
           userId,
           plan: 'PREMIUM',
         },
       });
+      this.clearUserCache(userId);
+      return subscription;
     }
   }
 
@@ -669,7 +722,7 @@ export class UsersService {
     );
 
     if (subscription) {
-      return this.databaseService.subscription.update({
+      const updated = await this.databaseService.subscription.update({
         where: { userId },
         data: {
           plan: 'PREMIUM',
@@ -678,9 +731,11 @@ export class UsersService {
           trialUsed: true,
         },
       });
+      this.clearUserCache(userId);
+      return updated;
     }
 
-    return this.databaseService.subscription.create({
+    const created = await this.databaseService.subscription.create({
       data: {
         userId,
         plan: 'PREMIUM',
@@ -689,5 +744,7 @@ export class UsersService {
         trialUsed: true,
       },
     });
+    this.clearUserCache(userId);
+    return created;
   }
 }

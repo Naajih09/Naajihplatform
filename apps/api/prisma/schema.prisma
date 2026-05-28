@@ -117,6 +117,13 @@ model User {
   communityPosts  CommunityPost[]
   communityComments CommunityComment[]
   communityReports CommunityReport[]
+
+  @@index([role])
+  @@index([isActive])
+  @@index([isVerified])
+  @@index([createdAt])
+  @@index([emailVerificationToken])
+  @@index([passwordResetToken])
 }
 
 // --- 2. PROFILES ---
@@ -169,6 +176,11 @@ model Pitch {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
 }
 
 // --- 4. NETWORKING (Fixes error!)
@@ -183,6 +195,8 @@ model Connection {
   createdAt DateTime         @default(now())
 
   @@unique([senderId, receiverId]) // Prevent duplicate requests
+  @@index([receiverId, status])
+  @@index([createdAt])
 }
 
 model Message {
@@ -198,6 +212,9 @@ model Message {
 
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([senderId, receiverId, createdAt])
+  @@index([receiverId, isRead])
 }
 
 // --- 5. EXTRAS ---
@@ -228,6 +245,9 @@ model Notification {
   message   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
 }
 
 model PaymentTransaction {
@@ -282,6 +302,8 @@ model Program {
 
   createdAt   DateTime            @default(now())
   enrollments ProgramEnrollment[]
+
+  @@index([createdAt])
 }
 
 model Module {
@@ -295,6 +317,8 @@ model Module {
 
   lessons Lesson[]
   tasks   Task[]
+
+  @@index([programId, order])
 }
 
 model Lesson {
@@ -314,6 +338,8 @@ model Lesson {
   createdAt DateTime @default(now())
 
   progress UserLessonProgress[]
+
+  @@index([moduleId, order])
 }
 
 model Task {
@@ -326,6 +352,8 @@ model Task {
   dueDate     DateTime?
 
   submissions UserTaskSubmission[]
+
+  @@index([moduleId, dueDate])
 }
 
 // --- TRACKING ---
@@ -341,6 +369,7 @@ model UserLessonProgress {
   isCompleted Boolean @default(false)
 
   @@unique([userId, lessonId])
+  @@index([lessonId])
 }
 
 model UserTaskSubmission {
@@ -356,6 +385,10 @@ model UserTaskSubmission {
   feedback      String?
 
   submittedAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([taskId, submittedAt])
+  @@index([status])
 }
 
 model Milestone {
@@ -377,6 +410,7 @@ model UserMilestone {
   achievedAt DateTime @default(now())
 
   @@unique([userId, milestoneId])
+  @@index([milestoneId])
 }
 
 // --- PROGRAM ENROLLMENT ---
@@ -392,6 +426,9 @@ model ProgramEnrollment {
   program Program @relation(fields: [programId], references: [id])
 
   @@unique([userId, programId]) // Prevent duplicate enrollments
+  @@index([programId, status])
+  @@index([userId, status])
+  @@index([enrolledAt])
 }
 
 model CommunityPost {
@@ -406,6 +443,9 @@ model CommunityPost {
   comments  CommunityComment[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([userId])
 }
 
 model CommunityComment {
@@ -417,6 +457,9 @@ model CommunityComment {
   body      String
   status    CommunityStatus @default(PENDING)
   createdAt DateTime @default(now())
+
+  @@index([postId, status])
+  @@index([userId])
 }
 
 model CommunityReport {

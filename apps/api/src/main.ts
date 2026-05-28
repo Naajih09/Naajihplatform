@@ -14,6 +14,21 @@ async function bootstrap() {
   expressApp.set('trust proxy', 1);
 
   app.use((req: any, res: any, next: () => void) => {
+    const isHealthPath = req.path === '/' || req.path === '/health';
+    const isHealthMethod = req.method === 'GET' || req.method === 'HEAD';
+
+    if (isHealthPath && isHealthMethod) {
+      return res.status(200).json({
+        status: 'ok',
+        service: 'naajih-api',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    next();
+  });
+
+  app.use((req: any, res: any, next: () => void) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');

@@ -32,10 +32,10 @@ export class UsersService {
   ) {}
 
   private clearUserCache(userId?: string) {
-    this.cache.deleteByPrefix('users:');
-    this.cache.deleteByPrefix('admin-users:');
+    void this.cache.deleteByPrefix('users:');
+    void this.cache.deleteByPrefix('admin-users:');
     if (userId) {
-      this.cache.deleteByPrefix(`user:${userId}:`);
+      void this.cache.deleteByPrefix(`user:${userId}:`);
     }
   }
 
@@ -240,61 +240,64 @@ export class UsersService {
       AppCacheService.stableKey('admin-users:list', query || {}),
       30,
       async () => {
-    const page = Math.max(1, Number(query?.page) || 1);
-    const pageSize = Math.min(100, Math.max(1, Number(query?.pageSize) || 20));
-    const skip = (page - 1) * pageSize;
-    const sortBy = query?.sortBy === 'name' ? 'name' : 'date';
+        const page = Math.max(1, Number(query?.page) || 1);
+        const pageSize = Math.min(
+          100,
+          Math.max(1, Number(query?.pageSize) || 20),
+        );
+        const skip = (page - 1) * pageSize;
+        const sortBy = query?.sortBy === 'name' ? 'name' : 'date';
 
-    const where: any = {};
+        const where: any = {};
 
-    if (query?.role && query.role !== 'ALL') {
-      where.role = query.role;
-    }
+        if (query?.role && query.role !== 'ALL') {
+          where.role = query.role;
+        }
 
-    if (query?.search) {
-      const search = query.search;
-      where.OR = [
-        { email: { contains: search, mode: 'insensitive' } },
-        {
-          entrepreneurProfile: {
-            firstName: { contains: search, mode: 'insensitive' },
-          },
-        },
-        {
-          entrepreneurProfile: {
-            lastName: { contains: search, mode: 'insensitive' },
-          },
-        },
-        {
-          investorProfile: {
-            firstName: { contains: search, mode: 'insensitive' },
-          },
-        },
-        {
-          investorProfile: {
-            lastName: { contains: search, mode: 'insensitive' },
-          },
-        },
-      ];
-    }
+        if (query?.search) {
+          const search = query.search;
+          where.OR = [
+            { email: { contains: search, mode: 'insensitive' } },
+            {
+              entrepreneurProfile: {
+                firstName: { contains: search, mode: 'insensitive' },
+              },
+            },
+            {
+              entrepreneurProfile: {
+                lastName: { contains: search, mode: 'insensitive' },
+              },
+            },
+            {
+              investorProfile: {
+                firstName: { contains: search, mode: 'insensitive' },
+              },
+            },
+            {
+              investorProfile: {
+                lastName: { contains: search, mode: 'insensitive' },
+              },
+            },
+          ];
+        }
 
-    const [total, data] = await Promise.all([
-      this.databaseService.user.count({ where }),
-      this.databaseService.user.findMany({
-        where,
-        include: { entrepreneurProfile: true, investorProfile: true },
-        orderBy:
-          sortBy === 'name'
-            ? [
-                { entrepreneurProfile: { firstName: 'asc' } },
-                { investorProfile: { firstName: 'asc' } },
-                { email: 'asc' },
-              ]
-            : { createdAt: 'desc' },
-        skip,
-        take: pageSize,
-      }),
-    ]);
+        const [total, data] = await Promise.all([
+          this.databaseService.user.count({ where }),
+          this.databaseService.user.findMany({
+            where,
+            include: { entrepreneurProfile: true, investorProfile: true },
+            orderBy:
+              sortBy === 'name'
+                ? [
+                    { entrepreneurProfile: { firstName: 'asc' } },
+                    { investorProfile: { firstName: 'asc' } },
+                    { email: 'asc' },
+                  ]
+                : { createdAt: 'desc' },
+            skip,
+            take: pageSize,
+          }),
+        ]);
 
         return {
           data: data.map((user) => this.sanitizeUser(user)),
@@ -384,6 +387,7 @@ export class UsersService {
   }
 
   async requestPasswordReset(email: string) {
+    const normalizedEmail = email.trim().toLowerCase();
     const genericResponse = {
       status: 'ok',
       message:
@@ -391,7 +395,7 @@ export class UsersService {
     };
 
     const user = await this.databaseService.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
       select: { id: true, email: true, isActive: true },
     });
 
@@ -419,11 +423,16 @@ export class UsersService {
       passwordResetEmail(resetUrl, this.getPasswordResetTtlMinutes()),
     );
 
-    return {
+    const response = {
       ...genericResponse,
       emailed,
-      ...(this.shouldExposePasswordResetLink() ? { resetUrl } : {}),
     };
+
+    if (this.shouldExposePasswordResetLink()) {
+      return { ...response, resetUrl };
+    }
+
+    return response;
   }
 
   async resetPassword(token: string, password: string) {
@@ -451,6 +460,7 @@ export class UsersService {
       },
     });
 
+    this.clearUserCache(user.id);
     return { status: 'ok', message: 'Password reset successfully' };
   }
 
@@ -492,136 +502,140 @@ export class UsersService {
 
   // 6. DASHBOARD STATS
   async getDashboardStats(userId: string) {
-    return this.cache.getOrSet(`user:${userId}:dashboard-stats`, 20, async () => {
-      const [activePitches, pendingConnections, user] = await Promise.all([
-      this.databaseService.pitch.count({
-        where: { userId },
-      }),
-      this.databaseService.connection.count({
-        where: {
-          receiverId: userId,
-          status: 'PENDING',
-        },
-      }),
-      this.databaseService.user.findUnique({
-        where: { id: userId },
-        include: { subscription: true },
-      }),
-    ]);
+    return this.cache.getOrSet(
+      `user:${userId}:dashboard-stats`,
+      20,
+      async () => {
+        const [activePitches, pendingConnections, user] = await Promise.all([
+          this.databaseService.pitch.count({
+            where: { userId },
+          }),
+          this.databaseService.connection.count({
+            where: {
+              receiverId: userId,
+              status: 'PENDING',
+            },
+          }),
+          this.databaseService.user.findUnique({
+            where: { id: userId },
+            include: { subscription: true },
+          }),
+        ]);
 
-    const now = new Date();
-    const activeUntil =
-      user?.subscription?.endDate || user?.subscription?.trialEndsAt;
-    const hasPremium =
-      user?.subscription?.plan === 'PREMIUM' &&
-      (!activeUntil || activeUntil > now);
-    const freePitchLimit = Number(process.env.FREE_PITCH_LIMIT || 1);
-    const pitchLimit =
-      Number.isFinite(freePitchLimit) && freePitchLimit > 0
-        ? freePitchLimit
-        : 1;
-    const remainingPitchSlots = hasPremium
-      ? null
-      : Math.max(0, pitchLimit - activePitches);
+        const now = new Date();
+        const activeUntil =
+          user?.subscription?.endDate || user?.subscription?.trialEndsAt;
+        const hasPremium =
+          user?.subscription?.plan === 'PREMIUM' &&
+          (!activeUntil || activeUntil > now);
+        const freePitchLimit = Number(process.env.FREE_PITCH_LIMIT || 1);
+        const pitchLimit =
+          Number.isFinite(freePitchLimit) && freePitchLimit > 0
+            ? freePitchLimit
+            : 1;
+        const remainingPitchSlots = hasPremium
+          ? null
+          : Math.max(0, pitchLimit - activePitches);
 
-      return {
-        activePitches,
-        pendingConnections,
-        isVerified: user?.isVerified || false,
-        hasPremium,
-        pitchLimit: hasPremium ? null : pitchLimit,
-        remainingPitchSlots,
-        canCreatePitch: hasPremium || activePitches < pitchLimit,
-        totalViews: 0,
-      };
-    });
+        return {
+          activePitches,
+          pendingConnections,
+          isVerified: user?.isVerified || false,
+          hasPremium,
+          pitchLimit: hasPremium ? null : pitchLimit,
+          remainingPitchSlots,
+          canCreatePitch: hasPremium || activePitches < pitchLimit,
+          totalViews: 0,
+        };
+      },
+    );
   }
 
   // Admin stats (platform overview)
   async getAdminStats() {
     return this.cache.getOrSet('admin-users:stats', 60, async () => {
-    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const [totalUsers, activeUsers, verifiedUsers, roleCounts] =
-      await Promise.all([
-        this.databaseService.user.count(),
-        this.databaseService.user.count({ where: { isActive: true } }),
-        this.databaseService.user.count({ where: { isVerified: true } }),
-        this.databaseService.user.groupBy({
-          by: ['role'],
-          _count: { _all: true },
+      const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const [totalUsers, activeUsers, verifiedUsers, roleCounts] =
+        await Promise.all([
+          this.databaseService.user.count(),
+          this.databaseService.user.count({ where: { isActive: true } }),
+          this.databaseService.user.count({ where: { isVerified: true } }),
+          this.databaseService.user.groupBy({
+            by: ['role'],
+            _count: { _all: true },
+          }),
+        ]);
+
+      const [newUsersLast7Days, newConnectionsLast7Days] = await Promise.all([
+        this.databaseService.user.count({
+          where: { createdAt: { gte: since } },
+        }),
+        this.databaseService.connection.count({
+          where: { createdAt: { gte: since } },
         }),
       ]);
 
-    const [newUsersLast7Days, newConnectionsLast7Days] = await Promise.all([
-      this.databaseService.user.count({
-        where: { createdAt: { gte: since } },
-      }),
-      this.databaseService.connection.count({
-        where: { createdAt: { gte: since } },
-      }),
-    ]);
+      const roles: Record<string, number> = {};
+      roleCounts.forEach((row) => {
+        roles[row.role] = row._count._all;
+      });
 
-    const roles: Record<string, number> = {};
-    roleCounts.forEach((row) => {
-      roles[row.role] = row._count._all;
-    });
-
-    return {
-      totalUsers,
-      activeUsers,
-      verifiedUsers,
-      roles,
-      newUsersLast7Days,
-      newConnectionsLast7Days,
-    };
+      return {
+        totalUsers,
+        activeUsers,
+        verifiedUsers,
+        roles,
+        newUsersLast7Days,
+        newConnectionsLast7Days,
+      };
     });
   }
 
   // Admin insights (last 7 days time series)
   async getAdminInsights() {
     return this.cache.getOrSet('admin-users:insights', 60, async () => {
-    const days = 7;
-    const today = new Date();
-    const results: Array<{
-      date: string;
-      newUsers: number;
-      newPitches: number;
-      newConnections: number;
-    }> = [];
+      const days = 7;
+      const today = new Date();
+      const results: Array<{
+        date: string;
+        newUsers: number;
+        newPitches: number;
+        newConnections: number;
+      }> = [];
 
-    for (let i = days - 1; i >= 0; i -= 1) {
-      const start = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - i,
-      );
-      const end = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - i + 1,
-      );
+      for (let i = days - 1; i >= 0; i -= 1) {
+        const start = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - i,
+        );
+        const end = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - i + 1,
+        );
 
-      const [newUsers, newPitches, newConnections] = await Promise.all([
-        this.databaseService.user.count({
-          where: { createdAt: { gte: start, lt: end } },
-        }),
-        this.databaseService.pitch.count({
-          where: { createdAt: { gte: start, lt: end } },
-        }),
-        this.databaseService.connection.count({
-          where: { createdAt: { gte: start, lt: end } },
-        }),
-      ]);
+        const [newUsers, newPitches, newConnections] = await Promise.all([
+          this.databaseService.user.count({
+            where: { createdAt: { gte: start, lt: end } },
+          }),
+          this.databaseService.pitch.count({
+            where: { createdAt: { gte: start, lt: end } },
+          }),
+          this.databaseService.connection.count({
+            where: { createdAt: { gte: start, lt: end } },
+          }),
+        ]);
 
-      results.push({
-        date: start.toISOString().slice(0, 10),
-        newUsers,
-        newPitches,
-        newConnections,
-      });
-    }
+        results.push({
+          date: start.toISOString().slice(0, 10),
+          newUsers,
+          newPitches,
+          newConnections,
+        });
+      }
 
-    return results;
+      return results;
     });
   }
 

@@ -207,25 +207,25 @@ export class PitchesService {
       30,
       async () => {
         const [total, data] = await Promise.all([
-      this.prisma.pitch.count({ where }),
-      this.prisma.pitch.findMany({
-        where,
-        include: {
-          user: {
-            select: {
-              id: true,
-              email: true,
-              role: true,
-              isVerified: true,
-              entrepreneurProfile: true,
+          this.prisma.pitch.count({ where }),
+          this.prisma.pitch.findMany({
+            where,
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  role: true,
+                  isVerified: true,
+                  entrepreneurProfile: true,
+                },
+              },
             },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: pageSize,
-      }),
-    ]);
+            orderBy: { createdAt: 'desc' },
+            skip,
+            take: pageSize,
+          }),
+        ]);
 
         return {
           data,
@@ -265,44 +265,44 @@ export class PitchesService {
   // Admin stats (counts, funding total, category breakdown)
   async getAdminStats() {
     return this.cache.getOrSet('admin-pitches:stats', 60, async () => {
-    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const pitches = await this.prisma.pitch.findMany({
-      select: { fundingAsk: true, category: true },
-    });
+      const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const pitches = await this.prisma.pitch.findMany({
+        select: { fundingAsk: true, category: true },
+      });
 
-    const totalPitches = pitches.length;
-    const fundingTotal = pitches.reduce((sum, pitch) => {
-      const ask = Number(pitch.fundingAsk);
-      return sum + (Number.isFinite(ask) ? ask : 0);
-    }, 0);
+      const totalPitches = pitches.length;
+      const fundingTotal = pitches.reduce((sum, pitch) => {
+        const ask = Number(pitch.fundingAsk);
+        return sum + (Number.isFinite(ask) ? ask : 0);
+      }, 0);
 
-    const categoryCounts = pitches.reduce(
-      (acc: Record<string, number>, pitch) => {
-        const category = pitch.category || 'Uncategorized';
-        acc[category] = (acc[category] || 0) + 1;
-        return acc;
-      },
-      {},
-    );
+      const categoryCounts = pitches.reduce(
+        (acc: Record<string, number>, pitch) => {
+          const category = pitch.category || 'Uncategorized';
+          acc[category] = (acc[category] || 0) + 1;
+          return acc;
+        },
+        {},
+      );
 
-    const investmentBreakdown = Object.entries(categoryCounts)
-      .map(([label, count]) => ({
-        label,
-        value: Math.round((count / Math.max(totalPitches, 1)) * 100),
-      }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 4);
+      const investmentBreakdown = Object.entries(categoryCounts)
+        .map(([label, count]) => ({
+          label,
+          value: Math.round((count / Math.max(totalPitches, 1)) * 100),
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 4);
 
-    const newPitchesLast7Days = await this.prisma.pitch.count({
-      where: { createdAt: { gte: since } },
-    });
+      const newPitchesLast7Days = await this.prisma.pitch.count({
+        where: { createdAt: { gte: since } },
+      });
 
-    return {
-      totalPitches,
-      fundingTotal,
-      investmentBreakdown,
-      newPitchesLast7Days,
-    };
+      return {
+        totalPitches,
+        fundingTotal,
+        investmentBreakdown,
+        newPitchesLast7Days,
+      };
     });
   }
 

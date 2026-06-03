@@ -52,7 +52,9 @@ async function bootstrap() {
       },
     }),
   );
-  app.use(urlencoded({ extended: true, limit: process.env.FORM_BODY_LIMIT || '1mb' }));
+  app.use(
+    urlencoded({ extended: true, limit: process.env.FORM_BODY_LIMIT || '1mb' }),
+  );
 
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
   app.setGlobalPrefix(process.env.API_PREFIX || 'api');

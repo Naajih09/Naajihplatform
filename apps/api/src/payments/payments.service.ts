@@ -89,7 +89,9 @@ export class PaymentsService {
   }
 
   private get aspiringOwnerSubscriptionAmountNgn() {
-    const amount = Number(process.env.ASPIRING_OWNER_SUBSCRIPTION_AMOUNT_NGN || 5000);
+    const amount = Number(
+      process.env.ASPIRING_OWNER_SUBSCRIPTION_AMOUNT_NGN || 5000,
+    );
     return Number.isFinite(amount) && amount > 0 ? amount : 5000;
   }
 

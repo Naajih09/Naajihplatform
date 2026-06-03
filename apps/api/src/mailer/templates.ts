@@ -47,7 +47,10 @@ export const notificationEmail = (message: string) =>
     contentHtml: `<p>${message}</p>`,
   });
 
-const roleWelcomeCopy: Record<string, { label: string; body: string; next: string }> = {
+const roleWelcomeCopy: Record<
+  string,
+  { label: string; body: string; next: string }
+> = {
   ENTREPRENEUR: {
     label: 'Entrepreneur',
     body: 'Your founder workspace is ready. You can shape your profile, prepare your pitch, and connect with Sharia-compliant investors.',

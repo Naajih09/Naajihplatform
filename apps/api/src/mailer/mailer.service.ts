@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import axios from 'axios';
 import * as nodemailer from 'nodemailer';
+import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 @Injectable()
 export class MailerService {
@@ -8,19 +8,6 @@ export class MailerService {
 
   private getFrom() {
     return process.env.SMTP_FROM || 'NaajihBiz <noreply@naajihbiz.com>';
-  }
-
-  private getResendApiKey() {
-    const explicitKey = process.env.RESEND_API_KEY;
-    if (explicitKey) return explicitKey;
-
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpPass = process.env.SMTP_PASS;
-    if (smtpHost === 'smtp.resend.com' && smtpPass?.startsWith('re_')) {
-      return smtpPass;
-    }
-
-    return undefined;
   }
 
   private getTransporter() {
@@ -33,44 +20,48 @@ export class MailerService {
       return null;
     }
 
-    return nodemailer.createTransport({
+    const options: SMTPTransport.Options = {
       host,
       port,
       secure: port === 465,
       auth: { user, pass },
-    });
+    };
+
+    if (process.env.SMTP_REQUIRE_TLS === 'true') {
+      options.requireTLS = true;
+    }
+
+    if (process.env.SMTP_REJECT_UNAUTHORIZED === 'false') {
+      options.tls = { rejectUnauthorized: false };
+    }
+
+    return nodemailer.createTransport(options);
+  }
+
+  async verifyConnection() {
+    const transporter = this.getTransporter();
+    if (!transporter) {
+      this.logger.warn('SMTP not configured. Email delivery is disabled.');
+      return false;
+    }
+
+    try {
+      await transporter.verify();
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `SMTP verification failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return false;
+    }
   }
 
   async sendMail(to: string, subject: string, html: string) {
     const from = this.getFrom();
-    const resendApiKey = this.getResendApiKey();
-
-    if (resendApiKey) {
-      try {
-        await axios.post(
-          'https://api.resend.com/emails',
-          { from, to, subject, html },
-          {
-            headers: {
-              Authorization: `Bearer ${resendApiKey}`,
-              'Content-Type': 'application/json',
-            },
-            timeout: 15000,
-          },
-        );
-        return true;
-      } catch (error: any) {
-        const detail = error?.response?.data
-          ? JSON.stringify(error.response.data)
-          : error instanceof Error
-            ? error.message
-            : String(error);
-        this.logger.error(`Resend email failed for ${to}: ${detail}`);
-        return false;
-      }
-    }
-
     const transporter = this.getTransporter();
+
     if (!transporter) {
       this.logger.warn('SMTP not configured. Email skipped.');
       return false;

@@ -26,9 +26,7 @@ export class AuthService {
       throw new UnauthorizedException('Email not verified');
     }
 
-    if (
-      !(await bcrypt.compare(pass, user.password).catch(() => false))
-    ) {
+    if (!(await bcrypt.compare(pass, user.password).catch(() => false))) {
       throw new UnauthorizedException('Invalid Credentials');
     }
 

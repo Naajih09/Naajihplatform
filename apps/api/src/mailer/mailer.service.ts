@@ -15,6 +15,8 @@ export class MailerService {
     const port = Number(process.env.SMTP_PORT || 587);
     const user = process.env.SMTP_USER;
     const pass = process.env.SMTP_PASS;
+    const timeout = Number(process.env.SMTP_TIMEOUT_MS || 10000);
+    const timeoutMs = Number.isFinite(timeout) && timeout > 0 ? timeout : 10000;
 
     if (!host || !user || !pass) {
       return null;
@@ -25,6 +27,9 @@ export class MailerService {
       port,
       secure: port === 465,
       auth: { user, pass },
+      connectionTimeout: timeoutMs,
+      greetingTimeout: timeoutMs,
+      socketTimeout: timeoutMs,
     };
 
     if (process.env.SMTP_REQUIRE_TLS === 'true') {

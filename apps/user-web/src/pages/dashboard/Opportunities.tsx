@@ -22,7 +22,7 @@ const Opportunities = () => {
   const [pitches, setPitches] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [sentRequests, setSentRequests] = useState<Record<string, boolean>>({});
+  const [connectionStates, setConnectionStates] = useState<Record<string, 'PENDING' | 'ACCEPTED'>>({});
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
     show: false,
     message: '',
@@ -115,6 +115,34 @@ const Opportunities = () => {
     return () => clearTimeout(delay);
   }, [searchTerm, activeCategory, filters]);
 
+  useEffect(() => {
+    if (!user?.id || !authToken) return;
+
+    const fetchSentRequests = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/connections/sent/${user.id}`, {
+          headers: authHeaders,
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const states = (Array.isArray(data) ? data : []).reduce(
+          (acc: Record<string, 'PENDING' | 'ACCEPTED'>, connection: any) => {
+            if (connection.receiverId && ['PENDING', 'ACCEPTED'].includes(connection.status)) {
+              acc[connection.receiverId] = connection.status;
+            }
+            return acc;
+          },
+          {},
+        );
+        setConnectionStates(states);
+      } catch {
+        // Keep the default connect state when this optional lookup fails.
+      }
+    };
+
+    fetchSentRequests();
+  }, [API_BASE, authHeaders, authToken, user?.id]);
+
   // --- 2. HANDLE CONNECT ---
   const handleConnect = async (pitch: any) => {
     if (!isVerified) {
@@ -144,7 +172,7 @@ const Opportunities = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to send request");
 
-      setSentRequests((prev) => ({ ...prev, [pitch.id]: true }));
+      setConnectionStates((prev) => ({ ...prev, [pitch.userId]: 'PENDING' }));
       setToast({ show: true, message: `Connection request sent to ${pitch.user?.entrepreneurProfile?.firstName || 'Entrepreneur'}!`, type: 'success' });
     } catch (error: any) {
       setToast({ show: true, message: error.message || 'Failed to send request.', type: 'error' });
@@ -286,13 +314,18 @@ const Opportunities = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pitches.map((pitch) => {
               const pitchApproved = isPitchApproved(pitch.status);
-              const connectLocked = !isVerified || !pitchApproved;
+              const connectionState = connectionStates[pitch.userId];
+              const isPending = connectionState === 'PENDING';
+              const isConnected = connectionState === 'ACCEPTED';
+              const connectLocked = !isVerified || !pitchApproved || isPending || isConnected;
               const connectTitle = !isVerified
                 ? verificationMessage
                 : !pitchApproved
                   ? 'This pitch is pending review'
-                  : sentRequests[pitch.id]
-                    ? 'Connection request sent'
+                  : isPending
+                    ? 'Connection request pending'
+                    : isConnected
+                      ? 'Already connected'
                     : 'Connect with this founder';
 
               return (
@@ -349,18 +382,20 @@ const Opportunities = () => {
                 {user.role === 'INVESTOR' && (
                     <button 
                         onClick={() => handleConnect(pitch)}
-                        disabled={sentRequests[pitch.id] || !pitchApproved}
+                        disabled={!pitchApproved || isPending || isConnected}
                         title={connectTitle}
                         className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${
-                            sentRequests[pitch.id] 
-                            ? 'bg-green-500/20 text-green-500 cursor-default' 
+                            isConnected
+                            ? 'bg-green-500/20 text-green-500 cursor-default'
+                            : isPending
+                              ? 'bg-amber-500/20 text-amber-600 cursor-default dark:text-amber-400'
                             : connectLocked
                               ? 'bg-slate-200 text-slate-500 cursor-not-allowed dark:bg-white/10 dark:text-slate-400'
                             : 'bg-primary text-neutral-dark hover:opacity-90'
                         }`}
                     >
-                        {sentRequests[pitch.id] ? <CheckCircle size={16} /> : <UserPlus size={16} />}
-                        {sentRequests[pitch.id] ? 'Sent' : !isVerified ? 'Verify' : !pitchApproved ? 'Pending review' : 'Connect'}
+                        {isConnected || isPending ? <CheckCircle size={16} /> : <UserPlus size={16} />}
+                        {isConnected ? 'Message' : isPending ? 'Pending' : !isVerified ? 'Verify' : !pitchApproved ? 'Pending review' : 'Connect'}
                     </button>
                 )}
               </div>

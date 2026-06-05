@@ -103,6 +103,22 @@ export class ConnectionsController {
     return this.connectionsService.getPendingRequests(userId);
   }
 
+  @Get('sent/:userId')
+  @Roles(
+    UserRole.ENTREPRENEUR,
+    UserRole.INVESTOR,
+    UserRole.ASPIRING_BUSINESS_OWNER,
+    UserRole.ADMIN,
+  )
+  async findSent(@Param('userId') userId: string, @Request() req) {
+    if (req.user.role !== UserRole.ADMIN && req.user.id !== userId) {
+      throw new ForbiddenException(
+        'You can only view your own sent requests.',
+      );
+    }
+    return this.connectionsService.getSentRequests(userId);
+  }
+
   // PATCH /api/connections/:id -> Accept/Reject a specific connection request
   // Only the receiver of the connection request should be able to respond
   @Patch(':id')

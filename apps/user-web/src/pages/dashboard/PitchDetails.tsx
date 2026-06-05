@@ -10,7 +10,7 @@ const PitchDetails = () => {
   const navigate = useNavigate();
   const [pitch, setPitch] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [requestSent, setRequestSent] = useState(false);
+  const [connectionState, setConnectionState] = useState<'PENDING' | 'ACCEPTED' | null>(null);
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
     show: false,
     message: '',
@@ -38,6 +38,28 @@ const PitchDetails = () => {
   useEffect(() => {
     fetchPitch();
   }, [id]);
+
+  useEffect(() => {
+    if (!user?.id || !authToken || !pitch?.userId || pitch.userId === user.id) return;
+
+    const fetchConnectionState = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/connections/sent/${user.id}`, {
+          headers: authHeaders,
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const connection = (Array.isArray(data) ? data : []).find(
+          (item: any) => item.receiverId === pitch.userId && ['PENDING', 'ACCEPTED'].includes(item.status),
+        );
+        setConnectionState(connection?.status || null);
+      } catch {
+        // Keep the default connect state when this optional lookup fails.
+      }
+    };
+
+    fetchConnectionState();
+  }, [API_BASE, authHeaders, authToken, pitch?.userId, user?.id]);
 
   const fetchPitch = async () => {
     try {
@@ -70,7 +92,7 @@ const PitchDetails = () => {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(data?.message || 'Failed to connect.');
-      setRequestSent(true);
+      setConnectionState('PENDING');
       setToast({ show: true, message: 'Connection request sent!', type: 'success' });
     } catch (error: any) { setToast({ show: true, message: error.message || 'Failed to connect.', type: 'error' }); }
   };
@@ -112,13 +134,17 @@ const PitchDetails = () => {
 
   const isOwner = user.id === pitch.userId;
   const pitchApproved = isPitchApproved(pitch.status);
-  const connectLocked = !isVerified || !pitchApproved;
+  const isPending = connectionState === 'PENDING';
+  const isConnected = connectionState === 'ACCEPTED';
+  const connectLocked = !isVerified || !pitchApproved || isPending || isConnected;
   const connectTitle = !isVerified
     ? verificationMessage
     : !pitchApproved
       ? 'This pitch is pending review'
-      : requestSent
-        ? 'Connection request sent'
+      : isPending
+        ? 'Connection request pending'
+        : isConnected
+          ? 'Already connected'
         : 'Connect with founder';
   const founderProfile = pitch.user?.entrepreneurProfile || pitch.user?.investorProfile || {};
   const founderAvatar = founderProfile.avatarUrl || pitch.user?.avatarUrl || '';
@@ -276,18 +302,22 @@ const PitchDetails = () => {
            {!isOwner && user.role === 'INVESTOR' && (
              <Button 
                className={`w-full font-bold shadow-lg ${
-                 requestSent
+                 isConnected
                    ? 'bg-green-600 hover:bg-green-700 text-white'
+                   : isPending
+                     ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
                    : connectLocked
                      ? 'bg-slate-200 text-slate-500 dark:bg-white/10 dark:text-slate-400'
                      : 'bg-primary text-black hover:brightness-110'
                }`}
                onClick={handleConnect}
-               disabled={requestSent || !pitchApproved}
+               disabled={!pitchApproved || isPending || isConnected}
                title={connectTitle}
              >
-               {requestSent
-                 ? <><CheckCircle size={18} className="mr-2" /> Request Sent</>
+               {isConnected
+                 ? <><CheckCircle size={18} className="mr-2" /> Message</>
+                 : isPending
+                   ? <><CheckCircle size={18} className="mr-2" /> Pending</>
                  : !isVerified
                    ? <><UserPlus size={18} className="mr-2" /> Verify First</>
                    : !pitchApproved

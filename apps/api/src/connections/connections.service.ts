@@ -147,6 +147,22 @@ export class ConnectionsService {
     });
   }
 
+  async getSentRequests(userId: string) {
+    return this.databaseService.connection.findMany({
+      where: {
+        senderId: userId,
+        status: {
+          in: [ConnectionStatus.PENDING, ConnectionStatus.ACCEPTED],
+        },
+      },
+      include: {
+        receiver: {
+          include: { entrepreneurProfile: true, investorProfile: true },
+        },
+      },
+    });
+  }
+
   // 4. ACCEPT / REJECT REQUEST
   async respond(id: string, status: 'ACCEPTED' | 'REJECTED') {
     const connection = await this.databaseService.connection.update({

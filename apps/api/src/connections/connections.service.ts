@@ -2,6 +2,7 @@
 import {
   Injectable,
   ConflictException,
+  ForbiddenException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -31,6 +32,21 @@ export class ConnectionsService {
       throw new ConflictException('You cannot connect with yourself.');
     }
 
+    const sender = await this.databaseService.user.findUnique({
+      where: { id: senderId },
+      include: { entrepreneurProfile: true, investorProfile: true },
+    });
+
+    if (!sender) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!sender.isVerified) {
+      throw new ForbiddenException(
+        'Verify your account to unlock this feature',
+      );
+    }
+
     // Check if connection already exists
     const existing = await this.databaseService.connection.findFirst({
       where: {
@@ -57,10 +73,6 @@ export class ConnectionsService {
     });
 
     // Notify receiver
-    const sender = await this.databaseService.user.findUnique({
-      where: { id: senderId },
-      include: { entrepreneurProfile: true, investorProfile: true },
-    });
     const senderName =
       sender?.entrepreneurProfile?.firstName ||
       sender?.investorProfile?.firstName ||

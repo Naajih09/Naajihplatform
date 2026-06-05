@@ -29,6 +29,8 @@ const Messages = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isVerified = Boolean(user.isVerified);
+  const verificationMessage = 'Verify your account to unlock this feature';
   const API_BASE = getApiBaseUrl();
   const authToken =
     localStorage.getItem('access_token') ||
@@ -144,6 +146,11 @@ const Messages = () => {
 
   const sendMessage = async (content: string, type: 'TEXT' | 'IMAGE' | 'PDF' | 'AUDIO', url?: string) => {
     if (!activeChat || !socket) return;
+
+    if (!isVerified) {
+      setToast({ show: true, message: verificationMessage, type: 'error' });
+      return;
+    }
     
     const messageData = {
       content,
@@ -172,12 +179,13 @@ const Messages = () => {
         }),
       });
       if (!res.ok) {
-        throw new Error(`Failed to send message (${res.status})`);
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.message || `Failed to send message (${res.status})`);
       }
       socket.emit('send_message', messageData);
       setToast({ show: true, message: 'Message sent.', type: 'success' });
-    } catch (error) {
-      setToast({ show: true, message: 'Failed to send message.', type: 'error' });
+    } catch (error: any) {
+      setToast({ show: true, message: error.message || 'Failed to send message.', type: 'error' });
       setMessages((prev) => prev.filter((msg) => msg !== messageData));
     }
     setSending(false);
@@ -190,6 +198,11 @@ const Messages = () => {
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isVerified) {
+      setToast({ show: true, message: verificationMessage, type: 'error' });
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -201,6 +214,11 @@ const Messages = () => {
   };
 
   const startRecording = async () => {
+    if (!isVerified) {
+      setToast({ show: true, message: verificationMessage, type: 'error' });
+      return;
+    }
+
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const recorder = new MediaRecorder(stream);
@@ -385,6 +403,11 @@ const Messages = () => {
 
             {/* INPUT AREA */}
             <div className="p-4 border-t border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-[#1d1d20]">
+                {!isVerified && (
+                    <div className="mb-3 rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
+                        Verify your account to unlock this feature
+                    </div>
+                )}
                 {isRecording ? (
                     <div className="flex items-center gap-4 text-red-500 animate-pulse">
                         <span className="font-bold">Recording Audio...</span>
@@ -394,17 +417,17 @@ const Messages = () => {
                     <form onSubmit={handleTextSubmit} className="flex gap-2 items-center">
                         <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} accept="image/*,application/pdf" aria-label="Upload file" />
                         
-                        <button type="button" onClick={() => fileInputRef.current?.click()} className="text-slate-400 hover:text-primary transition-colors" aria-label="Attach file">
+                        <button type="button" onClick={() => fileInputRef.current?.click()} className="text-slate-400 hover:text-primary transition-colors" aria-label="Attach file" title={!isVerified ? verificationMessage : 'Attach file'}>
                             <Paperclip size={20} />
                         </button>
                         
-                        <button type="button" onClick={startRecording} className="text-slate-400 hover:text-red-500 transition-colors" title="Start recording" aria-label="Start recording voice note">
+                        <button type="button" onClick={startRecording} className="text-slate-400 hover:text-red-500 transition-colors" title={!isVerified ? verificationMessage : 'Start recording'} aria-label="Start recording voice note">
                             <Mic size={20} />
                         </button>
 
                         <input value={inputText} onChange={(e) => setInputText(e.target.value)} className="flex-1 bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:border-primary focus:outline-none" placeholder="Type a message..." disabled={isUploading} aria-label="Message input"/>
                         
-                        <button type="submit" className="bg-primary text-black p-3 rounded-xl hover:brightness-110 disabled:opacity-50" disabled={isUploading || sending || (!inputText && !isRecording)} aria-label="Send">
+                        <button type="submit" className="bg-primary text-black p-3 rounded-xl hover:brightness-110 disabled:opacity-50" disabled={isUploading || sending || (!inputText && !isRecording)} aria-label="Send" title={!isVerified ? verificationMessage : 'Send'}>
                             {isUploading || sending ? <Loader2 className="animate-spin" size={18}/> : <Send size={18} />}
                         </button>
                     </form>

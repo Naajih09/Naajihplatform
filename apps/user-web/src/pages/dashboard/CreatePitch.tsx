@@ -17,6 +17,8 @@ const CreatePitch = () => {
     type: 'success',
   });
   const API_BASE = getApiBaseUrl();
+  const isVerified = Boolean(user.isVerified);
+  const verificationMessage = 'Verify your account to unlock this feature';
   
   const [formData, setFormData] = useState({
     title: '', tagline: '', problemStatement: '', solution: '', 
@@ -60,6 +62,12 @@ const CreatePitch = () => {
         return;
     }
 
+    if (!isVerified) {
+      setToast({ show: true, message: verificationMessage, type: 'error' });
+      navigate('/dashboard/verification');
+      return;
+    }
+
     if (!pitchAccessLoading && !canCreatePitch) {
       setToast({
         show: true,
@@ -83,7 +91,8 @@ const CreatePitch = () => {
           ...formData,
         }),
       });
-      if (!res.ok) throw new Error('Failed to post pitch');
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.message || 'Failed to post pitch');
       setToast({ show: true, message: 'Pitch posted successfully.', type: 'success' });
       navigate('/dashboard/opportunities');
     } catch (err: any) {
@@ -118,6 +127,21 @@ const CreatePitch = () => {
             className="bg-primary text-neutral-dark font-bold"
           >
             {isAspiringOwner ? 'Go to Learning Center' : 'Browse Opportunities'}
+          </Button>
+        </div>
+      ) : !isVerified ? (
+        <div className="bg-white dark:bg-[#1d1d20] rounded-2xl border border-slate-200 dark:border-gray-800 p-8 shadow-xl">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+            Verify your account to unlock this feature
+          </h2>
+          <p className="text-slate-500 dark:text-gray-400 mb-6">
+            Pitch submissions open after your account verification is approved.
+          </p>
+          <Button
+            onClick={() => navigate('/dashboard/verification')}
+            className="bg-primary text-neutral-dark font-bold"
+          >
+            Go to Verification
           </Button>
         </div>
       ) : !pitchAccessLoading && !canCreatePitch ? (

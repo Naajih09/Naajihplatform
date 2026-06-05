@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -18,6 +19,17 @@ export class MessagesService {
     attachmentUrl?: string;
     type?: string;
   }) {
+    const sender = await this.databaseService.user.findUnique({
+      where: { id: data.senderId },
+      select: { id: true, isVerified: true },
+    });
+
+    if (!sender?.isVerified) {
+      throw new ForbiddenException(
+        'Verify your account to unlock this feature',
+      );
+    }
+
     return this.databaseService.message.create({
       data: {
         content: sanitizePlainText(data.content),

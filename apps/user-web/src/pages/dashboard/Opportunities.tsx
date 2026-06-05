@@ -34,6 +34,8 @@ const Opportunities = () => {
   const [activeCategory, setActiveCategory] = useState('All');
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isVerified = Boolean(user.isVerified);
+  const verificationMessage = 'Verify your account to unlock this feature';
   const API_BASE = getApiBaseUrl();
   const authToken =
     localStorage.getItem('accessToken') ||
@@ -113,6 +115,11 @@ const Opportunities = () => {
 
   // --- 2. HANDLE CONNECT ---
   const handleConnect = async (pitch: any) => {
+    if (!isVerified) {
+      setToast({ show: true, message: verificationMessage, type: 'error' });
+      return;
+    }
+
     if (pitch.userId === user.id) {
         setToast({ show: true, message: 'You cannot connect with your own pitch.', type: 'error' });
         return;
@@ -163,7 +170,16 @@ const Opportunities = () => {
             />
           </div>
           {user.role === 'ENTREPRENEUR' && (
-            <Button onClick={() => setIsModalOpen(true)} className="bg-primary text-neutral-dark px-4 font-bold">
+            <Button
+              onClick={() => {
+                if (!isVerified) {
+                  setToast({ show: true, message: verificationMessage, type: 'error' });
+                  return;
+                }
+                setIsModalOpen(true);
+              }}
+              className="bg-primary text-neutral-dark px-4 font-bold"
+            >
               <Plus size={20} />
             </Button>
           )}
@@ -315,6 +331,7 @@ const Opportunities = () => {
                     <button 
                         onClick={() => handleConnect(pitch)}
                         disabled={sentRequests[pitch.id]}
+                        title={!isVerified ? verificationMessage : sentRequests[pitch.id] ? 'Connection request sent' : 'Connect with this founder'}
                         className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${
                             sentRequests[pitch.id] 
                             ? 'bg-green-500/20 text-green-500 cursor-default' 
@@ -322,7 +339,7 @@ const Opportunities = () => {
                         }`}
                     >
                         {sentRequests[pitch.id] ? <CheckCircle size={16} /> : <UserPlus size={16} />}
-                        {sentRequests[pitch.id] ? 'Sent' : 'Connect'}
+                        {sentRequests[pitch.id] ? 'Sent' : !isVerified ? 'Verify' : 'Connect'}
                     </button>
                 )}
               </div>
@@ -338,6 +355,8 @@ const Opportunities = () => {
           onSuccess={() => { setIsModalOpen(false); fetchPitches(); }}
           authHeaders={authHeaders}
           apiBase={API_BASE}
+          isVerified={isVerified}
+          verificationMessage={verificationMessage}
         />
       )}
     </div>
@@ -345,7 +364,14 @@ const Opportunities = () => {
 };
 
 // --- SUB-COMPONENT: CREATE PITCH FORM (Included here for simplicity) ---
-const CreatePitchModal = ({ onClose, onSuccess, apiBase, authHeaders }: any) => {
+const CreatePitchModal = ({
+  onClose,
+  onSuccess,
+  apiBase,
+  authHeaders,
+  isVerified,
+  verificationMessage,
+}: any) => {
   const navigate = useNavigate();
   const { loading: pitchAccessLoading, canCreatePitch, remainingPitchSlots, hasPremium } = usePitchAccess();
   const [formData, setFormData] = useState({
@@ -383,6 +409,10 @@ const CreatePitchModal = ({ onClose, onSuccess, apiBase, authHeaders }: any) => 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isVerified) {
+      setError(verificationMessage);
+      return;
+    }
     if (!pitchAccessLoading && !canCreatePitch) {
       setError('Your free pitch limit is exhausted. Upgrade to Premium to post more pitches.');
       return;
@@ -395,7 +425,8 @@ const CreatePitchModal = ({ onClose, onSuccess, apiBase, authHeaders }: any) => 
         headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({ ...formData }),
       });
-      if (!res.ok) throw new Error("Failed to post");
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.message || "Failed to post");
       onSuccess();
     } catch (err: any) {
       setError(err.message || 'Failed to post pitch.');
@@ -442,6 +473,36 @@ const CreatePitchModal = ({ onClose, onSuccess, apiBase, authHeaders }: any) => 
               You can still review your existing pitch history and investor activity while upgrading.
             </p>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  if (!isVerified) {
+    return (
+      <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm p-4">
+        <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-2xl w-full max-w-2xl shadow-2xl p-8">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Verification required</p>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Verify your account to unlock this feature</h2>
+              <p className="text-slate-500 dark:text-gray-400 max-w-xl">
+                Pitch submissions open after your account verification is approved.
+              </p>
+            </div>
+            <button onClick={onClose} className="text-slate-500 hover:text-red-500" aria-label="Close modal">
+              <X size={24} />
+            </button>
+          </div>
+
+          <div className="mt-8 flex flex-col sm:flex-row gap-3">
+            <Button onClick={() => navigate('/dashboard/verification')} className="bg-primary text-neutral-dark font-bold flex-1">
+              Go to Verification
+            </Button>
+            <Button variant="ghost" onClick={onClose} className="flex-1">
+              Close
+            </Button>
+          </div>
         </div>
       </div>
     );

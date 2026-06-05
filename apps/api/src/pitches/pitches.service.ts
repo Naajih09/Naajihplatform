@@ -84,6 +84,10 @@ export class PitchesService {
       throw new BadRequestException('User not found');
     }
 
+    if (!user.isVerified) {
+      throw new ForbiddenException('Verify your account to unlock this feature');
+    }
+
     const now = new Date();
     const activeUntil =
       user.subscription?.endDate || user.subscription?.trialEndsAt;

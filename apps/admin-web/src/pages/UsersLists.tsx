@@ -106,19 +106,6 @@ const UsersList = () => {
     }
   };
 
-  const handlePasswordReset = async () => {
-    if (!viewUser) return;
-    const newPassword = window.prompt('Enter a new password for this user');
-    if (!newPassword) return;
-
-    try {
-      await api.patch(`/users/password/${viewUser.id}`, { password: newPassword });
-      showToast('Password reset successfully.', 'success');
-    } catch (err) {
-      showToast('Network error occurred', 'error');
-    }
-  };
-
   const safePage = Math.min(currentPage, totalPages);
   const hasFilters = searchQuery.trim() !== '' || roleFilter !== 'ALL' || sortBy !== 'date';
 
@@ -410,12 +397,6 @@ const UsersList = () => {
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <button
-                  onClick={handlePasswordReset}
-                  className="px-4 py-2 bg-primary/20 text-primary border border-primary/30 rounded hover:bg-primary hover:text-black"
-                >
-                  Reset Password
-                </button>
                 <button
                   onClick={() => handleStatusToggle(viewUser)}
                   className={`px-4 py-2 rounded ${viewUser.isActive === false ? 'bg-green-600/20 text-green-400 border border-green-600/30' : 'bg-red-600/20 text-red-400 border border-red-600/30'}`}

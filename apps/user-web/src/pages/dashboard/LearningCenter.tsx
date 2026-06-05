@@ -68,7 +68,7 @@ const LearningCenter = () => {
       subscription?.plan === 'PREMIUM' &&
       (!activeUntil || new Date(activeUntil) > new Date());
     if (isPremium && !hasPremium) {
-      showToast('Premium subscription required for this program.', 'error');
+      showToast('Upgrade to Premium to join this program.', 'error');
       navigate('/dashboard/subscription');
       return;
     }
@@ -108,14 +108,14 @@ const LearningCenter = () => {
           Naajih <span className="text-primary">Academy</span>
         </h1>
         <p className="text-slate-500 dark:text-gray-400 max-w-2xl mx-auto text-lg">
-          Practical, Islam-compliant business education. Go from idea to investment in weeks, not years.
+          Practical, Shariah-compliant business training for building, validating, and presenting investment-ready ideas.
         </p>
       </div>
 
       {/* COURSE LIST */}
       <div>
         <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <BookOpen className="text-primary"/> Flagship Programs
+            <BookOpen className="text-primary"/> Available Programs
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -155,7 +155,7 @@ const LearningCenter = () => {
                   </div>
                   {/* Badge */}
                   <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white border border-white/10">
-                    {course.isPremium ? 'Premium' : 'Free Access'}
+                    {course.isPremium ? 'Premium Program' : 'Free Program'}
                   </div>
               </div>
 
@@ -194,8 +194,8 @@ const LearningCenter = () => {
                       : isRejected
                       ? 'Reapply'
                       : course.isPremium
-                      ? 'Upgrade to Access'
-                      : 'Join Program'}
+                      ? 'Upgrade to Join'
+                      : 'Request Enrollment'}
                   </Button>
               </div>
             </div>

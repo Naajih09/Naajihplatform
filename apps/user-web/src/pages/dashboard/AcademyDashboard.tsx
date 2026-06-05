@@ -112,7 +112,7 @@ const AcademyDashboard = () => {
       return;
     }
     if (program?.isPremium && !hasPremium) {
-      showToast('Premium subscription required for this program.', 'error');
+      showToast('Upgrade to Premium to join this program.', 'error');
       navigate('/dashboard/subscription');
       return;
     }
@@ -219,7 +219,7 @@ const AcademyDashboard = () => {
                  {program.cohort || 'Cohort 1'}
                </span>
                <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full ${program.isPremium ? 'bg-amber-500/20 text-amber-400' : 'bg-green-500/20 text-green-400'}`}>
-                 {program.isPremium ? 'Premium' : 'Free'}
+                 {program.isPremium ? 'Premium Program' : 'Free Program'}
                </span>
                {enrollmentStatus && (
                  <span
@@ -273,21 +273,21 @@ const AcademyDashboard = () => {
           <div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">
               {isPending
-                ? 'Enrollment pending approval.'
+                ? 'Enrollment request pending.'
                 : isRejected
-                ? 'Enrollment declined. You can reapply.'
+                ? 'Enrollment was not approved. You can reapply.'
                 : program.isPremium && !hasPremium
-                ? 'Premium subscription required to enroll.'
-                : 'Join this cohort to unlock the lessons.'}
+                ? 'Upgrade to Premium to request enrollment.'
+                : 'Request enrollment to unlock the lessons.'}
             </h3>
             <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
               {isPending
-                ? 'An admin will review your request shortly.'
+                ? 'Your request is waiting for admin review.'
                 : isRejected
-                ? 'Update your details and submit again.'
+                ? 'Review your details and submit a new request.'
                 : program.isPremium && !hasPremium
-                ? 'Upgrade your plan to access premium programs.'
-                : 'Enroll once and your progress will be tracked automatically.'}
+                ? 'Premium programs require an active Premium plan before approval.'
+                : 'After approval, your lessons, tasks, and progress will open here.'}
             </p>
           </div>
           <Button
@@ -302,8 +302,8 @@ const AcademyDashboard = () => {
               : isRejected
               ? 'Reapply'
               : program.isPremium && !hasPremium
-              ? 'Upgrade to Access'
-              : 'Join Program'}
+              ? 'Upgrade to Join'
+              : 'Request Enrollment'}
           </Button>
         </div>
       )}

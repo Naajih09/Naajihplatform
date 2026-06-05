@@ -187,20 +187,20 @@ const Signup = () => {
             <form className="space-y-5" onSubmit={handleSignup}>
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Full Name</label>
-                    <input aria-label="Full Name" name="fullName" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="e.g. Amina Yusuf" type="text"/>
+                    <input aria-label="Full Name" name="fullName" required value={formData.fullName} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="e.g. Amina Yusuf" type="text"/>
                 </div>
 
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Work Email</label>
-                    <input aria-label="Email Address" name="email" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="amina@yourbrand.ng" type="email"/>
+                    <input aria-label="Email Address" name="email" required value={formData.email} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="amina@yourbrand.ng" type="email"/>
                 </div>
 
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Business Location</label>
                     
                     {/* FIX 1: ADD ARIA-LABEL TO SELECT */}
-                    <select aria-label="Business Location" name="location" onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors">
-                        <option disabled selected value="">Select State</option>
+                    <select aria-label="Business Location" name="location" required value={formData.location} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 px-4 focus:border-primary focus:ring-0 outline-none transition-colors">
+                        <option disabled value="">Select State</option>
                         <option value="abuja">FCT - Abuja</option>
                         <option value="lagos">Lagos</option>
                         <option value="kano">Kano</option>
@@ -214,7 +214,7 @@ const Signup = () => {
                     <div className="flex flex-col gap-2">
                         <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Password</label>
                         <div className="relative">
-                            <input aria-label="Password" name="password" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 pl-4 pr-11 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="********" type={showPassword ? "text" : "password"}/>
+                            <input aria-label="Password" name="password" required value={formData.password} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 pl-4 pr-11 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="********" type={showPassword ? "text" : "password"}/>
                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-slate-400 hover:text-white" aria-label="Toggle password visibility">
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
@@ -223,7 +223,7 @@ const Signup = () => {
                     <div className="flex flex-col gap-2">
                         <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Confirm</label>
                         <div className="relative">
-                            <input aria-label="Confirm Password" name="confirmPassword" required onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 pl-4 pr-11 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="********" type={showConfirmPassword ? "text" : "password"}/>
+                            <input aria-label="Confirm Password" name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#262626] dark:text-white h-12 pl-4 pr-11 focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="********" type={showConfirmPassword ? "text" : "password"}/>
                             <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-3 text-slate-400 hover:text-white" aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}>
                                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
@@ -235,7 +235,7 @@ const Signup = () => {
                     {/* FIX 2: ADD ARIA-LABEL TO CHECKBOX */}
                     <input aria-label="Agree to Terms" className="mt-1 h-5 w-5 rounded border-slate-300 dark:border-white/10 text-primary focus:ring-0 accent-primary" type="checkbox" required />
                     <label className="text-sm text-slate-600 dark:text-slate-400 leading-tight">
-                        I agree to the <Link to="/terms" className="text-slate-900 dark:text-white font-bold underline decoration-primary underline-offset-4">Halal Investment Terms</Link> which prohibit interest (Riba).
+                        I agree to the <Link to="/terms" target="_blank" rel="noreferrer" className="text-slate-900 dark:text-white font-bold underline decoration-primary underline-offset-4">Halal Investment Terms</Link> which prohibit interest (Riba).
                     </label>
                 </div>
 

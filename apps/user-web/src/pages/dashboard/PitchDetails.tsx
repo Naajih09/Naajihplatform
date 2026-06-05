@@ -30,6 +30,10 @@ const PitchDetails = () => {
   const authHeaders = authToken
     ? { Authorization: `Bearer ${authToken}` }
     : {};
+  const isVerified = Boolean(user.isVerified);
+  const verificationMessage = 'Verify your account to unlock this feature';
+  const isPitchApproved = (status?: string) =>
+    ['APPROVED', 'ACTIVE'].includes((status || 'PENDING').toUpperCase());
 
   useEffect(() => {
     fetchPitch();
@@ -50,17 +54,25 @@ const PitchDetails = () => {
 
   const handleConnect = async () => {
     if (pitch.userId === user.id) return;
+    if (!isVerified) {
+      setToast({ show: true, message: verificationMessage, type: 'error' });
+      return;
+    }
+    if (!isPitchApproved(pitch.status)) {
+      setToast({ show: true, message: 'This pitch is pending review', type: 'error' });
+      return;
+    }
     try {
       const res = await fetch(`${API_BASE}/connections`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders },
-        body: JSON.stringify({ receiverId: pitch.userId })
+        body: JSON.stringify({ receiverId: pitch.userId, pitchId: pitch.id })
       });
-      if (res.ok) {
-        setRequestSent(true);
-        setToast({ show: true, message: 'Connection request sent!', type: 'success' });
-      }
-    } catch (error) { setToast({ show: true, message: 'Failed to connect.', type: 'error' }); }
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.message || 'Failed to connect.');
+      setRequestSent(true);
+      setToast({ show: true, message: 'Connection request sent!', type: 'success' });
+    } catch (error: any) { setToast({ show: true, message: error.message || 'Failed to connect.', type: 'error' }); }
   };
 
   // --- DELETE LOGIC ---
@@ -99,6 +111,15 @@ const PitchDetails = () => {
   if (!pitch) return <div className="text-center py-20 text-slate-500">Pitch not found</div>;
 
   const isOwner = user.id === pitch.userId;
+  const pitchApproved = isPitchApproved(pitch.status);
+  const connectLocked = !isVerified || !pitchApproved;
+  const connectTitle = !isVerified
+    ? verificationMessage
+    : !pitchApproved
+      ? 'This pitch is pending review'
+      : requestSent
+        ? 'Connection request sent'
+        : 'Connect with founder';
   const founderProfile = pitch.user?.entrepreneurProfile || pitch.user?.investorProfile || {};
   const founderAvatar = founderProfile.avatarUrl || pitch.user?.avatarUrl || '';
   const inputStyle = "w-full p-2 bg-slate-100 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded text-slate-900 dark:text-white mb-2 focus:outline-none focus:border-primary";
@@ -254,11 +275,24 @@ const PitchDetails = () => {
            {/* CONNECT BUTTON (Only for Investors) */}
            {!isOwner && user.role === 'INVESTOR' && (
              <Button 
-               className={`w-full font-bold shadow-lg ${requestSent ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-primary text-black hover:brightness-110'}`}
+               className={`w-full font-bold shadow-lg ${
+                 requestSent
+                   ? 'bg-green-600 hover:bg-green-700 text-white'
+                   : connectLocked
+                     ? 'bg-slate-200 text-slate-500 dark:bg-white/10 dark:text-slate-400'
+                     : 'bg-primary text-black hover:brightness-110'
+               }`}
                onClick={handleConnect}
-               disabled={requestSent}
+               disabled={requestSent || !pitchApproved}
+               title={connectTitle}
              >
-               {requestSent ? <><CheckCircle size={18} className="mr-2" /> Request Sent</> : <><UserPlus size={18} className="mr-2" /> Connect with Founder</>}
+               {requestSent
+                 ? <><CheckCircle size={18} className="mr-2" /> Request Sent</>
+                 : !isVerified
+                   ? <><UserPlus size={18} className="mr-2" /> Verify First</>
+                   : !pitchApproved
+                     ? <><UserPlus size={18} className="mr-2" /> Pending Review</>
+                     : <><UserPlus size={18} className="mr-2" /> Connect with Founder</>}
              </Button>
            )}
         </div>

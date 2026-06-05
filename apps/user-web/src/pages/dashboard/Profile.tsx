@@ -142,6 +142,14 @@ const Profile = () => {
         { label: 'Location', value: profile.location || 'Nigeria' },
         { label: 'Focus', value: profile.focusIndustries?.length ? profile.focusIndustries.join(', ') : 'General' },
       ];
+  const profileStats = [
+    ...(user.role === 'INVESTOR'
+      ? []
+      : [{ l: 'Active Pitches', v: String(stats.activePitches), sub: 'Total' }]),
+    { l: 'Pending', v: String(stats.pendingConnections), sub: 'Connections' },
+    { l: 'Verified', v: stats.isVerified ? 'Yes' : 'No', sub: 'Account' },
+    { l: 'Total Views', v: String(stats.totalViews || 0), sub: 'Profile' },
+  ];
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -417,12 +425,7 @@ const Profile = () => {
           ) : (
             // --- VIEW MODE STATS ---
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                    { l: 'Active Pitches', v: String(stats.activePitches), sub: 'Total' },
-                    { l: 'Pending', v: String(stats.pendingConnections), sub: 'Connections' },
-                    { l: 'Verified', v: stats.isVerified ? 'Yes' : 'No', sub: 'Account' },
-                    { l: 'Total Views', v: String(stats.totalViews || 0), sub: 'Profile' }
-                ].map(stat => (
+                {profileStats.map(stat => (
                     <div key={stat.l} className="bg-white dark:bg-[#1d1f23]/50 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-center shadow-sm">
                         <span className="text-slate-500 dark:text-[#abb89d] text-[10px] font-bold uppercase">{stat.l}</span>
                         <p className="text-2xl font-black text-slate-900 dark:text-white my-1">{stat.v}</p>

@@ -63,6 +63,8 @@ const Opportunities = () => {
       className: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300',
     };
   };
+  const isPitchApproved = (status?: string) =>
+    ['APPROVED', 'ACTIVE'].includes((status || 'PENDING').toUpperCase());
 
   // --- 1. FETCH PITCHES (With Search & Filter) ---
   const [filters, setFilters] = useState({
@@ -120,6 +122,11 @@ const Opportunities = () => {
       return;
     }
 
+    if (!isPitchApproved(pitch.status)) {
+      setToast({ show: true, message: 'This pitch is pending review', type: 'error' });
+      return;
+    }
+
     if (pitch.userId === user.id) {
         setToast({ show: true, message: 'You cannot connect with your own pitch.', type: 'error' });
         return;
@@ -129,7 +136,8 @@ const Opportunities = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
-          receiverId: pitch.userId 
+          receiverId: pitch.userId,
+          pitchId: pitch.id,
         })
       });
 
@@ -276,7 +284,18 @@ const Opportunities = () => {
         )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {pitches.map((pitch) => (
+          {pitches.map((pitch) => {
+              const pitchApproved = isPitchApproved(pitch.status);
+              const connectLocked = !isVerified || !pitchApproved;
+              const connectTitle = !isVerified
+                ? verificationMessage
+                : !pitchApproved
+                  ? 'This pitch is pending review'
+                  : sentRequests[pitch.id]
+                    ? 'Connection request sent'
+                    : 'Connect with this founder';
+
+              return (
             <div key={pitch.id} className="group bg-white dark:bg-[#151518] border border-slate-200 dark:border-white/5 rounded-xl p-5 flex flex-col hover:shadow-lg transition-all duration-300">
               
               <div className="flex items-start justify-between mb-6">
@@ -330,21 +349,24 @@ const Opportunities = () => {
                 {user.role === 'INVESTOR' && (
                     <button 
                         onClick={() => handleConnect(pitch)}
-                        disabled={sentRequests[pitch.id]}
-                        title={!isVerified ? verificationMessage : sentRequests[pitch.id] ? 'Connection request sent' : 'Connect with this founder'}
+                        disabled={sentRequests[pitch.id] || !pitchApproved}
+                        title={connectTitle}
                         className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${
                             sentRequests[pitch.id] 
                             ? 'bg-green-500/20 text-green-500 cursor-default' 
+                            : connectLocked
+                              ? 'bg-slate-200 text-slate-500 cursor-not-allowed dark:bg-white/10 dark:text-slate-400'
                             : 'bg-primary text-neutral-dark hover:opacity-90'
                         }`}
                     >
                         {sentRequests[pitch.id] ? <CheckCircle size={16} /> : <UserPlus size={16} />}
-                        {sentRequests[pitch.id] ? 'Sent' : !isVerified ? 'Verify' : 'Connect'}
+                        {sentRequests[pitch.id] ? 'Sent' : !isVerified ? 'Verify' : !pitchApproved ? 'Pending review' : 'Connect'}
                     </button>
                 )}
               </div>
             </div>
-          ))}
+              );
+          })}
         </div>
       )}
 

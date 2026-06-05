@@ -116,6 +116,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   }, [authUser, userString, authToken, hasValidAuthToken, dispatch, handleLogout]);
 
   const isAspirant = user.role === 'ASPIRING_BUSINESS_OWNER';
+  const isInvestor = user.role === 'INVESTOR';
+  const isEntrepreneur = user.role === 'ENTREPRENEUR';
 
   const navItems = isAspirant
     ? [
@@ -133,7 +135,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         { label: 'Connections', path: '/dashboard/connections', icon: LinkIcon },
         { label: 'Profile', path: '/dashboard/profile', icon: User },
         { label: 'Verification', path: '/dashboard/verification', icon: CheckCircle },
-        { label: 'Upgrade Plan', path: '/dashboard/subscription', icon: Zap, badge: 'PRO' },
+        ...(isInvestor
+          ? []
+          : [{ label: 'Upgrade Plan', path: '/dashboard/subscription', icon: Zap, badge: 'PRO' }]),
       ];
 
   if (!isAuth || !hasValidAuthToken) {
@@ -153,16 +157,20 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               Welcome to NaajihBiz
             </h2>
             <p className="mt-3 text-sm text-slate-600 dark:text-gray-400">
-              Start by creating or exploring opportunities
+              {isInvestor
+                ? 'Start by exploring approved opportunities and building your deal flow.'
+                : 'Start by creating or exploring opportunities'}
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Link
-                to="/dashboard/create-pitch"
-                onClick={() => setShowWelcomeModal(false)}
-                className="inline-flex flex-1 items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-black transition hover:brightness-110"
-              >
-                Create Opportunity
-              </Link>
+              {isEntrepreneur && (
+                <Link
+                  to="/dashboard/create-pitch"
+                  onClick={() => setShowWelcomeModal(false)}
+                  className="inline-flex flex-1 items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-black transition hover:brightness-110"
+                >
+                  Create Opportunity
+                </Link>
+              )}
               <Link
                 to="/dashboard/opportunities"
                 onClick={() => setShowWelcomeModal(false)}

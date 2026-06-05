@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { ConnectionStatus } from '@prisma/client'; // NEW: Import ConnectionStatus enum
+import { ConnectionStatus, PitchStatus, UserRole } from '@prisma/client'; // NEW: Import ConnectionStatus enum
 
 @Injectable()
 export class ConnectionsService {
@@ -25,8 +25,8 @@ export class ConnectionsService {
   }
 
   // 1. SEND CONNECTION REQUEST
-  async create(data: { senderId: string; receiverId: string }) {
-    const { senderId, receiverId } = data;
+  async create(data: { senderId: string; receiverId: string; pitchId?: string }) {
+    const { senderId, receiverId, pitchId } = data;
 
     if (senderId === receiverId) {
       throw new ConflictException('You cannot connect with yourself.');
@@ -45,6 +45,35 @@ export class ConnectionsService {
       throw new ForbiddenException(
         'Verify your account to unlock this feature',
       );
+    }
+
+    const receiver = await this.databaseService.user.findUnique({
+      where: { id: receiverId },
+      select: { id: true, role: true },
+    });
+
+    if (!receiver) {
+      throw new NotFoundException('Receiver not found');
+    }
+
+    if (sender.role === UserRole.INVESTOR) {
+      if (!pitchId) {
+        throw new ForbiddenException(
+          'An approved pitch is required before connecting with this founder.',
+        );
+      }
+
+      const pitch = await this.databaseService.pitch.findFirst({
+        where: {
+          id: pitchId,
+          userId: receiverId,
+        },
+        select: { id: true, status: true },
+      });
+
+      if (!pitch || pitch.status !== PitchStatus.APPROVED) {
+        throw new ForbiddenException('This pitch is pending review');
+      }
     }
 
     // Check if connection already exists

@@ -12,7 +12,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { ConnectionsService } from './connections.service';
-import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -25,6 +25,10 @@ export class CreateConnectionDto {
   @IsString()
   @IsNotEmpty()
   receiverId: string;
+
+  @IsOptional()
+  @IsString()
+  pitchId?: string;
 }
 
 // DTO for responding to connections
@@ -61,6 +65,7 @@ export class ConnectionsController {
     return this.connectionsService.create({
       senderId,
       receiverId: createConnectionDto.receiverId,
+      pitchId: createConnectionDto.pitchId,
     });
   }
 

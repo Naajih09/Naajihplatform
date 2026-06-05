@@ -50,6 +50,33 @@ const defaultSteps: ChecklistStep[] = [
   },
 ];
 
+const investorSteps: ChecklistStep[] = [
+  {
+    key: 'profile',
+    label: 'Complete profile',
+    description: 'Set up your investor profile so founders understand your mandate.',
+    path: '/dashboard/profile',
+  },
+  {
+    key: 'explore',
+    label: 'Browse approved pitches',
+    description: 'Review active opportunities and save deals you want to revisit.',
+    path: '/dashboard/opportunities',
+  },
+  {
+    key: 'community',
+    label: 'Build your network',
+    description: 'Track founders you connect with after pitch review.',
+    path: '/dashboard/connections',
+  },
+  {
+    key: 'message',
+    label: 'Continue conversations',
+    description: 'Message connected founders after your requests are accepted.',
+    path: '/dashboard/messages',
+  },
+];
+
 const aspiringOwnerSteps: ChecklistStep[] = [
   {
     key: 'profile',
@@ -81,7 +108,8 @@ export default function OnboardingChecklist() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAspirant = user.role === 'ASPIRING_BUSINESS_OWNER';
-  const steps = isAspirant ? aspiringOwnerSteps : defaultSteps;
+  const isInvestor = user.role === 'INVESTOR';
+  const steps = isAspirant ? aspiringOwnerSteps : isInvestor ? investorSteps : defaultSteps;
   const profile = user.entrepreneurProfile || user.investorProfile || {};
   const storageKey = `onboarding-checklist:${user.id || 'guest'}`;
 

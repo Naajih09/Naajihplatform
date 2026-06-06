@@ -4,7 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { AppCacheService } from '../cache/app-cache.service';
 
@@ -74,14 +74,15 @@ export class PitchesService {
       where: { id: userId },
       include: {
         subscription: true,
-        _count: {
-          select: { pitches: true },
-        },
       },
     });
 
     if (!user) {
       throw new BadRequestException('User not found');
+    }
+
+    if (user.role !== UserRole.ENTREPRENEUR) {
+      throw new ForbiddenException('Only entrepreneur accounts can submit pitches.');
     }
 
     if (!user.isVerified) {
@@ -94,15 +95,10 @@ export class PitchesService {
     const hasPremium =
       user.subscription?.plan === 'PREMIUM' &&
       (!activeUntil || activeUntil > now);
-    const freePitchLimit = Number(process.env.FREE_PITCH_LIMIT || 1);
-    const pitchLimit =
-      Number.isFinite(freePitchLimit) && freePitchLimit > 0
-        ? freePitchLimit
-        : 1;
 
-    if (!hasPremium && user._count.pitches >= pitchLimit) {
+    if (!hasPremium) {
       throw new ForbiddenException(
-        `Free tier allows ${pitchLimit} pitch${pitchLimit === 1 ? '' : 'es'}. Upgrade to Premium to create more pitches.`,
+        'Premium subscription is required to submit pitches.',
       );
     }
 

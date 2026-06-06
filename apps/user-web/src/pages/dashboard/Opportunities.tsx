@@ -430,7 +430,7 @@ const CreatePitchModal = ({
   verificationMessage,
 }: any) => {
   const navigate = useNavigate();
-  const { loading: pitchAccessLoading, canCreatePitch, remainingPitchSlots, hasPremium } = usePitchAccess();
+  const { loading: pitchAccessLoading, canCreatePitch, hasPremium } = usePitchAccess();
   const [formData, setFormData] = useState({
     title: '', tagline: '', problemStatement: '', solution: '', 
     traction: '', marketSize: '', fundingAsk: '', equityOffer: '', category: 'FinTech',
@@ -471,7 +471,7 @@ const CreatePitchModal = ({
       return;
     }
     if (!pitchAccessLoading && !canCreatePitch) {
-      setError('Your free pitch limit is exhausted. Upgrade to Premium to post more pitches.');
+      setError('Premium is required before you can submit a pitch.');
       return;
     }
     setSubmitting(true);
@@ -503,12 +503,9 @@ const CreatePitchModal = ({
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Upgrade required</p>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Free pitch limit reached</h2>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Payment required to pitch</h2>
               <p className="text-slate-500 dark:text-gray-400 max-w-xl">
-                {typeof remainingPitchSlots === 'number'
-                  ? `You have ${remainingPitchSlots} free pitch slot${remainingPitchSlots === 1 ? '' : 's'} left.`
-                  : 'Your free pitch allowance has been used.'}{' '}
-                Premium unlocks unlimited pitch submissions and helps you keep posting when you grow.
+                Entrepreneurs need an active Premium plan before submitting opportunities for review and investor discovery.
               </p>
             </div>
             <button onClick={onClose} className="text-slate-500 hover:text-red-500" aria-label="Close modal">
@@ -517,7 +514,7 @@ const CreatePitchModal = ({
           </div>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <Button onClick={() => navigate('/dashboard/subscription?reason=pitch-limit')} className="bg-primary text-neutral-dark font-bold flex-1">
+            <Button onClick={() => navigate('/dashboard/subscription?reason=pitch-payment')} className="bg-primary text-neutral-dark font-bold flex-1">
               Upgrade to Premium
             </Button>
             <Button variant="ghost" onClick={onClose} className="flex-1">

@@ -15,7 +15,9 @@ export default function Subscription() {
   const [subscription, setSubscription] = useState<any>(null);
   const API_BASE = getApiBaseUrl();
   const trialDays = Number(import.meta.env.VITE_TRIAL_DAYS || 14);
-  const pitchLimitReason = searchParams.get('reason') === 'pitch-limit';
+  const pitchPaymentReason =
+    searchParams.get('reason') === 'pitch-payment' ||
+    searchParams.get('reason') === 'pitch-limit';
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAspirant = user?.role === 'ASPIRING_BUSINESS_OWNER';
   const defaultSubscriptionAmount = Number(import.meta.env.VITE_SUBSCRIPTION_AMOUNT_NGN || 15000);
@@ -158,20 +160,20 @@ export default function Subscription() {
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h1 className="text-4xl font-black mb-4">
-            {isAspirant ? 'Unlock Premium Learning' : 'Elevate Your Networking'}
+            {isAspirant ? 'Unlock Premium Learning' : 'Unlock Pitch Submissions'}
           </h1>
           <p className="text-slate-500 dark:text-white/60">
             {isAspirant
               ? 'Premium is for advanced courses, mentor sessions, and completion certificates.'
-              : 'Choose the tier that matches your ambition. All plans comply with Sharia business principles.'}
+              : 'Premium is required before entrepreneurs can submit opportunities for review and investor discovery.'}
           </p>
           {!isAspirant && (
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs font-bold uppercase tracking-widest">
               <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-primary">
-                1 free pitch
+                Payment required to pitch
               </span>
               <span className="rounded-full border border-slate-300 bg-white px-3 py-1 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white/60">
-                Unlimited pitches on Premium
+                Pitch review on Premium
               </span>
               <span className="rounded-full border border-slate-300 bg-white px-3 py-1 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white/60">
                 Monthly checkout
@@ -180,9 +182,9 @@ export default function Subscription() {
           )}
         </div>
 
-        {pitchLimitReason && !isAspirant && (
+        {pitchPaymentReason && !isAspirant && (
           <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 text-sm text-slate-700 dark:text-white/80">
-            You have reached the free pitch limit. Upgrade to Premium to continue posting pitches without interruption.
+            Upgrade to Premium to submit your pitch for review and open investor discovery.
           </div>
         )}
 
@@ -203,7 +205,7 @@ export default function Subscription() {
                           : 'Full access to premium networking features.'
                         : isAspirant
                         ? 'Access free intro courses. Premium unlocks advanced learning.'
-                        : 'Limited access to deals and messages.'}
+                        : 'Browse opportunities freely. Premium is required when you are ready to submit pitches.'}
                     </p>
                 </div>
             </div>
@@ -222,13 +224,13 @@ export default function Subscription() {
                 <p className="text-sm text-slate-600 dark:text-white/70 mb-8 flex-grow">
                     {isAspirant
                       ? 'Perfect for learners getting started with business fundamentals.'
-                      : 'Perfect for new founders making their first connections and testing the market.'}
+                      : 'For browsing opportunities and preparing your profile before you submit a pitch.'}
                 </p>
                 
                 <ul className="space-y-4 mb-8">
                     {(isAspirant
                       ? ['Free intro courses', 'Basic community access', 'Learning dashboard', 'Progress tracking']
-                      : ['Create 1 active pitch', 'Browse public pitch feed', 'Send 5 connection requests/mo', 'Basic profile visibility']
+                      : ['Browse public opportunities', 'Prepare your founder profile', 'Review investor-facing examples', 'Upgrade before pitch submission']
                     ).map((feature, i) => (
                         <li key={i} className="flex items-center gap-3 text-sm text-slate-700 dark:text-white/80">
                             <Check size={18} className="text-slate-400 dark:text-gray-500" /> {feature}
@@ -284,7 +286,7 @@ export default function Subscription() {
                 <ul className="space-y-4 mb-8">
                     {(isAspirant
                       ? ['Advanced courses in Academy', 'Mentor booking & office hours', 'Certificates of completion', 'Priority learning support']
-                      : ['Unlimited pitch creations', 'Advanced filtering & deal discovery', 'Unlimited messaging & connections', 'Priority placement in feeds', 'Export network data']
+                      : ['Submit pitches for review', 'Investor discovery access', 'Unlimited messaging & connections', 'Priority placement in feeds', 'Export network data']
                     ).map((feature, i) => (
                         <li key={i} className="flex items-center gap-3 text-sm text-slate-700 dark:text-white/90">
                             <Check size={18} className="text-primary" /> {feature}
@@ -294,7 +296,7 @@ export default function Subscription() {
 
                 {!isAspirant && (
                   <div className="mb-6 rounded-xl border border-primary/20 bg-primary/10 p-4 text-sm text-slate-700 dark:text-white/80">
-                    Upgrade once and keep posting. Premium removes the pitch cap, keeps your listings active, and gives you a cleaner path to investor discovery.
+                    Upgrade before submitting your pitch. Premium opens the review workflow and gives founders a cleaner path to investor discovery.
                   </div>
                 )}
 
@@ -343,7 +345,7 @@ export default function Subscription() {
               <div className="rounded-xl border border-slate-200 dark:border-white/10 p-4">
                 <h3 className="font-bold text-slate-900 dark:text-white mb-3">Free Tier</h3>
                 <ul className="space-y-3 text-slate-600 dark:text-white/70">
-                  <li>Post 1 pitch only</li>
+                  <li>No pitch submission</li>
                   <li>Browse public opportunities</li>
                   <li>Basic visibility</li>
                   <li>Limited connection requests</li>
@@ -352,7 +354,7 @@ export default function Subscription() {
               <div className="rounded-xl border border-primary/20 bg-primary/10 p-4">
                 <h3 className="font-bold text-primary mb-3">Premium</h3>
                 <ul className="space-y-3 text-slate-700 dark:text-white/80">
-                  <li>Unlimited pitch submissions</li>
+                  <li>Pitch submissions opened</li>
                   <li>Priority placement in feeds</li>
                   <li>Better discovery and filtering</li>
                   <li>Stronger networking workflow</li>

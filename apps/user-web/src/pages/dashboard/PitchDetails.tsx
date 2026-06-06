@@ -149,6 +149,13 @@ const PitchDetails = () => {
   const founderProfile = pitch.user?.entrepreneurProfile || pitch.user?.investorProfile || {};
   const founderAvatar = founderProfile.avatarUrl || pitch.user?.avatarUrl || '';
   const inputStyle = "w-full p-2 bg-slate-100 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded text-slate-900 dark:text-white mb-2 focus:outline-none focus:border-primary";
+  const fundingAskValue = Number(String(pitch.fundingAsk || '').replace(/,/g, ''));
+  const equityOfferValue = Number(String(pitch.equityOffer || '').replace(/,/g, ''));
+  const impliedValuation =
+    Number.isFinite(fundingAskValue) && fundingAskValue > 0 &&
+    Number.isFinite(equityOfferValue) && equityOfferValue > 0
+      ? (fundingAskValue / equityOfferValue) * 100
+      : null;
 
   return (
     <div className="max-w-4xl mx-auto pb-20 font-sans text-slate-900 dark:text-white">
@@ -285,6 +292,16 @@ const PitchDetails = () => {
               ) : (
                   <p className="text-3xl font-black text-primary">{formatPercent(pitch.equityOffer)}</p>
               )}
+           </div>
+
+           <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+              <p className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold mb-1">Implied Valuation</p>
+              <p className="text-3xl font-black text-slate-900 dark:text-white">
+                {impliedValuation ? formatNaira(impliedValuation) : '--'}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-gray-500 mt-2">
+                Based on this pitch's funding ask and equity offer.
+              </p>
            </div>
 
            <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6 space-y-4 shadow-sm">

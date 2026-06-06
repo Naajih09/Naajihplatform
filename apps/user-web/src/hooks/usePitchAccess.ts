@@ -13,10 +13,10 @@ type PitchAccessState = {
 const initialState: PitchAccessState = {
   loading: true,
   activePitches: 0,
-  pitchLimit: 1,
-  remainingPitchSlots: 1,
+  pitchLimit: null,
+  remainingPitchSlots: 0,
   hasPremium: false,
-  canCreatePitch: true,
+  canCreatePitch: false,
 };
 
 export const usePitchAccess = () => {

@@ -8,7 +8,7 @@ import { getApiBaseUrl } from '../../lib/api-base';
 const CreatePitch = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const { loading: pitchAccessLoading, canCreatePitch, remainingPitchSlots, hasPremium } = usePitchAccess();
+  const { loading: pitchAccessLoading, canCreatePitch, hasPremium } = usePitchAccess();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
@@ -71,10 +71,10 @@ const CreatePitch = () => {
     if (!pitchAccessLoading && !canCreatePitch) {
       setToast({
         show: true,
-        message: 'Your free pitch limit is exhausted. Upgrade to Premium to post more pitches.',
+        message: 'Premium is required before you can submit a pitch.',
         type: 'error',
       });
-      navigate('/dashboard/subscription?reason=pitch-limit');
+      navigate('/dashboard/subscription?reason=pitch-payment');
       return;
     }
 
@@ -102,7 +102,7 @@ const CreatePitch = () => {
 
   const inputStyles = "w-full p-3 bg-slate-50 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded-xl text-slate-900 dark:text-white focus:border-primary focus:outline-none transition-colors placeholder:text-gray-400";
   const labelStyles = "block text-sm font-bold text-slate-600 dark:text-gray-400 mb-2";
-  const showPitchLimitNotice = !pitchAccessLoading && !hasPremium;
+  const showPremiumNotice = !pitchAccessLoading && !hasPremium;
   const isAspiringOwner = user.role === 'ASPIRING_BUSINESS_OWNER';
 
   return (
@@ -148,14 +148,13 @@ const CreatePitch = () => {
       <div className="bg-white dark:bg-[#1d1d20] rounded-2xl border border-slate-200 dark:border-gray-800 p-8 shadow-xl">
         <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Free tier limit reached</p>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Upgrade to post more pitches</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Payment required</p>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Upgrade to submit your pitch</h2>
             <p className="text-slate-500 dark:text-gray-400 max-w-2xl">
-              Your free plan allows {typeof remainingPitchSlots === 'number' ? `${remainingPitchSlots} remaining pitch${remainingPitchSlots === 1 ? '' : 'es'}` : 'one pitch'}.
-              Upgrade to Premium to unlock unlimited pitch submissions and keep building your investor pipeline.
+              Entrepreneurs need an active Premium plan before submitting opportunities for review and investor discovery.
             </p>
           </div>
-          <Button onClick={() => navigate('/dashboard/subscription?reason=pitch-limit')} className="bg-primary text-neutral-dark font-bold">
+          <Button onClick={() => navigate('/dashboard/subscription?reason=pitch-payment')} className="bg-primary text-neutral-dark font-bold">
             Upgrade Now
           </Button>
         </div>
@@ -167,9 +166,9 @@ const CreatePitch = () => {
         <Button variant="ghost" onClick={() => navigate('/dashboard/opportunities')}>Cancel</Button>
       </div>
 
-      {showPitchLimitNotice && (
+      {showPremiumNotice && (
         <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/10 p-4 text-sm text-slate-700 dark:text-white/80">
-          <strong className="text-primary">Free tier:</strong> you can post 1 pitch before upgrading. Premium gives you unlimited pitch submissions.
+          <strong className="text-primary">Premium required:</strong> pitch submissions are opened after payment, so your opportunity can enter review and investor discovery.
         </div>
       )}
 

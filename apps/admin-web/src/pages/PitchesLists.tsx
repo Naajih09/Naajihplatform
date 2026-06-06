@@ -94,6 +94,19 @@ const PitchesList = () => {
     }
   };
 
+  const getPitchEquity = (pitch: any) => pitch.equityOffer ?? pitch.equityOffered;
+
+  const getImpliedValuation = (pitch: any) => {
+    const ask = Number(String(pitch.fundingAsk || '').replace(/,/g, ''));
+    const equity = Number(String(getPitchEquity(pitch) || '').replace(/,/g, ''));
+
+    if (!Number.isFinite(ask) || ask <= 0 || !Number.isFinite(equity) || equity <= 0) {
+      return null;
+    }
+
+    return (ask / equity) * 100;
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-20 relative">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
@@ -186,6 +199,7 @@ const PitchesList = () => {
              </div>
            ) : pitches.map((pitch) => {
              const ask = pitch.fundingAsk ? parseInt(pitch.fundingAsk) : 0;
+             const equity = getPitchEquity(pitch);
              const status = pitch.status || 'PENDING';
              
              return (
@@ -207,7 +221,7 @@ const PitchesList = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] text-slate-500 dark:text-gray-500 uppercase font-bold">Equity</p>
-                      <p className="text-slate-900 dark:text-white font-bold">{pitch.equityOffered || 'N/A'}%</p>
+                      <p className="text-slate-900 dark:text-white font-bold">{equity || 'N/A'}%</p>
                     </div>
                   </div>
 
@@ -294,13 +308,14 @@ const PitchesList = () => {
                 </div>
                 <div className="admin-surface-muted p-3 rounded">
                   <p className="text-slate-500 dark:text-gray-500 text-[10px] uppercase font-bold mb-1">Equity Offered</p>
-                  <p className="text-slate-900 dark:text-white font-bold">{selectedPitch.equityOffered || 'N/A'}%</p>
+                  <p className="text-slate-900 dark:text-white font-bold">{getPitchEquity(selectedPitch) || 'N/A'}%</p>
                 </div>
                 <div className="admin-surface-muted p-3 rounded">
                   <p className="text-slate-500 dark:text-gray-500 text-[10px] uppercase font-bold mb-1">Valuation</p>
                   <p className="text-slate-900 dark:text-white font-bold">
-                    {selectedPitch.fundingAsk && selectedPitch.equityOffered ? 
-                      `NGN ${Math.round((parseInt(selectedPitch.fundingAsk) / parseFloat(selectedPitch.equityOffered)) * 100).toLocaleString()}` : 'N/A'}
+                    {getImpliedValuation(selectedPitch)
+                      ? `NGN ${Math.round(getImpliedValuation(selectedPitch) || 0).toLocaleString()}`
+                      : 'N/A'}
                   </p>
                 </div>
                 <div className="admin-surface-muted p-3 rounded">

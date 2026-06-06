@@ -528,23 +528,17 @@ export class UsersService {
         const hasPremium =
           user?.subscription?.plan === 'PREMIUM' &&
           (!activeUntil || activeUntil > now);
-        const freePitchLimit = Number(process.env.FREE_PITCH_LIMIT || 1);
-        const pitchLimit =
-          Number.isFinite(freePitchLimit) && freePitchLimit > 0
-            ? freePitchLimit
-            : 1;
-        const remainingPitchSlots = hasPremium
-          ? null
-          : Math.max(0, pitchLimit - activePitches);
+        const canCreatePitch =
+          user?.role === UserRole.ENTREPRENEUR && hasPremium;
 
         return {
           activePitches,
           pendingConnections,
           isVerified: user?.isVerified || false,
           hasPremium,
-          pitchLimit: hasPremium ? null : pitchLimit,
-          remainingPitchSlots,
-          canCreatePitch: hasPremium || activePitches < pitchLimit,
+          pitchLimit: null,
+          remainingPitchSlots: hasPremium ? null : 0,
+          canCreatePitch,
           totalViews: 0,
         };
       },

@@ -175,6 +175,12 @@ const Opportunities = () => {
       setConnectionStates((prev) => ({ ...prev, [pitch.userId]: 'PENDING' }));
       setToast({ show: true, message: `Connection request sent to ${pitch.user?.entrepreneurProfile?.firstName || 'Entrepreneur'}!`, type: 'success' });
     } catch (error: any) {
+      const message = String(error.message || '').toLowerCase();
+      if (message.includes('accepted')) {
+        setConnectionStates((prev) => ({ ...prev, [pitch.userId]: 'ACCEPTED' }));
+      } else if (message.includes('pending')) {
+        setConnectionStates((prev) => ({ ...prev, [pitch.userId]: 'PENDING' }));
+      }
       setToast({ show: true, message: error.message || 'Failed to send request.', type: 'error' });
     }
   };
@@ -317,16 +323,16 @@ const Opportunities = () => {
               const connectionState = connectionStates[pitch.userId];
               const isPending = connectionState === 'PENDING';
               const isConnected = connectionState === 'ACCEPTED';
-              const connectLocked = !isVerified || !pitchApproved || isPending || isConnected;
+              const connectLocked = !isVerified || !pitchApproved || isPending;
               const connectTitle = !isVerified
                 ? verificationMessage
                 : !pitchApproved
                   ? 'This pitch is pending review'
-                  : isPending
-                    ? 'Connection request pending'
-                    : isConnected
-                      ? 'Already connected'
-                    : 'Connect with this founder';
+                : isPending
+                  ? 'Connection request pending'
+                  : isConnected
+                    ? 'Message founder'
+                  : 'Connect with this founder';
 
               return (
             <div key={pitch.id} className="group bg-white dark:bg-[#151518] border border-slate-200 dark:border-white/5 rounded-xl p-5 flex flex-col hover:shadow-lg transition-all duration-300">
@@ -381,12 +387,18 @@ const Opportunities = () => {
                 </Link>
                 {user.role === 'INVESTOR' && (
                     <button 
-                        onClick={() => handleConnect(pitch)}
-                        disabled={!pitchApproved || isPending || isConnected}
+                        onClick={() => {
+                          if (isConnected) {
+                            navigate('/dashboard/messages');
+                            return;
+                          }
+                          handleConnect(pitch);
+                        }}
+                        disabled={!pitchApproved || isPending}
                         title={connectTitle}
                         className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${
                             isConnected
-                            ? 'bg-green-500/20 text-green-500 cursor-default'
+                            ? 'bg-green-600 text-white hover:bg-green-700'
                             : isPending
                               ? 'bg-amber-500/20 text-amber-600 cursor-default dark:text-amber-400'
                             : connectLocked
@@ -395,7 +407,7 @@ const Opportunities = () => {
                         }`}
                     >
                         {isConnected || isPending ? <CheckCircle size={16} /> : <UserPlus size={16} />}
-                        {isConnected ? 'Message' : isPending ? 'Pending' : !isVerified ? 'Verify' : !pitchApproved ? 'Pending review' : 'Connect'}
+                        {isConnected ? 'Message' : isPending ? 'Pending' : !isVerified ? 'Verify' : 'Connect'}
                     </button>
                 )}
               </div>

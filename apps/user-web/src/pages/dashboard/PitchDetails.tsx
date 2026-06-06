@@ -94,7 +94,15 @@ const PitchDetails = () => {
       if (!res.ok) throw new Error(data?.message || 'Failed to connect.');
       setConnectionState('PENDING');
       setToast({ show: true, message: 'Connection request sent!', type: 'success' });
-    } catch (error: any) { setToast({ show: true, message: error.message || 'Failed to connect.', type: 'error' }); }
+    } catch (error: any) {
+      const message = String(error.message || '').toLowerCase();
+      if (message.includes('accepted')) {
+        setConnectionState('ACCEPTED');
+      } else if (message.includes('pending')) {
+        setConnectionState('PENDING');
+      }
+      setToast({ show: true, message: error.message || 'Failed to connect.', type: 'error' });
+    }
   };
 
   // --- DELETE LOGIC ---
@@ -136,7 +144,7 @@ const PitchDetails = () => {
   const pitchApproved = isPitchApproved(pitch.status);
   const isPending = connectionState === 'PENDING';
   const isConnected = connectionState === 'ACCEPTED';
-  const connectLocked = !isVerified || !pitchApproved || isPending || isConnected;
+  const connectLocked = !isVerified || !pitchApproved || isPending;
   const connectTitle = !isVerified
     ? verificationMessage
     : !pitchApproved
@@ -144,7 +152,7 @@ const PitchDetails = () => {
       : isPending
         ? 'Connection request pending'
         : isConnected
-          ? 'Already connected'
+          ? 'Message founder'
         : 'Connect with founder';
   const founderProfile = pitch.user?.entrepreneurProfile || pitch.user?.investorProfile || {};
   const founderAvatar = founderProfile.avatarUrl || pitch.user?.avatarUrl || '';
@@ -327,8 +335,14 @@ const PitchDetails = () => {
                      ? 'bg-slate-200 text-slate-500 dark:bg-white/10 dark:text-slate-400'
                      : 'bg-primary text-black hover:brightness-110'
                }`}
-               onClick={handleConnect}
-               disabled={!pitchApproved || isPending || isConnected}
+               onClick={() => {
+                 if (isConnected) {
+                   navigate('/dashboard/messages');
+                   return;
+                 }
+                 handleConnect();
+               }}
+               disabled={!pitchApproved || isPending}
                title={connectTitle}
              >
                {isConnected
@@ -338,7 +352,7 @@ const PitchDetails = () => {
                  : !isVerified
                    ? <><UserPlus size={18} className="mr-2" /> Verify First</>
                    : !pitchApproved
-                     ? <><UserPlus size={18} className="mr-2" /> Pending Review</>
+                     ? <><UserPlus size={18} className="mr-2" /> Connect</>
                      : <><UserPlus size={18} className="mr-2" /> Connect with Founder</>}
              </Button>
            )}

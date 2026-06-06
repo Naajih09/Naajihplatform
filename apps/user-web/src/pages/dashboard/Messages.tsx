@@ -1,4 +1,4 @@
-import { ArrowLeft, FileText, Loader2, Mic, MoreVertical, Paperclip, Search, Send, StopCircle } from 'lucide-react';
+import { ArrowLeft, FileText, Loader2, Mic, MoreVertical, Paperclip, Search, Send, StopCircle, X } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import EmptyState from '../../components/EmptyState';
 import { useSocket } from '../../hooks/useSocket';
@@ -14,6 +14,10 @@ const Messages = () => {
     show: false,
     message: '',
     type: 'success',
+  });
+  const [comingSoon, setComingSoon] = useState<{ show: boolean; title: string }>({
+    show: false,
+    title: '',
   });
   
   // --- NEW: Search State ---
@@ -235,7 +239,7 @@ const Messages = () => {
         recorder.start();
         setIsRecording(true);
     } catch (err) {
-        alert("Microphone access denied");
+        setToast({ show: true, message: 'Microphone access denied.', type: 'error' });
     }
   };
 
@@ -287,6 +291,37 @@ const Messages = () => {
       {toast.show && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
           {toast.message}
+        </div>
+      )}
+
+      {comingSoon.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-[#1d1d20]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Coming Soon</p>
+                <h2 className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{comingSoon.title}</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setComingSoon({ show: false, title: '' })}
+                className="rounded-full p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-white/10 dark:hover:text-white"
+                aria-label="Close coming soon modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p className="mt-4 text-sm text-slate-500 dark:text-gray-400">
+              This feature is coming soon. We'll notify you when it's ready.
+            </p>
+            <button
+              type="button"
+              onClick={() => setComingSoon({ show: false, title: '' })}
+              className="mt-6 w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-black hover:brightness-110"
+            >
+              Got it
+            </button>
+          </div>
         </div>
       )}
       
@@ -379,7 +414,15 @@ const Messages = () => {
                         <p className="text-xs text-slate-500 dark:text-gray-400 font-bold uppercase tracking-wider">{activeChat.role}</p>
                     </div>
                 </div>
-                <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white" aria-label="Options"><MoreVertical size={20}/></button>
+                <button
+                  type="button"
+                  onClick={() => setComingSoon({ show: true, title: 'Conversation Options' })}
+                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  aria-label="Options"
+                  title="Conversation options"
+                >
+                  <MoreVertical size={20}/>
+                </button>
             </div>
 
             {/* MESSAGES LIST */}

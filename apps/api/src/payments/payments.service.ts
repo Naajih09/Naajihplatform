@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import axios from 'axios';
+import { AppCacheService } from '../cache/app-cache.service';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PaymentProvider, PaymentStatus, UserRole } from '@prisma/client';
@@ -103,7 +104,14 @@ export class PaymentsService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly notificationsService: NotificationsService,
+    private readonly cache: AppCacheService,
   ) {}
+
+  private clearUserSubscriptionCache(userId: string) {
+    void this.cache.deleteByPrefix(`user:${userId}:`);
+    void this.cache.deleteByPrefix('users:');
+    void this.cache.deleteByPrefix('admin-users:');
+  }
 
   async initializeTransaction(
     provider: 'paystack' | 'opay',
@@ -320,6 +328,7 @@ export class PaymentsService {
             trialEndsAt: null,
           },
         });
+        this.clearUserSubscriptionCache(user.id);
 
         // Notify user
         await this.notificationsService.create(

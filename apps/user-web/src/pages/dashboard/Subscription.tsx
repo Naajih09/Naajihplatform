@@ -1,9 +1,10 @@
 import { Check, Info, Shield, Wallet, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getApiBaseUrl } from '../../lib/api-base';
 
 export default function Subscription() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<'paystack' | 'opay'>('paystack');
   const [searchParams] = useSearchParams();
@@ -28,6 +29,21 @@ export default function Subscription() {
     localStorage.getItem('access_token') ||
     '';
 
+  const refreshCurrentUser = async () => {
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!storedUser?.email || !authToken) return null;
+
+    const res = await fetch(`${API_BASE}/users/${storedUser.email}`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    setSubscription(data.subscription || null);
+    localStorage.setItem('user', JSON.stringify(data));
+    return data;
+  };
+
   useEffect(() => {
     const reference = searchParams.get('reference') || searchParams.get('trxref') || searchParams.get('orderNo');
     const provider = (searchParams.get('provider') as 'paystack' | 'opay') || 'paystack';
@@ -37,18 +53,7 @@ export default function Subscription() {
   }, [searchParams]);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (!user?.email || !authToken) return;
-    fetch(`${API_BASE}/users/${user.email}`, {
-      headers: { Authorization: `Bearer ${authToken}` },
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data) {
-          setSubscription(data.subscription || null);
-          localStorage.setItem('user', JSON.stringify(data));
-        }
-      })
+    refreshCurrentUser()
       .catch(() => null);
   }, [authToken]);
 
@@ -61,7 +66,14 @@ export default function Subscription() {
         throw new Error(data?.message || 'Payment verification failed.');
       }
       if (data.status === 'success') {
+        const refreshedUser = await refreshCurrentUser();
         setToast({ show: true, message: 'Subscription successful! You are now a Premium member.', type: 'success' });
+        if (
+          searchParams.get('reason') === 'pitch-payment' &&
+          refreshedUser?.role === 'ENTREPRENEUR'
+        ) {
+          setTimeout(() => navigate('/dashboard/create-pitch', { replace: true }), 800);
+        }
       } else {
         setToast({ show: true, message: 'Payment verification failed.', type: 'error' });
       }
@@ -127,12 +139,7 @@ export default function Subscription() {
       setToast({ show: true, message: `Trial started. You have ${trialDays} days of Premium.`, type: 'success' });
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user?.email) {
-        const refreshed = await fetch(`${API_BASE}/users/${user.email}`, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-        const data = await refreshed.json();
-        setSubscription(data.subscription || null);
-        localStorage.setItem('user', JSON.stringify(data));
+        await refreshCurrentUser();
       }
     } catch (error: any) {
       setToast({ show: true, message: error?.message || 'Unable to start trial.', type: 'error' });

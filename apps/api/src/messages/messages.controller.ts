@@ -65,6 +65,18 @@ export class MessagesController {
     return this.messagesService.getMyChatPartners(req.user.id);
   }
 
+  // GET /api/messages/unread-count -> Count unread messages for sidebar badge
+  @Get('unread-count')
+  getUnreadCount(@Request() req) {
+    return this.messagesService.getUnreadCount(req.user.id);
+  }
+
+  // PATCH /api/messages/conversation/:otherId/read -> Mark a conversation as read
+  @Patch('conversation/:otherId/read')
+  markConversationAsRead(@Param('otherId') otherId: string, @Request() req) {
+    return this.messagesService.markConversationAsRead(req.user.id, otherId);
+  }
+
   // PATCH /api/messages/:messageId/read -> Mark as read
   @Patch(':messageId/read')
   markAsRead(@Param('messageId') messageId: string, @Request() req) {

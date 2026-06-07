@@ -93,6 +93,11 @@ const Messages = () => {
         const data = await res.json();
         setMessages(Array.isArray(data) ? data : []);
         scrollToBottom();
+        await fetch(`${API_BASE}/messages/conversation/${activeChat.id}/read`, {
+          method: 'PATCH',
+          headers: authHeaders,
+        });
+        window.dispatchEvent(new Event('messages:read'));
       } catch (error) {
         console.error(error);
         setMessages([]);
@@ -187,6 +192,7 @@ const Messages = () => {
         throw new Error(data?.message || `Failed to send message (${res.status})`);
       }
       socket.emit('send_message', messageData);
+      window.dispatchEvent(new Event('messages:sent'));
       setToast({ show: true, message: 'Message sent.', type: 'success' });
     } catch (error: any) {
       setToast({ show: true, message: error.message || 'Failed to send message.', type: 'error' });

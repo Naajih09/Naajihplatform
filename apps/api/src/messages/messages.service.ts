@@ -59,6 +59,30 @@ export class MessagesService {
     });
   }
 
+  async getUnreadCount(userId: string) {
+    const count = await this.databaseService.message.count({
+      where: {
+        receiverId: userId,
+        isRead: false,
+      },
+    });
+
+    return { count };
+  }
+
+  async markConversationAsRead(userId: string, otherId: string) {
+    const result = await this.databaseService.message.updateMany({
+      where: {
+        senderId: otherId,
+        receiverId: userId,
+        isRead: false,
+      },
+      data: { isRead: true },
+    });
+
+    return { count: result.count };
+  }
+
   // 3. GET MY CHAT LIST
   async getMyChatPartners(userId: string) {
     // Find all connections where status is ACCEPTED

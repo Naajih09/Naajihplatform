@@ -80,6 +80,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     localStorage.setItem(welcomeKey, 'true');
     return true;
   });
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
     if (authToken && !hasValidAuthToken) {
@@ -115,6 +116,39 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     };
   }, [authUser, userString, authToken, hasValidAuthToken, dispatch, handleLogout]);
 
+  useEffect(() => {
+    if (!hasValidAuthToken) return;
+
+    let cancelled = false;
+
+    const fetchUnreadMessages = async () => {
+      try {
+        const res = await fetch(`${getApiBaseUrl()}/messages/unread-count`, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) {
+          setUnreadMessages(Number(data?.count) || 0);
+        }
+      } catch {
+        // Keep the existing badge value if this optional count fails.
+      }
+    };
+
+    fetchUnreadMessages();
+    const interval = window.setInterval(fetchUnreadMessages, 30000);
+    window.addEventListener('messages:read', fetchUnreadMessages);
+    window.addEventListener('messages:sent', fetchUnreadMessages);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+      window.removeEventListener('messages:read', fetchUnreadMessages);
+      window.removeEventListener('messages:sent', fetchUnreadMessages);
+    };
+  }, [authToken, hasValidAuthToken, location.pathname]);
+
   const isAspirant = user.role === 'ASPIRING_BUSINESS_OWNER';
   const isInvestor = user.role === 'INVESTOR';
   const isEntrepreneur = user.role === 'ENTREPRENEUR';
@@ -131,7 +165,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     : [
         { label: 'Dashboard', path: '/dashboard', icon: LayoutGrid },
         { label: 'Opportunities', path: '/dashboard/opportunities', icon: Compass },
-        { label: 'Messages', path: '/dashboard/messages', icon: MessageSquare },
+        { label: 'Messages', path: '/dashboard/messages', icon: MessageSquare, count: unreadMessages },
         { label: 'Connections', path: '/dashboard/connections', icon: LinkIcon },
         { label: 'Profile', path: '/dashboard/profile', icon: User },
         { label: 'Verification', path: '/dashboard/verification', icon: CheckCircle },
@@ -215,6 +249,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             >
               <item.icon size={20} />
               <span>{item.label}</span>
+              {item.count > 0 && (
+                <span className="ml-auto min-w-5 rounded-full bg-red-500 px-1.5 py-0.5 text-center text-[10px] font-black leading-none text-white">
+                  {item.count > 99 ? '99+' : item.count}
+                </span>
+              )}
               {item.badge && (
                 <span className="ml-auto bg-white/20 text-xs px-2 py-0.5 rounded-full font-bold">{item.badge}</span>
               )}

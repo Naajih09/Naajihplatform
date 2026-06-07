@@ -1,4 +1,4 @@
-import { Award, BookOpen, Calendar, ChevronRight, Network, PlayCircle, Rocket, ShieldCheck } from 'lucide-react';
+import { Award, BookOpen, Calendar, ChevronRight, Network, PlayCircle, Rocket, ShieldCheck, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
@@ -38,6 +38,7 @@ function DashboardHome() {
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [joiningId, setJoiningId] = useState(null);
+  const [comingSoon, setComingSoon] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -194,6 +195,37 @@ function DashboardHome() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-20">
+      {comingSoon && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-[#1d1d20]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Coming Soon</p>
+                <h2 className="mt-2 text-2xl font-black text-slate-900 dark:text-white">Scheduled Calls</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setComingSoon(false)}
+                className="rounded-full p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-white/10 dark:hover:text-white"
+                aria-label="Close coming soon modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p className="mt-4 text-sm text-slate-500 dark:text-gray-400">
+              This feature is coming soon. We'll notify you when it's ready.
+            </p>
+            <button
+              type="button"
+              onClick={() => setComingSoon(false)}
+              className="mt-6 w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-black hover:brightness-110"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
@@ -443,9 +475,13 @@ function DashboardHome() {
             <h3 className="text-xl font-black mb-2 text-slate-900 dark:text-white">Need Guidance?</h3>
             <p className="text-slate-500 dark:text-neutral-muted text-sm mb-4">Book a session with our Islamic Finance consultants.</p>
 
-            <a href="mailto:support@naajihbiz.com?subject=Consultation%20Request" className="text-slate-900 dark:text-white font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">
+            <button
+              type="button"
+              onClick={() => setComingSoon(true)}
+              className="text-slate-900 dark:text-white font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all"
+            >
               Schedule a Call <ChevronRight size={14} />
-            </a>
+            </button>
           </div>
         </div>
       </div>

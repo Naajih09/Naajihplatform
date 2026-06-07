@@ -22,6 +22,7 @@ export class PaymentsController {
     data: {
       provider: 'paystack' | 'opay';
       amount: number;
+      reason?: string;
     },
     @Req() req: any,
   ) {
@@ -31,6 +32,7 @@ export class PaymentsController {
       data.amount,
       req.user.id,
       req.user.role,
+      data.reason,
     );
   }
 

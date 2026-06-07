@@ -111,6 +111,7 @@ export default function Subscription() {
           email: user.email, 
           amount: subscriptionAmount,
           userId: user.id,
+          reason: pitchPaymentReason ? 'pitch-payment' : undefined,
         }),
       });
       const data = await res.json().catch(() => null);

@@ -119,6 +119,7 @@ export class PaymentsService {
     amount: number,
     userId?: string,
     userRole?: UserRole,
+    reason?: string,
   ) {
     if (!email || !userId) {
       throw new BadRequestException('Authenticated user is required');
@@ -157,7 +158,7 @@ export class PaymentsService {
     });
 
     if (provider === 'paystack') {
-      return this.initializePaystack(email, amountKobo, reference);
+      return this.initializePaystack(email, amountKobo, reference, reason);
     }
     return this.initializeOPay(email, amountKobo, reference);
   }
@@ -166,8 +167,15 @@ export class PaymentsService {
     email: string,
     amountKobo: number,
     reference: string,
+    reason?: string,
   ) {
     const url = 'https://api.paystack.co/transaction/initialize';
+    const callbackUrl = new URL(`${this.frontendUrl}/dashboard/subscription`);
+    callbackUrl.searchParams.set('provider', 'paystack');
+    if (reason) {
+      callbackUrl.searchParams.set('reason', reason);
+    }
+
     try {
       const response = await axios.post(
         url,
@@ -175,6 +183,7 @@ export class PaymentsService {
           email,
           amount: amountKobo,
           reference,
+          callback_url: callbackUrl.toString(),
         },
         {
           headers: {

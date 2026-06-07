@@ -502,47 +502,40 @@ export class UsersService {
 
   // 6. DASHBOARD STATS
   async getDashboardStats(userId: string) {
-    return this.cache.getOrSet(
-      `user:${userId}:dashboard-stats`,
-      20,
-      async () => {
-        const [activePitches, pendingConnections, user] = await Promise.all([
-          this.databaseService.pitch.count({
-            where: { userId },
-          }),
-          this.databaseService.connection.count({
-            where: {
-              receiverId: userId,
-              status: 'PENDING',
-            },
-          }),
-          this.databaseService.user.findUnique({
-            where: { id: userId },
-            include: { subscription: true },
-          }),
-        ]);
+    const [activePitches, pendingConnections, user] = await Promise.all([
+      this.databaseService.pitch.count({
+        where: { userId },
+      }),
+      this.databaseService.connection.count({
+        where: {
+          receiverId: userId,
+          status: 'PENDING',
+        },
+      }),
+      this.databaseService.user.findUnique({
+        where: { id: userId },
+        include: { subscription: true },
+      }),
+    ]);
 
-        const now = new Date();
-        const activeUntil =
-          user?.subscription?.endDate || user?.subscription?.trialEndsAt;
-        const hasPremium =
-          user?.subscription?.plan === 'PREMIUM' &&
-          (!activeUntil || activeUntil > now);
-        const canCreatePitch =
-          user?.role === UserRole.ENTREPRENEUR && hasPremium;
+    const now = new Date();
+    const activeUntil =
+      user?.subscription?.endDate || user?.subscription?.trialEndsAt;
+    const hasPremium =
+      user?.subscription?.plan === 'PREMIUM' &&
+      (!activeUntil || activeUntil > now);
+    const canCreatePitch = user?.role === UserRole.ENTREPRENEUR && hasPremium;
 
-        return {
-          activePitches,
-          pendingConnections,
-          isVerified: user?.isVerified || false,
-          hasPremium,
-          pitchLimit: null,
-          remainingPitchSlots: hasPremium ? null : 0,
-          canCreatePitch,
-          totalViews: 0,
-        };
-      },
-    );
+    return {
+      activePitches,
+      pendingConnections,
+      isVerified: user?.isVerified || false,
+      hasPremium,
+      pitchLimit: null,
+      remainingPitchSlots: hasPremium ? null : 0,
+      canCreatePitch,
+      totalViews: 0,
+    };
   }
 
   // Admin stats (platform overview)

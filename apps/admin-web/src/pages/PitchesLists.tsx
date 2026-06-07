@@ -3,6 +3,8 @@ import { Loader2, CheckCircle, XCircle, Search, Eye, X, Clock } from 'lucide-rea
 import EmptyState from '../components/EmptyState';
 import api from '../utils/api';
 
+const STAGE_OPTIONS = ['Idea Phase', 'MVP / Prototype', 'Generating Revenue', 'Scaling', 'Seed', 'Growth', 'Scale'];
+
 const PitchesList = () => {
   const [pitches, setPitches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -11,6 +13,7 @@ const PitchesList = () => {
   const[searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [stageFilter, setStageFilter] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
   const [totalItems, setTotalItems] = useState(0);
@@ -21,7 +24,7 @@ const PitchesList = () => {
   const [rejectModal, setRejectModal] = useState<{ show: boolean; pitch: any | null }>({ show: false, pitch: null });
   const [rejectionReason, setRejectionReason] = useState('');
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({ show: false, message: '', type: 'success' });
-  const hasFilters = searchQuery.trim() !== '' || categoryFilter !== 'ALL' || statusFilter !== 'ALL';
+  const hasFilters = searchQuery.trim() !== '' || categoryFilter !== 'ALL' || statusFilter !== 'ALL' || stageFilter !== 'ALL';
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ show: true, message, type });
@@ -35,6 +38,7 @@ const PitchesList = () => {
       if (searchQuery) params.set('search', searchQuery);
       if (categoryFilter !== 'ALL') params.set('category', categoryFilter);
       if (statusFilter !== 'ALL') params.set('status', statusFilter);
+      if (stageFilter !== 'ALL') params.set('stage', stageFilter);
       params.set('page', String(currentPage));
       params.set('pageSize', String(pageSize));
 
@@ -54,11 +58,11 @@ const PitchesList = () => {
 
   useEffect(() => {
     fetchPitches();
-  }, [searchQuery, categoryFilter, statusFilter, currentPage, pageSize]);
+  }, [searchQuery, categoryFilter, statusFilter, stageFilter, currentPage, pageSize]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, categoryFilter, statusFilter, pageSize]);
+  }, [searchQuery, categoryFilter, statusFilter, stageFilter, pageSize]);
 
   const handleStatusUpdate = async (id: string, newStatus: 'APPROVED' | 'REJECTED', reason?: string) => {
     try {
@@ -102,6 +106,7 @@ const PitchesList = () => {
     }
   };
 
+  const getPitchStage = (pitch: any) => pitch.user?.entrepreneurProfile?.stage || pitch.stage || 'N/A';
   const getPitchEquity = (pitch: any) => pitch.equityOffer ?? pitch.equityOffered;
 
   const getImpliedValuation = (pitch: any) => {
@@ -161,6 +166,19 @@ const PitchesList = () => {
           </select>
 
           <select
+            value={stageFilter}
+            onChange={(e) => setStageFilter(e.target.value)}
+            className="admin-input px-3 py-2 text-sm"
+            aria-label="Filter by business stage"
+            title="Filter by business stage"
+          >
+            <option value="ALL">All Stages</option>
+            {STAGE_OPTIONS.map((stage) => (
+              <option key={stage} value={stage}>{stage}</option>
+            ))}
+          </select>
+
+          <select
             value={pageSize}
             onChange={(e) => setPageSize(Number(e.target.value))}
             className="admin-input px-3 py-2 text-sm"
@@ -198,6 +216,7 @@ const PitchesList = () => {
                      setSearchQuery('');
                      setCategoryFilter('ALL');
                      setStatusFilter('ALL');
+                     setStageFilter('ALL');
                      setCurrentPage(1);
                    } else {
                      fetchPitches();
@@ -217,6 +236,7 @@ const PitchesList = () => {
                           {getStatusBadge(status)}
                           <h3 className="text-xl font-bold text-slate-900 dark:text-white mt-3 line-clamp-1" title={pitch.title}>{pitch.title}</h3>
                           <p className="text-primary text-xs font-bold uppercase mt-1">{pitch.category || pitch.sector || 'Uncategorized'}</p>
+                          <p className="text-slate-500 dark:text-gray-500 text-[11px] font-bold uppercase mt-1">{getPitchStage(pitch)}</p>
                       </div>
                   </div>
                   
@@ -328,7 +348,7 @@ const PitchesList = () => {
                 </div>
                 <div className="admin-surface-muted p-3 rounded">
                   <p className="text-slate-500 dark:text-gray-500 text-[10px] uppercase font-bold mb-1">Business Stage</p>
-                  <p className="text-slate-900 dark:text-white font-bold truncate">{selectedPitch.stage || 'N/A'}</p>
+                  <p className="text-slate-900 dark:text-white font-bold truncate">{getPitchStage(selectedPitch)}</p>
                 </div>
               </div>
 

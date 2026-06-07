@@ -258,10 +258,10 @@ const Opportunities = () => {
                     aria-label="Filter pitches by stage" // Added an aria-label for good measure
                 >
                     <option value="All">All Stages</option>
-                    <option value="Idea">Idea</option>
-                    <option value="Seed">Seed</option>
-                    <option value="Growth">Growth</option>
-                    <option value="Scale">Scale</option>
+                    <option value="Idea Phase">Idea Phase</option>
+                    <option value="MVP / Prototype">MVP / Prototype</option>
+                    <option value="Generating Revenue">Generating Revenue</option>
+                    <option value="Scaling">Scaling</option>
                 </select>
             </div>
 

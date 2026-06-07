@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertOctagon, Loader2, CheckCircle, XCircle, Search, Eye, X, Clock } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Search, Eye, X, Clock } from 'lucide-react';
 import EmptyState from '../components/EmptyState';
 import api from '../utils/api';
 
@@ -18,6 +18,8 @@ const PitchesList = () => {
 
   // Modal & Toast
   const[selectedPitch, setSelectedPitch] = useState<any | null>(null);
+  const [rejectModal, setRejectModal] = useState<{ show: boolean; pitch: any | null }>({ show: false, pitch: null });
+  const [rejectionReason, setRejectionReason] = useState('');
   const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({ show: false, message: '', type: 'success' });
   const hasFilters = searchQuery.trim() !== '' || categoryFilter !== 'ALL' || statusFilter !== 'ALL';
 
@@ -58,27 +60,33 @@ const PitchesList = () => {
     setCurrentPage(1);
   }, [searchQuery, categoryFilter, statusFilter, pageSize]);
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Remove this pitch entirely from the platform? This cannot be undone.")) return;
+  const handleStatusUpdate = async (id: string, newStatus: 'APPROVED' | 'REJECTED', reason?: string) => {
     try {
-      await api.delete(`/pitches/${id}`);
-      showToast("Pitch removed successfully.", "success");
-      setPitches(pitches.filter(p => p.id !== id));
-      if (selectedPitch?.id === id) setSelectedPitch(null);
+      await api.patch(`/pitches/${id}`, { status: newStatus, rejectionReason: reason });
+      showToast(`Pitch ${newStatus.toLowerCase()} successfully.`, "success");
+      setPitches(pitches.map(p => p.id === id ? { ...p, status: newStatus, rejectionReason: reason || null } : p));
+      if (selectedPitch?.id === id) setSelectedPitch({ ...selectedPitch, status: newStatus, rejectionReason: reason || null });
     } catch (err) {
       showToast("Network error", "error");
     }
   };
 
-  const handleStatusUpdate = async (id: string, newStatus: 'APPROVED' | 'REJECTED') => {
-    try {
-      await api.patch(`/pitches/${id}`, { status: newStatus });
-      showToast(`Pitch ${newStatus.toLowerCase()} successfully.`, "success");
-      setPitches(pitches.map(p => p.id === id ? { ...p, status: newStatus } : p));
-      if (selectedPitch?.id === id) setSelectedPitch({ ...selectedPitch, status: newStatus });
-    } catch (err) {
-      showToast("Network error", "error");
+  const openRejectModal = (pitch: any) => {
+    setRejectModal({ show: true, pitch });
+    setRejectionReason(pitch?.rejectionReason || '');
+  };
+
+  const handleRejectSubmit = async () => {
+    if (!rejectModal.pitch) return;
+    const reason = rejectionReason.trim();
+    if (!reason) {
+      showToast('Please provide a rejection reason.', 'error');
+      return;
     }
+
+    await handleStatusUpdate(rejectModal.pitch.id, 'REJECTED', reason);
+    setRejectModal({ show: false, pitch: null });
+    setRejectionReason('');
   };
 
   // Extract unique categories for filter dropdown
@@ -331,22 +339,80 @@ const PitchesList = () => {
                 </div>
               )}
 
-              <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-white/10 mt-8">
-                <button onClick={() => handleDelete(selectedPitch.id)} className="px-4 py-2 text-red-500 hover:bg-red-500/10 rounded flex items-center gap-2 text-sm font-bold mr-auto">
-                  <AlertOctagon size={16} /> Delete Pitch
-                </button>
+              {selectedPitch.status === 'REJECTED' && selectedPitch.rejectionReason && (
+                <div>
+                  <h4 className="text-red-500 font-bold mb-2 uppercase text-xs tracking-wider">Rejection Reason</h4>
+                  <p className="text-slate-700 dark:text-gray-300 text-sm admin-surface-muted p-4 rounded border border-red-500/20">{selectedPitch.rejectionReason}</p>
+                </div>
+              )}
 
+              <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-white/10 mt-8">
                 {(selectedPitch.status !== 'APPROVED') && (
                   <button onClick={() => handleStatusUpdate(selectedPitch.id, 'APPROVED')} className="px-6 py-2 bg-green-600 text-white rounded font-bold text-sm hover:bg-green-700">
                     Approve Pitch
                   </button>
                 )}
                 {(selectedPitch.status !== 'REJECTED') && (
-                  <button onClick={() => handleStatusUpdate(selectedPitch.id, 'REJECTED')} className="px-6 py-2 border border-red-600/50 text-red-500 rounded font-bold text-sm hover:bg-red-900/30">
+                  <button onClick={() => openRejectModal(selectedPitch)} className="px-6 py-2 border border-red-600/50 text-red-500 rounded font-bold text-sm hover:bg-red-900/30">
                     Reject Pitch
                   </button>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {rejectModal.show && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white border border-slate-200 rounded-xl w-full max-w-md p-6 dark:bg-[#1d1d20] dark:border-white/10">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.25em] text-red-500">Reject Pitch</p>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mt-1">
+                  {rejectModal.pitch?.title || 'Pitch submission'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setRejectModal({ show: false, pitch: null });
+                  setRejectionReason('');
+                }}
+                className="text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                aria-label="Close reject modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p className="text-sm text-slate-500 dark:text-gray-400 mb-4">
+              Explain what the founder needs to fix. The pitch will stay in the system as rejected.
+            </p>
+            <textarea
+              value={rejectionReason}
+              onChange={(event) => setRejectionReason(event.target.value)}
+              className="admin-input w-full min-h-32 p-3 resize-none"
+              placeholder="e.g. Funding ask and equity terms need clarification, or the pitch deck is incomplete."
+              aria-label="Pitch rejection reason"
+            />
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setRejectModal({ show: false, pitch: null });
+                  setRejectionReason('');
+                }}
+                className="px-4 py-2 rounded text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleRejectSubmit}
+                className="px-4 py-2 rounded bg-red-600 text-white font-medium hover:bg-red-700"
+              >
+                Reject With Reason
+              </button>
             </div>
           </div>
         </div>

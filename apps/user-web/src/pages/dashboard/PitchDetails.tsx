@@ -255,6 +255,15 @@ const PitchDetails = () => {
         
         {/* Main Content */}
         <div className="md:col-span-2 space-y-8">
+          {pitch.status === 'REJECTED' && pitch.rejectionReason && (
+            <section className="rounded-xl border border-red-200 bg-red-50 p-6 shadow-sm dark:border-red-500/20 dark:bg-red-500/10">
+              <h3 className="text-xl font-bold mb-2 text-red-600 dark:text-red-400">Admin Rejection Reason</h3>
+              <p className="text-sm leading-relaxed text-red-700 dark:text-red-200">
+                {pitch.rejectionReason}
+              </p>
+            </section>
+          )}
+
           <section>
             <h3 className="text-xl font-bold mb-3 text-primary">The Problem</h3>
             {isEditing ? (

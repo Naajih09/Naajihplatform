@@ -173,6 +173,7 @@ model Pitch {
   category         String
   pitchDeckUrl     String?
   status           PitchStatus @default(PENDING)
+  rejectionReason  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

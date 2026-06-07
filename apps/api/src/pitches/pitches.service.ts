@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma.service';
 import { Prisma, UserRole } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { AppCacheService } from '../cache/app-cache.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PitchesService {
@@ -14,6 +15,7 @@ export class PitchesService {
     private prisma: PrismaService,
     private readonly auditService: AuditService,
     private readonly cache: AppCacheService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   private clearPitchCache(userId?: string) {
@@ -309,6 +311,19 @@ export class PitchesService {
   // 4. UPDATE PITCH
   async update(id: string, data: any, actorId?: string) {
     const updateData = this.normalizePitchMoneyFields(data);
+
+    if (updateData.status === 'REJECTED') {
+      const reason = String(updateData.rejectionReason || '').trim();
+      if (!reason) {
+        throw new BadRequestException('Rejection reason is required.');
+      }
+      updateData.rejectionReason = reason;
+    }
+
+    if (updateData.status === 'APPROVED') {
+      updateData.rejectionReason = null;
+    }
+
     const updated = await this.prisma.pitch.update({
       where: { id },
       data: updateData,
@@ -320,6 +335,18 @@ export class PitchesService {
     });
 
     if (updateData?.status) {
+      if (updateData.status === 'REJECTED') {
+        await this.notificationsService.create(
+          updated.user.id,
+          `Your pitch "${updated.title}" was rejected. Reason: ${updated.rejectionReason}`,
+        );
+      } else if (updateData.status === 'APPROVED') {
+        await this.notificationsService.create(
+          updated.user.id,
+          `Your pitch "${updated.title}" has been approved.`,
+        );
+      }
+
       await this.auditService.log({
         action: 'PITCH_STATUS_UPDATED',
         entityType: 'Pitch',
@@ -327,6 +354,7 @@ export class PitchesService {
         actorId,
         metadata: {
           status: updateData.status,
+          rejectionReason: updated.rejectionReason ?? null,
           pitchTitle: updated.title,
           ownerId: updated.user?.id,
           ownerEmail: updated.user?.email,
@@ -340,11 +368,9 @@ export class PitchesService {
 
   // 5. DELETE PITCH
   async remove(id: string) {
-    const deleted = await this.prisma.pitch.delete({
-      where: { id },
-    });
-    this.clearPitchCache(deleted.userId);
-    return deleted;
+    throw new ForbiddenException(
+      'Pitches should be rejected with a reason instead of deleted.',
+    );
   }
 
   // 6. RECOMMENDED PITCHES (Simple industry/category match)

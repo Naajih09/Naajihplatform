@@ -39,8 +39,12 @@ export const usePitchAccess = () => {
 
     const load = async () => {
       try {
-        const res = await fetch(`${apiBase}/users/stats/${user.id}`, {
-          headers: { Authorization: `Bearer ${authToken}` },
+        const res = await fetch(`${apiBase}/users/stats/${user.id}?_=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            'Cache-Control': 'no-store',
+          },
         });
         if (!res.ok) {
           throw new Error('Failed to load pitch access.');

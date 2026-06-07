@@ -33,8 +33,12 @@ export default function Subscription() {
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
     if (!storedUser?.email || !authToken) return null;
 
-    const res = await fetch(`${API_BASE}/users/${storedUser.email}`, {
-      headers: { Authorization: `Bearer ${authToken}` },
+    const res = await fetch(`${API_BASE}/users/${encodeURIComponent(storedUser.email)}?_=${Date.now()}`, {
+      cache: 'no-store',
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        'Cache-Control': 'no-store',
+      },
     });
     if (!res.ok) return null;
 
@@ -60,7 +64,10 @@ export default function Subscription() {
   const verifyPayment = async (provider: 'paystack' | 'opay', reference: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/payments/verify?provider=${provider}&reference=${reference}`);
+      const res = await fetch(`${API_BASE}/payments/verify?provider=${provider}&reference=${reference}&_=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-store' },
+      });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
         throw new Error(data?.message || 'Payment verification failed.');

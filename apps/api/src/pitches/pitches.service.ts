@@ -243,6 +243,12 @@ export class PitchesService {
   }
   // 3. GET ONE PITCH (For Details View)
   async findOne(id: string) {
+    const uuidPattern =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidPattern.test(id)) {
+      throw new BadRequestException('Invalid pitch id.');
+    }
+
     return this.cache.getOrSet(`pitches:detail:${id}`, 30, () =>
       this.prisma.pitch.findUnique({
         where: { id },

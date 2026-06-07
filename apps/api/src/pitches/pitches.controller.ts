@@ -47,6 +47,26 @@ export class PitchesController {
   // Admin-only list with filters + pagination
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
+  @Get('admin/list')
+  findAllAdminList(
+    @Query('search') search?: string,
+    @Query('category') category?: string,
+    @Query('status') status?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.pitchesService.findAll({
+      search,
+      category,
+      status,
+      page,
+      pageSize,
+    });
+  }
+
+  // Backward-compatible admin list route.
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Get('admin')
   findAllAdmin(
     @Query('search') search?: string,

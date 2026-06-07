@@ -38,7 +38,7 @@ const PitchesList = () => {
       params.set('page', String(currentPage));
       params.set('pageSize', String(pageSize));
 
-      const res = await api.get(`/pitches/admin?${params.toString()}`);
+      const res = await api.get(`/pitches/admin/list?${params.toString()}`);
       const data = res.data;
       const list = data.data || data || [];
       setPitches(list);

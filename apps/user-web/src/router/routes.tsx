@@ -64,6 +64,7 @@ const Connections = lazyWithReload(() => import('../pages/dashboard/Connections'
 const Messages = lazyWithReload(() => import('../pages/dashboard/Messages').then(module => ({ default: module.default })));
 const Settings = lazyWithReload(() => import('../pages/dashboard/Settings'));
 const Verification = lazyWithReload(() => import('../pages/dashboard/Verification'));
+const Knowledge = lazyWithReload(() => import('../pages/dashboard/Knowledge'));
 const LearningCenter = lazyWithReload(() => import('../pages/dashboard/LearningCenter'));
 const CourseViewer = lazyWithReload(() => import('../pages/dashboard/CourseViewer'));
 const AcademyDashboard = lazyWithReload(() => import('../pages/dashboard/AcademyDashboard'));
@@ -123,6 +124,11 @@ const routes = [
   {
     path: 'dashboard',
     element: <DashboardHome />,
+    layout: 'dashboard',
+  },
+  {
+    path: 'dashboard/knowledge',
+    element: <Knowledge />,
     layout: 'dashboard',
   },
   {

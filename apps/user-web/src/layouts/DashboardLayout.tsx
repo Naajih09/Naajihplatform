@@ -1,6 +1,7 @@
 import {
     CheckCircle,
     Compass,
+    BookOpen,
     LayoutGrid,
     Link as LinkIcon,
     Menu,
@@ -156,6 +157,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navItems = isAspirant
     ? [
         { label: 'Dashboard', path: '/dashboard', icon: LayoutGrid },
+        { label: 'Knowledge', path: '/dashboard/knowledge', icon: BookOpen },
         { label: 'Learning Center', path: '/dashboard/learning-center', icon: Compass },
         { label: 'Community', path: '/dashboard/community', icon: Users },
         { label: 'Mentor Booking', path: '/dashboard/mentors', icon: Video },
@@ -164,6 +166,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       ]
     : [
         { label: 'Dashboard', path: '/dashboard', icon: LayoutGrid },
+        { label: 'Knowledge', path: '/dashboard/knowledge', icon: BookOpen },
         { label: 'Opportunities', path: '/dashboard/opportunities', icon: Compass },
         { label: 'Messages', path: '/dashboard/messages', icon: MessageSquare, count: unreadMessages },
         { label: 'Connections', path: '/dashboard/connections', icon: LinkIcon },

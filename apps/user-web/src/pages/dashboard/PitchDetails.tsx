@@ -203,6 +203,9 @@ const PitchDetails = () => {
           <div className="w-full">
             <div className="flex items-center gap-3 mb-2">
               <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded font-bold uppercase tracking-wider">{pitch.category}</span>
+              <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded font-bold uppercase tracking-wider dark:bg-white/10 dark:text-white/70">
+                {pitch.investmentType === 'CONVENTIONAL' ? 'Conventional' : 'Sharia Compliant'}
+              </span>
               <span className="text-slate-500 dark:text-gray-400 text-xs flex items-center gap-1"><Calendar size={12}/> {new Date(pitch.createdAt).toLocaleDateString()}</span>
             </div>
             

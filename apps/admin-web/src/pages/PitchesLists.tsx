@@ -107,6 +107,8 @@ const PitchesList = () => {
   };
 
   const getPitchStage = (pitch: any) => pitch.user?.entrepreneurProfile?.stage || pitch.stage || 'N/A';
+  const getInvestmentTypeLabel = (pitch: any) =>
+    pitch.investmentType === 'CONVENTIONAL' ? 'Conventional' : 'Sharia Compliant';
   const getPitchEquity = (pitch: any) => pitch.equityOffer ?? pitch.equityOffered;
 
   const getImpliedValuation = (pitch: any) => {
@@ -237,6 +239,7 @@ const PitchesList = () => {
                           <h3 className="text-xl font-bold text-slate-900 dark:text-white mt-3 line-clamp-1" title={pitch.title}>{pitch.title}</h3>
                           <p className="text-primary text-xs font-bold uppercase mt-1">{pitch.category || pitch.sector || 'Uncategorized'}</p>
                           <p className="text-slate-500 dark:text-gray-500 text-[11px] font-bold uppercase mt-1">{getPitchStage(pitch)}</p>
+                          <p className="text-slate-500 dark:text-gray-500 text-[11px] font-bold uppercase mt-1">{getInvestmentTypeLabel(pitch)}</p>
                       </div>
                   </div>
                   
@@ -318,6 +321,9 @@ const PitchesList = () => {
               <div className="flex items-center gap-2 mb-2">
                 {getStatusBadge(selectedPitch.status)}
                 <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs font-bold">{selectedPitch.category || selectedPitch.sector}</span>
+                <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs font-bold dark:bg-white/10 dark:text-white/70">
+                  {getInvestmentTypeLabel(selectedPitch)}
+                </span>
               </div>
               <h2 className="text-2xl font-black text-slate-900 dark:text-white">{selectedPitch.title}</h2>
               <p className="text-slate-600 dark:text-gray-400 mt-2">{selectedPitch.tagline}</p>

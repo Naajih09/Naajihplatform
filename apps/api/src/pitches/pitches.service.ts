@@ -70,6 +70,10 @@ export class PitchesService {
     return normalized as T;
   }
 
+  private normalizeInvestmentType(value: unknown) {
+    return value === 'CONVENTIONAL' ? 'CONVENTIONAL' : 'SHARIA_COMPLIANT';
+  }
+
   // 1. CREATE A PITCH
   async create(data: Prisma.PitchCreateInput, userId: string) {
     const user = await this.prisma.user.findUnique({
@@ -107,6 +111,9 @@ export class PitchesService {
     const pitch = await this.prisma.pitch.create({
       data: {
         ...this.normalizePitchMoneyFields(data),
+        investmentType: this.normalizeInvestmentType(
+          (data as any).investmentType,
+        ),
         user: {
           connect: { id: userId },
         },
@@ -123,12 +130,13 @@ export class PitchesService {
     status?: string;
     stage?: string;
     industry?: string;
+    investmentType?: string;
     minTicket?: string;
     maxTicket?: string;
     page?: string;
     pageSize?: string;
   }) {
-    const { search, category, status, stage, industry, minTicket, maxTicket } =
+    const { search, category, status, stage, industry, investmentType, minTicket, maxTicket } =
       query;
     const page = Math.max(1, Number(query.page) || 1);
     const pageSize = Math.min(100, Math.max(1, Number(query.pageSize) || 20));
@@ -166,6 +174,10 @@ export class PitchesService {
             }
           : {},
 
+        investmentType && investmentType !== 'All' && investmentType !== 'ALL'
+          ? { investmentType: this.normalizeInvestmentType(investmentType) }
+          : {},
+
         // Filter by Ticket Size (fundingAsk)
         minTicket
           ? {
@@ -201,6 +213,7 @@ export class PitchesService {
         status,
         stage,
         industry,
+        investmentType,
         minTicket,
         maxTicket,
         page,
@@ -261,6 +274,8 @@ export class PitchesService {
               isVerified: true,
               isActive: true,
               emailVerified: true,
+              entrepreneurProfile: true,
+              investorProfile: true,
               createdAt: true,
               updatedAt: true,
             },

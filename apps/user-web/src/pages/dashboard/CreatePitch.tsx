@@ -22,7 +22,8 @@ const CreatePitch = () => {
   
   const [formData, setFormData] = useState({
     title: '', tagline: '', problemStatement: '', solution: '', 
-    traction: '', marketSize: '', fundingAsk: '', equityOffer: '', category: 'FinTech', pitchDeckUrl: '', 
+    traction: '', marketSize: '', fundingAsk: '', equityOffer: '', category: 'FinTech', pitchDeckUrl: '',
+    investmentType: 'SHARIA_COMPLIANT',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -187,6 +188,29 @@ const CreatePitch = () => {
                 <select name="category" className={inputStyles} onChange={handleChange} aria-label="Select Industry">
                     <option value="FinTech">FinTech</option><option value="AgriTech">AgriTech</option><option value="HealthTech">HealthTech</option><option value="Retail">Retail</option>
                 </select>
+            </div>
+          </div>
+          <div>
+            <label className={labelStyles}>Investment Type</label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { value: 'SHARIA_COMPLIANT', label: 'Sharia Compliant' },
+                { value: 'CONVENTIONAL', label: 'Conventional' },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, investmentType: option.value }))}
+                  className={`rounded-xl border px-4 py-3 text-sm font-bold transition-colors ${
+                    formData.investmentType === option.value
+                      ? 'border-primary bg-primary text-black'
+                      : 'border-slate-300 bg-slate-50 text-slate-700 hover:border-primary/50 dark:border-gray-700 dark:bg-[#151518] dark:text-white'
+                  }`}
+                  aria-pressed={formData.investmentType === option.value}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
           </div>
           <div><label className={labelStyles}>Tagline</label><input name="tagline" required onChange={handleChange} className={inputStyles} placeholder="Short description..." aria-label="Tagline" /></div>

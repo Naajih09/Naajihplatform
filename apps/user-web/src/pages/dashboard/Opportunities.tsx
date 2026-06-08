@@ -67,8 +67,14 @@ const Opportunities = () => {
     ['APPROVED', 'ACTIVE'].includes((status || 'PENDING').toUpperCase());
 
   // --- 1. FETCH PITCHES (With Search & Filter) ---
+  const defaultInvestmentType =
+    user.role === 'INVESTOR' &&
+    ['SHARIA_COMPLIANT', 'CONVENTIONAL'].includes(user.investorProfile?.investmentPreference)
+      ? user.investorProfile.investmentPreference
+      : 'All';
   const [filters, setFilters] = useState({
     stage: 'All',
+    investmentType: defaultInvestmentType,
     minTicket: '',
     maxTicket: ''
   });
@@ -76,6 +82,7 @@ const Opportunities = () => {
     Boolean(searchTerm.trim()) ||
     activeCategory !== 'All' ||
     filters.stage !== 'All' ||
+    filters.investmentType !== 'All' ||
     Boolean(filters.minTicket) ||
     Boolean(filters.maxTicket);
 
@@ -87,6 +94,7 @@ const Opportunities = () => {
       if (searchTerm) params.append('search', searchTerm);
       if (activeCategory && activeCategory !== 'All') params.append('category', activeCategory);
       if (filters.stage !== 'All') params.append('stage', filters.stage);
+      if (filters.investmentType !== 'All') params.append('investmentType', filters.investmentType);
       if (filters.minTicket) params.append('minTicket', filters.minTicket);
       if (filters.maxTicket) params.append('maxTicket', filters.maxTicket);
 
@@ -266,6 +274,22 @@ const Opportunities = () => {
             </div>
 
             <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-500 uppercase">Type:</span>
+                <label htmlFor="investment-type-filter-select" className="sr-only">Filter by investment type</label>
+                <select
+                    value={filters.investmentType}
+                    onChange={(e) => setFilters({...filters, investmentType: e.target.value})}
+                    className="bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none"
+                    id="investment-type-filter-select"
+                    aria-label="Filter pitches by investment type"
+                >
+                    <option value="All">All Types</option>
+                    <option value="SHARIA_COMPLIANT">Sharia Compliant</option>
+                    <option value="CONVENTIONAL">Conventional</option>
+                </select>
+            </div>
+
+            <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-500 uppercase">Ticket (NGN):</span>
                 <label htmlFor="min-ticket-input" className="sr-only">Minimum Ticket</label>
                 <input 
@@ -305,7 +329,7 @@ const Opportunities = () => {
             onAction={() => {
               setSearchTerm('');
               setActiveCategory('All');
-              setFilters({ stage: 'All', minTicket: '', maxTicket: '' });
+              setFilters({ stage: 'All', investmentType: 'All', minTicket: '', maxTicket: '' });
             }}
           />
         ) : (
@@ -358,6 +382,9 @@ const Opportunities = () => {
                     {getPitchStatusBadge(pitch.status).label}
                   </div>
                   <span className="text-[10px] text-slate-400 font-semibold uppercase">{pitch.category}</span>
+                  <span className="text-[10px] text-slate-400 font-semibold uppercase">
+                    {pitch.investmentType === 'CONVENTIONAL' ? 'Conventional' : 'Sharia Compliant'}
+                  </span>
                 </div>
               </div>
 
@@ -446,7 +473,8 @@ const CreatePitchModal = ({
   const [formData, setFormData] = useState({
     title: '', tagline: '', problemStatement: '', solution: '', 
     traction: '', marketSize: '', fundingAsk: '', equityOffer: '', category: 'FinTech',
-    pitchDeckUrl: ''
+    pitchDeckUrl: '',
+    investmentType: 'SHARIA_COMPLIANT',
   });
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -601,6 +629,29 @@ const CreatePitchModal = ({
             </div>
           </div>
           <div><label className={labelStyle}>Tagline</label><input name="tagline" required className={inputStyle} onChange={handleChange} aria-label="Tagline" /></div>
+          <div>
+            <label className={labelStyle}>Investment Type</label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { value: 'SHARIA_COMPLIANT', label: 'Sharia Compliant' },
+                { value: 'CONVENTIONAL', label: 'Conventional' },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, investmentType: option.value }))}
+                  className={`rounded-lg border px-4 py-3 text-sm font-bold transition-colors ${
+                    formData.investmentType === option.value
+                      ? 'border-primary bg-primary text-black'
+                      : 'border-slate-300 bg-slate-100 text-slate-700 hover:border-primary/50 dark:border-gray-700 dark:bg-[#151518] dark:text-white'
+                  }`}
+                  aria-pressed={formData.investmentType === option.value}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div><label className={labelStyle}>Problem Statement</label><textarea name="problemStatement" required className={`${inputStyle} h-24`} onChange={handleChange} aria-label="Problem Statement"></textarea></div>
           <div><label className={labelStyle}>Solution</label><textarea name="solution" required className={`${inputStyle} h-24`} onChange={handleChange} aria-label="Solution"></textarea></div>
           

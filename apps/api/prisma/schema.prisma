@@ -154,6 +154,7 @@ model InvestorProfile {
   minTicketSize   Decimal?
   maxTicketSize   Decimal?
   focusIndustries String[]
+  investmentPreference String @default("BOTH")
 }
 
 // --- 3. PITCHES ---
@@ -172,6 +173,7 @@ model Pitch {
   equityOffer      String
   category         String
   pitchDeckUrl     String?
+  investmentType   String @default("SHARIA_COMPLIANT")
   status           PitchStatus @default(PENDING)
   rejectionReason  String?
 
@@ -181,6 +183,7 @@ model Pitch {
   @@index([userId])
   @@index([status])
   @@index([category])
+  @@index([investmentType])
   @@index([createdAt])
 }
 

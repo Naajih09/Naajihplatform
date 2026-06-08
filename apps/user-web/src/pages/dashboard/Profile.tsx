@@ -139,6 +139,15 @@ const Profile = () => {
     : [
         { label: 'Organization', value: profile.organization || 'Not set' },
         { label: 'Ticket Size', value: profile.maxTicketSize ? `NGN ${Number(profile.maxTicketSize).toLocaleString()}` : 'Not set' },
+        {
+          label: 'Preference',
+          value:
+            profile.investmentPreference === 'SHARIA_COMPLIANT'
+              ? 'Sharia Compliant'
+              : profile.investmentPreference === 'CONVENTIONAL'
+                ? 'Conventional'
+                : 'Both',
+        },
         { label: 'Location', value: profile.location || 'Nigeria' },
         { label: 'Focus', value: profile.focusIndustries?.length ? profile.focusIndustries.join(', ') : 'General' },
       ];
@@ -318,7 +327,16 @@ const Profile = () => {
                 </p>
                 <div className="flex flex-wrap justify-center md:justify-start gap-4 text-gray-400 text-sm">
                   <span className="flex items-center gap-1"><MapPin size={16}/> {getProfile().location || 'Nigeria'}</span>
-                  <span className="flex items-center gap-1 text-primary"><ShieldCheck size={16}/> Sharia Compliant</span>
+                  <span className="flex items-center gap-1 text-primary">
+                    <ShieldCheck size={16}/>
+                    {user.role === 'INVESTOR'
+                      ? profile.investmentPreference === 'CONVENTIONAL'
+                        ? 'Conventional'
+                        : profile.investmentPreference === 'SHARIA_COMPLIANT'
+                          ? 'Sharia Compliant'
+                          : 'Open to Both'
+                      : 'Sharia Compliant'}
+                  </span>
                   {getProfile().website && (
                     <span className="flex items-center gap-1">
                       <Globe size={16} /> {getProfile().website}
@@ -413,6 +431,19 @@ const Profile = () => {
                         <div>
                             <label className={labelStyle}>Max Ticket Size</label>
                             <input aria-label="Ticket Size" type="number" className={inputStyle} value={formData.maxTicketSize || ''} onChange={e => setFormData({...formData, maxTicketSize: e.target.value})} />
+                        </div>
+                        <div className="col-span-2">
+                            <label className={labelStyle}>Investment Preference</label>
+                            <select
+                              aria-label="Investment Preference"
+                              className={inputStyle}
+                              value={formData.investmentPreference || 'BOTH'}
+                              onChange={e => setFormData({...formData, investmentPreference: e.target.value})}
+                            >
+                              <option value="BOTH">Both</option>
+                              <option value="SHARIA_COMPLIANT">Sharia Compliant</option>
+                              <option value="CONVENTIONAL">Conventional</option>
+                            </select>
                         </div>
                     </div>
                  )}

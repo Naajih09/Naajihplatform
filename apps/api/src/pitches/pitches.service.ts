@@ -412,6 +412,11 @@ export class PitchesService {
     if (user.investorProfile?.focusIndustries?.length) {
       user.investorProfile.focusIndustries.forEach((i) => industries.add(i));
     }
+    if (user.entrepreneurProfile?.focusIndustries?.length) {
+      user.entrepreneurProfile.focusIndustries.forEach((i) =>
+        industries.add(i),
+      );
+    }
     if (user.entrepreneurProfile?.industry) {
       industries.add(user.entrepreneurProfile.industry);
     }

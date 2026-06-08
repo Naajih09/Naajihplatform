@@ -137,6 +137,7 @@ model EntrepreneurProfile {
   avatarUrl    String?
   businessName String?
   industry     String?
+  focusIndustries String[] @default([])
   stage        String?
   cacNumber    String?
   location     String?
@@ -153,7 +154,7 @@ model InvestorProfile {
   organization    String?
   minTicketSize   Decimal?
   maxTicketSize   Decimal?
-  focusIndustries String[]
+  focusIndustries String[] @default([])
   investmentPreference String @default("BOTH")
 }
 

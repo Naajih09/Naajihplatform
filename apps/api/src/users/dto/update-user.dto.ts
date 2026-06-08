@@ -7,11 +7,13 @@ export class UpdateUserDto {
   entrepreneurProfile?: {
     businessName?: string;
     industry?: string;
+    focusIndustries?: string[];
     description?: string;
   };
 
   investorProfile?: {
     interests?: string[];
+    focusIndustries?: string[];
     budget?: number;
   };
 }

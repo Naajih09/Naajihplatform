@@ -159,6 +159,12 @@ const Profile = () => {
     { l: 'Verified', v: stats.isVerified ? 'Yes' : 'No', sub: 'Account' },
     { l: 'Total Views', v: String(stats.totalViews || 0), sub: 'Profile' },
   ];
+  const focusTags =
+    Array.isArray(profile.focusIndustries) && profile.focusIndustries.length > 0
+      ? profile.focusIndustries
+      : user.role === 'ENTREPRENEUR' && profile.industry
+        ? [profile.industry]
+        : [];
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -271,11 +277,8 @@ const Profile = () => {
               <h3 className="text-primary text-sm font-bold uppercase tracking-widest">Focus Areas</h3>
             </div>
             <div className="flex flex-wrap gap-2">
-              {(user.role === 'ENTREPRENEUR'
-                ? ['#HalalTech', '#AgriBusiness', '#SaaS', '#IslamicFinance']
-                : ['#DealFlow', '#ImpactInvesting', '#GrowthCapital', '#ShariaCompliance']
-              ).map(tag => (
-                <span key={tag} className="px-3 py-1 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full text-xs text-slate-600 dark:text-white/80">{tag}</span>
+              {(focusTags.length > 0 ? focusTags : ['General']).map(tag => (
+                <span key={tag} className="px-3 py-1 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full text-xs text-slate-600 dark:text-white/80">#{tag}</span>
               ))}
             </div>
           </div>

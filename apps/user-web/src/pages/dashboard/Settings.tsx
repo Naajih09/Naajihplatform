@@ -1,17 +1,40 @@
 import React, { useState } from 'react';
-import { Bell, Eye, EyeOff, Lock, Trash2 } from 'lucide-react';
+import { Bell, Check, Eye, EyeOff, Lock, Target, Trash2 } from 'lucide-react';
 import Button from '../../components/Button';
 import { useNavigate } from 'react-router-dom';
 import { getApiBaseUrl } from '../../lib/api-base';
 
+const FOCUS_AREAS = [
+  'FinTech',
+  'AgriTech',
+  'HealthTech',
+  'Retail',
+  'Education',
+  'Logistics',
+  'Real Estate',
+  'Islamic Finance',
+  'SaaS',
+  'Clean Energy',
+  'Fashion',
+  'Food & Beverage',
+];
+
 const Settings = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const profile = user.role === 'INVESTOR' ? user.investorProfile : user.entrepreneurProfile;
   
   const [activeTab, setActiveTab] = useState('security');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [focusAreas, setFocusAreas] = useState<string[]>(() =>
+    Array.isArray(profile?.focusIndustries)
+      ? profile.focusIndustries
+      : profile?.industry
+        ? [profile.industry]
+        : [],
+  );
   const [notificationPrefs, setNotificationPrefs] = useState(() => {
     try {
       const stored = localStorage.getItem('notificationPreferences');
@@ -45,6 +68,44 @@ const Settings = () => {
   React.useEffect(() => {
     localStorage.setItem('notificationPreferences', JSON.stringify(notificationPrefs));
   }, [notificationPrefs]);
+
+  const toggleFocusArea = (area: string) => {
+    setFocusAreas((current) =>
+      current.includes(area)
+        ? current.filter((item) => item !== area)
+        : [...current, area],
+    );
+  };
+
+  const handleSaveFocusAreas = async () => {
+    if (!user?.id) {
+      setToast({ show: true, message: 'Session expired. Please log in again.', type: 'error' });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const payload =
+        user.role === 'INVESTOR'
+          ? { investorProfile: { ...(user.investorProfile || {}), focusIndustries: focusAreas } }
+          : { entrepreneurProfile: { ...(user.entrepreneurProfile || {}), focusIndustries: focusAreas } };
+
+      const res = await fetch(`${API_BASE}/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.message || 'Failed to save focus areas.');
+
+      localStorage.setItem('user', JSON.stringify(data));
+      setToast({ show: true, message: 'Focus areas saved.', type: 'success' });
+    } catch (err: any) {
+      setToast({ show: true, message: err?.message || 'Failed to save focus areas.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -95,12 +156,12 @@ const Settings = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Sidebar */}
         <div className="space-y-2">
-            {['Security', 'Notifications'].map((tab) => (
+            {['Security', 'Focus Areas', 'Notifications'].map((tab) => (
                 <button 
                     key={tab}
-                    onClick={() => setActiveTab(tab.toLowerCase())}
+                    onClick={() => setActiveTab(tab.toLowerCase().replace(/\s+/g, '-'))}
                     className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm transition-colors ${
-                      activeTab === tab.toLowerCase() 
+                      activeTab === tab.toLowerCase().replace(/\s+/g, '-')
                       ? 'bg-primary text-black' 
                       : 'hover:bg-slate-200 dark:hover:bg-white/5 text-slate-500 dark:text-gray-400'
                     }`}
@@ -146,6 +207,51 @@ const Settings = () => {
                         <Button type="submit" isLoading={loading} className="bg-slate-900 text-white dark:bg-white dark:text-black font-bold">Update Password</Button>
                     </div>
                 </form>
+            )}
+
+            {activeTab === 'focus-areas' && (
+                <div className="space-y-6">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200 dark:border-gray-800">
+                        <Target className="text-primary" size={24} />
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white">Focus Areas</h3>
+                    </div>
+                    <p className="text-slate-500 dark:text-gray-500 text-sm">
+                      Select the industries you want the platform to prioritize in feeds and recommendations.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {FOCUS_AREAS.map((area) => {
+                        const selected = focusAreas.includes(area);
+                        return (
+                          <button
+                            key={area}
+                            type="button"
+                            onClick={() => toggleFocusArea(area)}
+                            className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left text-sm font-bold transition-colors ${
+                              selected
+                                ? 'border-primary bg-primary text-black'
+                                : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-primary/50 dark:border-gray-800 dark:bg-[#151518] dark:text-white'
+                            }`}
+                          >
+                            <span>{area}</span>
+                            {selected && <Check size={16} />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4">
+                      <p className="text-xs text-slate-500 dark:text-gray-500">
+                        {focusAreas.length} selected
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={handleSaveFocusAreas}
+                        isLoading={loading}
+                        className="bg-primary text-black font-bold"
+                      >
+                        Save Focus Areas
+                      </Button>
+                    </div>
+                </div>
             )}
 
             {activeTab === 'notifications' && (

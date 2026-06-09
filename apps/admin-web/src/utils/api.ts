@@ -32,6 +32,7 @@ const clearStoredAuth = () => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('token');
   localStorage.removeItem('userRole');
+  localStorage.removeItem('adminPermissions');
 };
 
 // Request interceptor to add the JWT token

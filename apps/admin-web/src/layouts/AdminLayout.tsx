@@ -1,31 +1,54 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Users, FileText, CheckCircle, LogOut, LayoutDashboard, Menu, X, Activity, Settings, BookOpen, ClipboardCheck, UserCheck } from 'lucide-react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import { useTheme } from '../hooks/useTheme';
+import api from '../utils/api';
+import { AdminPermission, hasAdminPermission, storeAdminPermissions } from '../utils/admin-access';
 
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   useTheme();
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    const payload = parseJwt(token || '');
+    if (!payload?.email) return;
+
+    api
+      .get(`/users/${payload.email}`)
+      .then((response) => {
+        storeAdminPermissions(response.data?.adminPermissions);
+      })
+      .catch(() => null);
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('adminPermissions');
     navigate('/login');
   };
 
-  const navItems = [
-    { label: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard },
-    { label: 'User Management', path: '/admin/users', icon: Users },
-    { label: 'Pitch Moderation', path: '/admin/pitches', icon: FileText },
-    { label: 'KYC Verification', path: '/admin/verification', icon: CheckCircle },
-    { label: 'Academy Programs', path: '/admin/academy', icon: BookOpen },
-    { label: 'Enrollments', path: '/admin/academy/enrollments', icon: UserCheck },
-    { label: 'Assignments', path: '/admin/academy/submissions', icon: ClipboardCheck },
-    { label: 'Audit Log', path: '/admin/audit', icon: Activity },
-    { label: 'Settings', path: '/admin/settings', icon: Settings },
+  const navItems: Array<{
+    label: string;
+    path: string;
+    icon: typeof LayoutDashboard;
+    permission: AdminPermission;
+  }> = [
+    { label: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard, permission: 'dashboard' },
+    { label: 'User Management', path: '/admin/users', icon: Users, permission: 'users' },
+    { label: 'Pitch Moderation', path: '/admin/pitches', icon: FileText, permission: 'pitches' },
+    { label: 'KYC Verification', path: '/admin/verification', icon: CheckCircle, permission: 'verification' },
+    { label: 'Academy Programs', path: '/admin/academy', icon: BookOpen, permission: 'academy' },
+    { label: 'Enrollments', path: '/admin/academy/enrollments', icon: UserCheck, permission: 'academy' },
+    { label: 'Assignments', path: '/admin/academy/submissions', icon: ClipboardCheck, permission: 'academy' },
+    { label: 'Audit Log', path: '/admin/audit', icon: Activity, permission: 'audit' },
+    { label: 'Settings', path: '/admin/settings', icon: Settings, permission: 'settings' },
   ];
+  const visibleNavItems = navItems.filter((item) => hasAdminPermission(item.permission));
 
   return (
     <div className="relative flex flex-col lg:flex-row min-h-screen bg-[#f8fafc] text-slate-900 font-sans overflow-hidden dark:bg-[#111113] dark:text-white">
@@ -66,7 +89,7 @@ const AdminLayout = () => {
         </div>
 
         <nav className="flex-1 px-4 py-4 grid grid-cols-2 gap-2 lg:flex lg:flex-col lg:space-y-2">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <Link 
               key={item.path} 
               to={item.path}
@@ -110,6 +133,16 @@ const AdminLayout = () => {
       </main>
     </div>
   );
+};
+
+const parseJwt = (token: string) => {
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+  } catch {
+    return null;
+  }
 };
 
 export default AdminLayout;

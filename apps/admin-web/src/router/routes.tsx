@@ -37,48 +37,83 @@ export const routes = [
         element: <ProtectedRoute allowedRoles={[UserRole.ADMIN]} />,
         children: [
           {
-            path: 'admin/dashboard',
-            element: withSuspense(<Dashboard />),
+            element: <ProtectedRoute permission="dashboard" />,
+            children: [
+              {
+                path: 'admin/dashboard',
+                element: withSuspense(<Dashboard />),
+              },
+            ],
           },
           {
-            path: 'admin/users',
-            element: withSuspense(<UsersList />),
+            element: <ProtectedRoute permission="users" />,
+            children: [
+              {
+                path: 'admin/users',
+                element: withSuspense(<UsersList />),
+              },
+            ],
           },
           {
-            path: 'admin/pitches',
-            element: withSuspense(<PitchesList />),
+            element: <ProtectedRoute permission="pitches" />,
+            children: [
+              {
+                path: 'admin/pitches',
+                element: withSuspense(<PitchesList />),
+              },
+            ],
           },
           {
-            path: 'admin/audit',
-            element: withSuspense(<AuditLogs />),
+            element: <ProtectedRoute permission="audit" />,
+            children: [
+              {
+                path: 'admin/audit',
+                element: withSuspense(<AuditLogs />),
+              },
+            ],
           },
           {
-            path: 'admin/settings',
-            element: withSuspense(<Settings />),
+            element: <ProtectedRoute permission="settings" />,
+            children: [
+              {
+                path: 'admin/settings',
+                element: withSuspense(<Settings />),
+              },
+            ],
           },
           {
-            path: 'admin/academy',
-            element: withSuspense(<AcademyPrograms />),
+            element: <ProtectedRoute permission="academy" />,
+            children: [
+              {
+                path: 'admin/academy',
+                element: withSuspense(<AcademyPrograms />),
+              },
+              {
+                path: 'admin/academy/submissions',
+                element: withSuspense(<AcademySubmissions />),
+              },
+              {
+                path: 'admin/academy/enrollments',
+                element: withSuspense(<AcademyEnrollments />),
+              },
+              {
+                path: 'admin/academy/:id',
+                element: withSuspense(<AcademyProgramDetail />),
+              },
+            ],
           },
           {
-            path: 'admin/academy/submissions',
-            element: withSuspense(<AcademySubmissions />),
-          },
-          {
-            path: 'admin/academy/enrollments',
-            element: withSuspense(<AcademyEnrollments />),
-          },
-          {
-            path: 'admin/academy/:id',
-            element: withSuspense(<AcademyProgramDetail />),
-          },
-          {
-            path: 'admin/verification',
-            element: withSuspense(
-              <div className="p-10">
-                <Verification />
-              </div>
-            ),
+            element: <ProtectedRoute permission="verification" />,
+            children: [
+              {
+                path: 'admin/verification',
+                element: withSuspense(
+                  <div className="p-10">
+                    <Verification />
+                  </div>
+                ),
+              },
+            ],
           },
         ],
       },

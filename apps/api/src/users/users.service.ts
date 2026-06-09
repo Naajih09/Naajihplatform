@@ -23,6 +23,16 @@ interface CreateUserDto {
   lastName: string;
 }
 
+const ADMIN_PERMISSIONS = [
+  'dashboard',
+  'users',
+  'pitches',
+  'verification',
+  'academy',
+  'audit',
+  'settings',
+] as const;
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -84,6 +94,16 @@ export class UsersService {
       (process.env.BETA_TEST_MODE === 'true' &&
         process.env.PASSWORD_RESET_EXPOSE_LINK === 'true')
     );
+  }
+
+  private normalizeAdminPermissions(permissions?: unknown) {
+    if (!Array.isArray(permissions)) return [];
+    return permissions
+      .filter((permission): permission is string => typeof permission === 'string')
+      .map((permission) => permission.trim())
+      .filter((permission) =>
+        (ADMIN_PERMISSIONS as readonly string[]).includes(permission),
+      );
   }
 
   private async issueEmailVerification(userId: string, email: string) {
@@ -194,6 +214,7 @@ export class UsersService {
         role: UserRole.ADMIN,
         isVerified: true,
         emailVerified: true,
+        adminPermissions: [...ADMIN_PERMISSIONS],
         entrepreneurProfile: { create: { firstName, lastName } },
       },
       include: { entrepreneurProfile: true, investorProfile: true },
@@ -202,6 +223,78 @@ export class UsersService {
     const { password: _, ...result } = newUser;
     this.clearUserCache(newUser.id);
     return result;
+  }
+
+  async getAdminTeam() {
+    const admins = await this.databaseService.user.findMany({
+      where: { role: UserRole.ADMIN },
+      include: { entrepreneurProfile: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return admins.map((admin) => this.sanitizeUser(admin));
+  }
+
+  async createAdminTeamMember(data: {
+    email?: string;
+    password?: string;
+    firstName?: string;
+    lastName?: string;
+    adminPermissions?: string[];
+  }) {
+    if (!data.email || !data.password || !data.firstName || !data.lastName) {
+      throw new BadRequestException(
+        'Email, password, first name, and last name are required.',
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const adminPermissions = this.normalizeAdminPermissions(
+      data.adminPermissions,
+    );
+
+    const newAdmin = await this.databaseService.user.create({
+      data: {
+        email: data.email.trim().toLowerCase(),
+        password: hashedPassword,
+        role: UserRole.ADMIN,
+        isVerified: true,
+        emailVerified: true,
+        adminPermissions,
+        entrepreneurProfile: {
+          create: {
+            firstName: data.firstName,
+            lastName: data.lastName,
+          },
+        },
+      },
+      include: { entrepreneurProfile: true },
+    });
+
+    this.clearUserCache(newAdmin.id);
+    return this.sanitizeUser(newAdmin);
+  }
+
+  async updateAdminPermissions(adminId: string, permissions: unknown) {
+    const admin = await this.databaseService.user.findUnique({
+      where: { id: adminId },
+      select: { id: true, role: true },
+    });
+
+    if (!admin || admin.role !== UserRole.ADMIN) {
+      throw new BadRequestException('Admin user not found.');
+    }
+
+    const updated = await this.databaseService.user.update({
+      where: { id: adminId },
+      data: {
+        adminPermissions: this.normalizeAdminPermissions(permissions),
+      },
+      include: { entrepreneurProfile: true },
+    });
+
+    this.clearUserCache(adminId);
+    return this.sanitizeUser(updated);
   }
 
   async findById(id: string): Promise<User | null> {

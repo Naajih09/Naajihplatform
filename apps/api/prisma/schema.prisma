@@ -82,6 +82,7 @@ model User {
   role        UserRole
   isVerified  Boolean             @default(false)
   isActive    Boolean             @default(true)
+  adminPermissions String[]        @default([])
   emailVerified Boolean           @default(false)
   emailVerificationToken String?
   emailVerificationExpires DateTime?

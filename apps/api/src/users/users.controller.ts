@@ -142,6 +142,30 @@ export class UsersController {
     return this.usersService.findAll({ search, role, sortBy, page, pageSize });
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('admin/team')
+  getAdminTeam() {
+    return this.usersService.getAdminTeam();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Post('admin/team')
+  createAdminTeamMember(@Body() body: any) {
+    return this.usersService.createAdminTeamMember(body);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Patch('admin/team/:id/permissions')
+  updateAdminPermissions(@Param('id') id: string, @Body() body: any) {
+    return this.usersService.updateAdminPermissions(
+      id,
+      body?.adminPermissions,
+    );
+  }
+
   // 5b. REQUEST EMAIL VERIFICATION (Authenticated)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(

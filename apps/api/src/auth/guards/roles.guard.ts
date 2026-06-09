@@ -2,6 +2,20 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UserRole } from '@prisma/client';
 import { ROLES_KEY } from '../decorators/roles.decorator';
+
+const getAdminPermissionForRequest = (path = '') => {
+  if (path.includes('/users/admin/team')) return 'settings';
+  if (path.includes('/users/admin/stats')) return 'dashboard';
+  if (path.includes('/users/admin/insights')) return 'dashboard';
+  if (path.includes('/users/password')) return 'settings';
+  if (path.includes('/pitches/admin')) return 'pitches';
+  if (path.includes('/verification/admin')) return 'verification';
+  if (path.includes('/academy/admin')) return 'academy';
+  if (path.includes('/audit')) return 'audit';
+  if (path.includes('/users')) return 'users';
+  return null;
+};
+
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
@@ -16,8 +30,32 @@ export class RolesGuard implements CanActivate {
       return true; // If no roles are specified, allow access
     }
 
-    const { user } = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest();
+    const { user } = request;
     // 'user' object comes from JwtStrategy's validate method
-    return requiredRoles.some((role) => user.role === role);
+    const hasRequiredRole = requiredRoles.some((role) => user.role === role);
+
+    if (!hasRequiredRole) {
+      return false;
+    }
+
+    if (user.role !== UserRole.ADMIN || !requiredRoles.includes(UserRole.ADMIN)) {
+      return true;
+    }
+
+    const permission = getAdminPermissionForRequest(request.path || request.url);
+    if (!permission) {
+      return true;
+    }
+
+    const permissions = Array.isArray(user.adminPermissions)
+      ? user.adminPermissions
+      : [];
+
+    if (permissions.length === 0) {
+      return true;
+    }
+
+    return permissions.includes(permission);
   }
 }

@@ -4,6 +4,7 @@ import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../hooks/useAuth';
 import { UserRole } from '../types/enums';
+import { storeAdminPermissions } from '../utils/admin-access';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ const Login = () => {
         return;
       }
 
+      storeAdminPermissions(user.adminPermissions);
       login(accessToken, user.role);
       navigate('/admin/dashboard', { replace: true });
     } catch (error: any) {

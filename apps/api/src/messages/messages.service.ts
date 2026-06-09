@@ -7,6 +7,14 @@ import {
 import { DatabaseService } from '../database/database.service';
 import { sanitizePlainText } from '../utils/sanitize';
 
+const riskyMessagePattern =
+  /(whats\s?app|wa\.me|telegram|t\.me|outside\s+(the\s+)?platform|off[-\s]?platform|bank\s+transfer|send\s+money|pay\s+me|gmail\.com|yahoo\.com|outlook\.com|hotmail\.com|\+?\d[\d\s().-]{7,}\d)/i;
+
+const messageUserInclude = {
+  entrepreneurProfile: true,
+  investorProfile: true,
+};
+
 @Injectable()
 export class MessagesService {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -30,15 +38,32 @@ export class MessagesService {
       );
     }
 
-    return this.databaseService.message.create({
+    const content = sanitizePlainText(data.content);
+
+    const message = await this.databaseService.message.create({
       data: {
-        content: sanitizePlainText(data.content),
+        content,
         senderId: data.senderId,
         receiverId: data.receiverId,
         attachmentUrl: data.attachmentUrl,
         type: data.type || 'TEXT',
       },
     });
+
+    if (content && riskyMessagePattern.test(content)) {
+      await this.databaseService.messageReport.create({
+        data: {
+          reporterId: data.receiverId,
+          reportedUserId: data.senderId,
+          messageId: message.id,
+          source: 'SYSTEM_FLAG',
+          reason:
+            'Message may include off-platform contact details or payment language.',
+        },
+      });
+    }
+
+    return message;
   }
 
   // 2. GET CONVERSATION (Between User A and User B)
@@ -140,6 +165,122 @@ export class MessagesService {
 
     return this.databaseService.message.delete({
       where: { id: messageId },
+    });
+  }
+
+  async reportConversation(data: {
+    reporterId: string;
+    reportedUserId: string;
+    messageId?: string;
+    reason?: string;
+  }) {
+    if (data.reporterId === data.reportedUserId) {
+      throw new ForbiddenException('You cannot report yourself.');
+    }
+
+    const message = data.messageId
+      ? await this.databaseService.message.findUnique({
+          where: { id: data.messageId },
+        })
+      : null;
+
+    if (
+      message &&
+      !(
+        (message.senderId === data.reporterId &&
+          message.receiverId === data.reportedUserId) ||
+        (message.senderId === data.reportedUserId &&
+          message.receiverId === data.reporterId)
+      )
+    ) {
+      throw new ForbiddenException('You can only report your own conversation.');
+    }
+
+    const existingConnection = await this.databaseService.connection.findFirst({
+      where: {
+        status: 'ACCEPTED',
+        OR: [
+          { senderId: data.reporterId, receiverId: data.reportedUserId },
+          { senderId: data.reportedUserId, receiverId: data.reporterId },
+        ],
+      },
+    });
+
+    if (!existingConnection && !message) {
+      throw new ForbiddenException('You can only report connected conversations.');
+    }
+
+    return this.databaseService.messageReport.create({
+      data: {
+        reporterId: data.reporterId,
+        reportedUserId: data.reportedUserId,
+        messageId: data.messageId,
+        reason: sanitizePlainText(data.reason) || 'User reported this conversation.',
+        source: 'USER_REPORT',
+      },
+      include: {
+        reporter: { include: messageUserInclude },
+        reportedUser: { include: messageUserInclude },
+        message: true,
+      },
+    });
+  }
+
+  async getAdminReports(status?: string) {
+    const where =
+      status && status !== 'ALL'
+        ? { status: status.toUpperCase() }
+        : {};
+
+    return this.databaseService.messageReport.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        reporter: { include: messageUserInclude },
+        reportedUser: { include: messageUserInclude },
+        message: {
+          include: {
+            sender: { include: messageUserInclude },
+            receiver: { include: messageUserInclude },
+          },
+        },
+      },
+    });
+  }
+
+  async getAdminConversation(reportId: string) {
+    const report = await this.databaseService.messageReport.findUnique({
+      where: { id: reportId },
+    });
+
+    if (!report) {
+      throw new NotFoundException('Message report not found');
+    }
+
+    if (!report.reporterId) {
+      const message = report.messageId
+        ? await this.databaseService.message.findUnique({
+            where: { id: report.messageId },
+          })
+        : null;
+
+      if (!message) {
+        return [];
+      }
+
+      return this.getConversation(message.senderId, message.receiverId);
+    }
+
+    return this.getConversation(report.reporterId, report.reportedUserId);
+  }
+
+  async resolveReport(reportId: string) {
+    return this.databaseService.messageReport.update({
+      where: { id: reportId },
+      data: {
+        status: 'RESOLVED',
+        resolvedAt: new Date(),
+      },
     });
   }
 }

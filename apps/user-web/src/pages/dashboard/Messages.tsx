@@ -1,4 +1,4 @@
-import { ArrowLeft, FileText, Loader2, Mic, MoreVertical, Paperclip, Search, Send, StopCircle, X } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, FileText, Flag, Loader2, Mic, Paperclip, Search, Send, ShieldAlert, StopCircle, X } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import EmptyState from '../../components/EmptyState';
 import { useSocket } from '../../hooks/useSocket';
@@ -19,6 +19,19 @@ const Messages = () => {
     show: false,
     title: '',
   });
+  const [safetyPrompt, setSafetyPrompt] = useState<{
+    show: boolean;
+    content: string;
+    type: 'TEXT' | 'IMAGE' | 'PDF' | 'AUDIO';
+    url?: string;
+  }>({
+    show: false,
+    content: '',
+    type: 'TEXT',
+  });
+  const [reportModal, setReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reporting, setReporting] = useState(false);
   
   // --- NEW: Search State ---
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,6 +58,8 @@ const Messages = () => {
     [authToken]
   );
   const scrollRef = useRef<HTMLDivElement>(null);
+  const riskyMessagePattern =
+    /(whats\s?app|wa\.me|telegram|t\.me|outside\s+(the\s+)?platform|off[-\s]?platform|bank\s+transfer|send\s+money|pay\s+me|gmail\.com|yahoo\.com|outlook\.com|hotmail\.com|\+?\d[\d\s().-]{7,}\d)/i;
 
   // --- SOCKET HOOK ---
   const socket = useSocket(user.id);
@@ -204,7 +219,50 @@ const Messages = () => {
   const handleTextSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
+    if (riskyMessagePattern.test(inputText)) {
+      setSafetyPrompt({
+        show: true,
+        content: inputText,
+        type: 'TEXT',
+      });
+      return;
+    }
     sendMessage(inputText, 'TEXT');
+  };
+
+  const confirmSafetySend = () => {
+    sendMessage(safetyPrompt.content, safetyPrompt.type, safetyPrompt.url);
+    setSafetyPrompt({ show: false, content: '', type: 'TEXT' });
+  };
+
+  const reportConversation = async () => {
+    if (!activeChat) return;
+    setReporting(true);
+    try {
+      const lastOtherMessage = [...messages].reverse().find((message) => message.senderId === activeChat.id);
+      const res = await fetch(`${API_BASE}/messages/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        body: JSON.stringify({
+          reportedUserId: activeChat.id,
+          messageId: lastOtherMessage?.id,
+          reason: reportReason || 'User reported this conversation.',
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.message || 'Unable to report conversation.');
+      }
+
+      setReportModal(false);
+      setReportReason('');
+      setToast({ show: true, message: 'Conversation reported for admin review.', type: 'success' });
+    } catch (error: any) {
+      setToast({ show: true, message: error.message || 'Unable to report conversation.', type: 'error' });
+    } finally {
+      setReporting(false);
+    }
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -330,6 +388,80 @@ const Messages = () => {
           </div>
         </div>
       )}
+
+      {safetyPrompt.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-amber-200 bg-white p-6 shadow-2xl dark:border-amber-500/30 dark:bg-[#1d1d20]">
+            <div className="flex items-start gap-3">
+              <div className="rounded-xl bg-amber-500/15 p-2 text-amber-500">
+                <ShieldAlert size={22} />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.25em] text-amber-500">Safety Check</p>
+                <h2 className="mt-2 text-xl font-black text-slate-900 dark:text-white">Keep deals on NaajihBiz</h2>
+              </div>
+            </div>
+            <p className="mt-4 text-sm text-slate-600 dark:text-gray-300">
+              This message may include contact details, off-platform payment, or language that can move the deal away from NaajihBiz. For your protection, keep business conversations here.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => setSafetyPrompt({ show: false, content: '', type: 'TEXT' })}
+                className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-900 hover:bg-slate-50 dark:border-gray-700 dark:text-white dark:hover:bg-white/5"
+              >
+                Review Message
+              </button>
+              <button
+                type="button"
+                onClick={confirmSafetySend}
+                className="flex-1 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-black hover:brightness-110"
+              >
+                Send Anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {reportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-[#1d1d20]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-red-500">Report</p>
+                <h2 className="mt-2 text-2xl font-black text-slate-900 dark:text-white">Report Conversation</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReportModal(false)}
+                className="rounded-full p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-white/10 dark:hover:text-white"
+                aria-label="Close report modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p className="mt-4 text-sm text-slate-500 dark:text-gray-400">
+              Admins will review this reported conversation for fraud, pressure, or off-platform deal risk.
+            </p>
+            <textarea
+              value={reportReason}
+              onChange={(event) => setReportReason(event.target.value)}
+              className="mt-4 min-h-28 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-primary dark:border-gray-800 dark:bg-[#151518] dark:text-white"
+              placeholder="What happened?"
+            />
+            <button
+              type="button"
+              onClick={reportConversation}
+              disabled={reporting}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-bold text-white hover:bg-red-600 disabled:opacity-60"
+            >
+              {reporting ? <Loader2 size={18} className="animate-spin" /> : <Flag size={18} />}
+              Submit Report
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* LEFT: Sidebar */}
       <div className={`
@@ -422,12 +554,13 @@ const Messages = () => {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setComingSoon({ show: true, title: 'Conversation Options' })}
-                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                  aria-label="Options"
-                  title="Conversation options"
+                  onClick={() => setReportModal(true)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-red-500/20 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-500/10"
+                  aria-label="Report conversation"
+                  title="Report conversation"
                 >
-                  <MoreVertical size={20}/>
+                  <Flag size={14}/>
+                  <span className="hidden sm:inline">Report</span>
                 </button>
             </div>
 
@@ -452,6 +585,10 @@ const Messages = () => {
 
             {/* INPUT AREA */}
             <div className="p-4 border-t border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-[#1d1d20]">
+                <div className="mb-3 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-800 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
+                    <AlertTriangle size={15} className="mt-0.5 shrink-0" />
+                    <span>For your protection, keep deal conversations and payment discussions on NaajihBiz.</span>
+                </div>
                 {!isVerified && (
                     <div className="mb-3 rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
                         Verify your account to unlock this feature

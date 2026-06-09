@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Users, FileText, CheckCircle, LogOut, LayoutDashboard, Menu, X, Activity, Settings, BookOpen, ClipboardCheck, UserCheck } from 'lucide-react';
+import { Users, FileText, CheckCircle, LogOut, LayoutDashboard, Menu, X, Activity, Settings, BookOpen, ClipboardCheck, UserCheck, MessageSquareWarning } from 'lucide-react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import { useTheme } from '../hooks/useTheme';
@@ -45,6 +45,7 @@ const AdminLayout = () => {
     { label: 'Academy Programs', path: '/admin/academy', icon: BookOpen, permission: 'academy' },
     { label: 'Enrollments', path: '/admin/academy/enrollments', icon: UserCheck, permission: 'academy' },
     { label: 'Assignments', path: '/admin/academy/submissions', icon: ClipboardCheck, permission: 'academy' },
+    { label: 'Message Reports', path: '/admin/messages/reports', icon: MessageSquareWarning, permission: 'messages' },
     { label: 'Audit Log', path: '/admin/audit', icon: Activity, permission: 'audit' },
     { label: 'Settings', path: '/admin/settings', icon: Settings, permission: 'settings' },
   ];

@@ -11,6 +11,7 @@ const getAdminPermissionForRequest = (path = '') => {
   if (path.includes('/pitches/admin')) return 'pitches';
   if (path.includes('/verification/admin')) return 'verification';
   if (path.includes('/academy/admin')) return 'academy';
+  if (path.includes('/messages/admin')) return 'messages';
   if (path.includes('/audit')) return 'audit';
   if (path.includes('/users')) return 'users';
   return null;

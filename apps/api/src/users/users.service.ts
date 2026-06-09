@@ -29,6 +29,7 @@ const ADMIN_PERMISSIONS = [
   'pitches',
   'verification',
   'academy',
+  'messages',
   'audit',
   'settings',
 ] as const;
@@ -738,6 +739,10 @@ export class UsersService {
     });
 
     // 2. Delete related messages (New addition for safety)
+    await this.databaseService.messageReport.deleteMany({
+      where: { OR: [{ reporterId: id }, { reportedUserId: id }] },
+    });
+
     await this.databaseService.message.deleteMany({
       where: { OR: [{ senderId: id }, { receiverId: id }] },
     });

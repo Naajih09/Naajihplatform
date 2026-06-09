@@ -4,6 +4,7 @@ export type AdminPermission =
   | 'pitches'
   | 'verification'
   | 'academy'
+  | 'messages'
   | 'audit'
   | 'settings';
 
@@ -36,6 +37,11 @@ export const ADMIN_PERMISSIONS: Array<{
     id: 'academy',
     label: 'Academy',
     description: 'Manage programs, enrollments, and submissions.',
+  },
+  {
+    id: 'messages',
+    label: 'Messages',
+    description: 'Review reported and safety-flagged conversations.',
   },
   {
     id: 'audit',

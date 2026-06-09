@@ -104,6 +104,8 @@ model User {
   receivedConnections Connection[] @relation("Receiver")
   sentMessages        Message[]    @relation("MessageSender")
   receivedMessages    Message[]    @relation("MessageReceiver")
+  messageReportsMade  MessageReport[] @relation("MessageReporter")
+  messageReportsAgainst MessageReport[] @relation("MessageReportedUser")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -218,9 +220,29 @@ model Message {
 
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+  reports   MessageReport[]
 
   @@index([senderId, receiverId, createdAt])
   @@index([receiverId, isRead])
+}
+
+model MessageReport {
+  id             String   @id @default(uuid())
+  reporterId     String?
+  reporter       User?    @relation("MessageReporter", fields: [reporterId], references: [id])
+  reportedUserId String
+  reportedUser   User     @relation("MessageReportedUser", fields: [reportedUserId], references: [id])
+  messageId      String?
+  message        Message? @relation(fields: [messageId], references: [id])
+  reason         String
+  source         String   @default("USER_REPORT")
+  status         String   @default("OPEN")
+  createdAt      DateTime @default(now())
+  resolvedAt     DateTime?
+
+  @@index([status, createdAt])
+  @@index([reportedUserId])
+  @@index([reporterId])
 }
 
 // --- 5. EXTRAS ---

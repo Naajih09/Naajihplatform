@@ -16,6 +16,7 @@ const AcademyPrograms = lazy(() => import('../pages/AcademyPrograms'));
 const AcademyProgramDetail = lazy(() => import('../pages/AcademyProgramDetail'));
 const AcademySubmissions = lazy(() => import('../pages/AcademySubmissions'));
 const AcademyEnrollments = lazy(() => import('../pages/AcademyEnrollments'));
+const MessageReports = lazy(() => import('../pages/MessageReports'));
 const Login = lazy(() => import('../pages/Login'));
 const Unauthorized = lazy(() => import('../pages/Unauthorized'));
 
@@ -69,6 +70,15 @@ export const routes = [
               {
                 path: 'admin/audit',
                 element: withSuspense(<AuditLogs />),
+              },
+            ],
+          },
+          {
+            element: <ProtectedRoute permission="messages" />,
+            children: [
+              {
+                path: 'admin/messages/reports',
+                element: withSuspense(<MessageReports />),
               },
             ],
           },

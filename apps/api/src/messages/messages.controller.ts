@@ -8,10 +8,14 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
 
 // Standard DTOs embedded for convenience
 export enum MessageType {
@@ -37,6 +41,20 @@ export class CreateMessageDto {
   @IsOptional()
   @IsEnum(MessageType)
   type?: MessageType;
+}
+
+export class ReportMessageDto {
+  @IsString()
+  @IsNotEmpty()
+  reportedUserId: string;
+
+  @IsString()
+  @IsOptional()
+  messageId?: string;
+
+  @IsString()
+  @IsOptional()
+  reason?: string;
 }
 
 @Controller('messages')
@@ -69,6 +87,37 @@ export class MessagesController {
   @Get('unread-count')
   getUnreadCount(@Request() req) {
     return this.messagesService.getUnreadCount(req.user.id);
+  }
+
+  @Post('report')
+  reportConversation(@Body() body: ReportMessageDto, @Request() req) {
+    return this.messagesService.reportConversation({
+      reporterId: req.user.id,
+      reportedUserId: body.reportedUserId,
+      messageId: body.messageId,
+      reason: body.reason,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('admin/reports')
+  getAdminReports(@Query('status') status?: string) {
+    return this.messagesService.getAdminReports(status);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('admin/reports/:reportId/conversation')
+  getAdminConversation(@Param('reportId') reportId: string) {
+    return this.messagesService.getAdminConversation(reportId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Patch('admin/reports/:reportId/resolve')
+  resolveReport(@Param('reportId') reportId: string) {
+    return this.messagesService.resolveReport(reportId);
   }
 
   // PATCH /api/messages/conversation/:otherId/read -> Mark a conversation as read

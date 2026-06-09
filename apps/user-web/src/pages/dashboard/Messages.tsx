@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowLeft, FileText, Flag, Loader2, Mic, Paperclip, Search, Send, ShieldAlert, StopCircle, X } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, FileText, Flag, Loader2, Mic, Paperclip, Phone, Search, Send, ShieldAlert, StopCircle, Video, X } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import EmptyState from '../../components/EmptyState';
 import { useSocket } from '../../hooks/useSocket';
@@ -552,16 +552,36 @@ const Messages = () => {
                         <p className="text-xs text-slate-500 dark:text-gray-400 font-bold uppercase tracking-wider">{activeChat.role}</p>
                     </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setReportModal(true)}
-                  className="inline-flex items-center gap-2 rounded-lg border border-red-500/20 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-500/10"
-                  aria-label="Report conversation"
-                  title="Report conversation"
-                >
-                  <Flag size={14}/>
-                  <span className="hidden sm:inline">Report</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setComingSoon({ show: true, title: 'Voice Calls' })}
+                    className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:border-primary hover:text-primary dark:border-gray-800 dark:text-gray-400"
+                    aria-label="Start voice call"
+                    title="Voice calls coming soon"
+                  >
+                    <Phone size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setComingSoon({ show: true, title: 'Video Calls' })}
+                    className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:border-primary hover:text-primary dark:border-gray-800 dark:text-gray-400"
+                    aria-label="Start video call"
+                    title="Video calls coming soon"
+                  >
+                    <Video size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReportModal(true)}
+                    className="inline-flex items-center gap-2 rounded-lg border border-red-500/20 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-500/10"
+                    aria-label="Report conversation"
+                    title="Report conversation"
+                  >
+                    <Flag size={14}/>
+                    <span className="hidden sm:inline">Report</span>
+                  </button>
+                </div>
             </div>
 
             {/* MESSAGES LIST */}

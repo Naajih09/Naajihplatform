@@ -1,4 +1,4 @@
-import { Award, BookOpen, Calendar, ChevronRight, Network, PlayCircle, Rocket, ShieldCheck, X } from 'lucide-react';
+import { Award, BookOpen, Calendar, CheckCircle2, ChevronRight, GraduationCap, MessageSquareText, Network, PlayCircle, Rocket, ShieldCheck, Sparkles, Users, Wallet, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
@@ -150,6 +150,35 @@ function DashboardHome() {
   const pitchAccessText = hasPremium
     ? 'Premium active - pitch submissions open'
     : 'Premium required to submit pitches';
+  const academySummary = courses.reduce(
+    (summary, course) => {
+      const totalLessons = course.modules?.reduce(
+        (sum, mod) => sum + (mod.lessons?.length || 0),
+        0,
+      ) || 0;
+      const completedLessons = course.modules?.reduce(
+        (sum, mod) =>
+          sum +
+          (mod.lessons?.filter((lesson) => lesson.progress?.length > 0)
+            .length || 0),
+        0,
+      ) || 0;
+      const enrollmentStatus = course.enrollments?.[0]?.status;
+
+      return {
+        totalLessons: summary.totalLessons + totalLessons,
+        completedLessons: summary.completedLessons + completedLessons,
+        enrolledPrograms: summary.enrolledPrograms + (enrollmentStatus === 'APPROVED' ? 1 : 0),
+        pendingPrograms: summary.pendingPrograms + (enrollmentStatus === 'PENDING' ? 1 : 0),
+      };
+    },
+    { totalLessons: 0, completedLessons: 0, enrolledPrograms: 0, pendingPrograms: 0 },
+  );
+  const academyProgress =
+    academySummary.totalLessons > 0
+      ? Math.round((academySummary.completedLessons / academySummary.totalLessons) * 100)
+      : 0;
+  const recommendedCourses = courses.slice(0, 3);
 
   const handleJoin = async (event, programId, isEnrolled, isPremium) => {
     event.stopPropagation();
@@ -233,7 +262,7 @@ function DashboardHome() {
           </h2>
           <p className="text-slate-500 dark:text-neutral-muted font-medium mt-1">
             {isAspirant
-              ? 'Ready to learn? Here is your business curriculum.'
+              ? 'Build your idea through learning, community feedback, and a clear path into entrepreneurship.'
               : 'Here is what is happening with your business today.'}
           </p>
         </div>
@@ -250,12 +279,12 @@ function DashboardHome() {
           </p>
           <h3 className="mt-4 text-2xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
             {isAspirant
-              ? 'Learn the foundations before launching your business'
+              ? 'Start as a learner, leave with a pitch-ready business idea'
               : 'Connect with entrepreneurs, investors, and real opportunities'}
           </h3>
           <p className="mt-3 max-w-2xl text-sm md:text-base text-slate-600 dark:text-neutral-muted">
             {isAspirant
-              ? 'Build your idea step by step through courses, community support, and mentor guidance designed for aspiring business owners.'
+              ? 'Use Academy programs to learn the basics, ask questions in Community, then upgrade to an Entrepreneur account when you are ready to submit a real pitch.'
               : 'Discover vetted founders, practical learning, and funding-ready opportunities in one place so you can grow with confidence.'}
           </p>
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -284,10 +313,17 @@ function DashboardHome() {
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white dark:bg-[#151518] p-6 rounded-2xl border border-slate-200 dark:border-gray-800 shadow-sm flex items-center gap-4">
-              <div className="size-12 bg-primary/20 rounded-full flex items-center justify-center text-primary"><BookOpen size={24} /></div>
+              <div className="size-12 bg-primary/20 rounded-full flex items-center justify-center text-primary"><GraduationCap size={24} /></div>
               <div>
                 <p className="text-xs text-slate-500 font-bold uppercase">Available Programs</p>
                 <h3 className="text-2xl font-black text-slate-900 dark:text-white">{courses.length}</h3>
+              </div>
+            </div>
+            <div className="bg-white dark:bg-[#151518] p-6 rounded-2xl border border-slate-200 dark:border-gray-800 shadow-sm flex items-center gap-4">
+              <div className="size-12 bg-emerald-500/15 rounded-full flex items-center justify-center text-emerald-500"><CheckCircle2 size={24} /></div>
+              <div>
+                <p className="text-xs text-slate-500 font-bold uppercase">Learning Progress</p>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white">{academyProgress}%</h3>
               </div>
             </div>
             <div className="bg-white dark:bg-[#151518] p-6 rounded-2xl border border-slate-200 dark:border-gray-800 shadow-sm flex items-center gap-4">
@@ -296,6 +332,86 @@ function DashboardHome() {
                 <p className="text-xs text-slate-500 font-bold uppercase">Certificates</p>
                 <h3 className="text-2xl font-black text-slate-900 dark:text-white">{certificateCount}</h3>
               </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Link
+              to="/dashboard/learning-center"
+              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-primary/50 dark:border-gray-800 dark:bg-[#151518]"
+            >
+              <div className="mb-5 inline-flex size-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <BookOpen size={24} />
+              </div>
+              <h3 className="text-lg font-black text-slate-900 dark:text-white">Continue Academy</h3>
+              <p className="mt-2 text-sm text-slate-500 dark:text-neutral-muted">
+                Work through business basics, Islamic finance lessons, and practical launch material.
+              </p>
+              <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+                Open learning center <ChevronRight size={14} />
+              </span>
+            </Link>
+
+            <Link
+              to="/dashboard/community"
+              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-primary/50 dark:border-gray-800 dark:bg-[#151518]"
+            >
+              <div className="mb-5 inline-flex size-12 items-center justify-center rounded-xl bg-sky-500/15 text-sky-500">
+                <Users size={24} />
+              </div>
+              <h3 className="text-lg font-black text-slate-900 dark:text-white">Ask The Community</h3>
+              <p className="mt-2 text-sm text-slate-500 dark:text-neutral-muted">
+                Share your idea, get feedback, and learn from other founders before you pitch.
+              </p>
+              <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+                Visit community <ChevronRight size={14} />
+              </span>
+            </Link>
+
+            <Link
+              to="/dashboard/subscription"
+              className="rounded-2xl border border-primary/30 bg-primary p-6 shadow-sm transition hover:-translate-y-1 hover:brightness-105"
+            >
+              <div className="mb-5 inline-flex size-12 items-center justify-center rounded-xl bg-neutral-dark/10 text-neutral-dark">
+                <Wallet size={24} />
+              </div>
+              <h3 className="text-lg font-black text-neutral-dark">Become An Entrepreneur</h3>
+              <p className="mt-2 text-sm font-medium text-neutral-dark/70">
+                Upgrade when your idea is ready so you can move from learning into pitch submission.
+              </p>
+              <span className="mt-5 inline-flex items-center gap-2 text-sm font-black text-neutral-dark">
+                View upgrade path <ChevronRight size={14} />
+              </span>
+            </Link>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-[#151518]">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.25em] text-primary">Aspirant Roadmap</p>
+                <h3 className="mt-2 text-xl font-black text-slate-900 dark:text-white">Your next best steps</h3>
+              </div>
+              <Link
+                to="/dashboard/knowledge"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-900 hover:bg-slate-50 dark:border-gray-700 dark:text-white dark:hover:bg-white/5"
+              >
+                Full walkthrough <ChevronRight size={14} />
+              </Link>
+            </div>
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+              {[
+                ['1', 'Learn the fundamentals', 'Complete free Academy lessons and request premium programs when needed.'],
+                ['2', 'Validate your idea', 'Use Community and mentor guidance to shape the problem, market, and revenue model.'],
+                ['3', 'Upgrade to pitch', 'Become an Entrepreneur only when you are ready to submit for review.'],
+              ].map(([step, title, text]) => (
+                <div key={step} className="rounded-2xl border border-slate-200 p-5 dark:border-gray-800">
+                  <span className="inline-flex size-8 items-center justify-center rounded-full bg-slate-900 text-sm font-black text-white dark:bg-white dark:text-slate-900">
+                    {step}
+                  </span>
+                  <h4 className="mt-4 font-black text-slate-900 dark:text-white">{title}</h4>
+                  <p className="mt-2 text-sm text-slate-500 dark:text-neutral-muted">{text}</p>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -309,7 +425,7 @@ function DashboardHome() {
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.map((course) => {
+              {recommendedCourses.map((course) => {
                 const totalLessons = course.modules?.reduce(
                   (sum, mod) => sum + (mod.lessons?.length || 0),
                   0,
@@ -382,6 +498,16 @@ function DashboardHome() {
               })}
             </div>
           )}
+          {courses.length > recommendedCourses.length && (
+            <div className="text-center">
+              <Link
+                to="/dashboard/learning-center"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-900 hover:bg-slate-50 dark:border-gray-700 dark:bg-[#151518] dark:text-white dark:hover:bg-white/5"
+              >
+                See all programs <ChevronRight size={14} />
+              </Link>
+            </div>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -447,19 +573,19 @@ function DashboardHome() {
         <div className="bg-primary p-8 rounded-3xl relative overflow-hidden group">
           <div className="relative z-10">
             <h3 className="text-2xl font-black text-neutral-dark mb-2">
-              {isAspirant ? 'Continue your learning path' : pitchPaymentRequired ? 'Upgrade to submit pitches' : 'Ready to expand?'}
+              {isAspirant ? 'Ready to move from learner to founder?' : pitchPaymentRequired ? 'Upgrade to submit pitches' : 'Ready to expand?'}
             </h3>
             <p className="text-neutral-dark/70 font-medium mb-6 max-w-sm">
               {isAspirant
-                ? 'Work through your courses and mentor guidance first. When your idea is ready, you can move into pitch creation with more confidence.'
+                ? 'Stay in Academy while your idea is forming. Upgrade only when you are ready to become an Entrepreneur and submit a pitch for review.'
                 : pitchPaymentRequired
                 ? 'Entrepreneurs need Premium before submitting opportunities for review and investor discovery.'
                 : 'Connect with over 500+ certified halal investors.'}
             </p>
 
-            <Link to={isAspirant ? '/dashboard/learning-center' : pitchPaymentRequired ? '/dashboard/subscription?reason=pitch-payment' : '/dashboard/create-pitch'} className="inline-block">
+            <Link to={isAspirant ? '/dashboard/subscription' : pitchPaymentRequired ? '/dashboard/subscription?reason=pitch-payment' : '/dashboard/create-pitch'} className="inline-block">
               <button className="bg-neutral-dark text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-neutral-dark/90 transition-all flex items-center gap-2">
-                {isAspirant ? 'Go to Learning Center' : pitchPaymentRequired ? 'Upgrade Now' : 'Launch New Pitch'} <ChevronRight size={16} />
+                {isAspirant ? 'View Upgrade Path' : pitchPaymentRequired ? 'Upgrade Now' : 'Launch New Pitch'} <ChevronRight size={16} />
               </button>
             </Link>
             {user.role === 'ENTREPRENEUR' && (
@@ -472,17 +598,33 @@ function DashboardHome() {
 
         <div className="bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 p-8 rounded-3xl flex items-center justify-between shadow-sm">
           <div>
-            <h3 className="text-xl font-black mb-2 text-slate-900 dark:text-white">Need Guidance?</h3>
-            <p className="text-slate-500 dark:text-neutral-muted text-sm mb-4">Book a session with our Islamic Finance consultants.</p>
+            <h3 className="text-xl font-black mb-2 text-slate-900 dark:text-white">
+              {isAspirant ? 'Need Feedback?' : 'Need Guidance?'}
+            </h3>
+            <p className="text-slate-500 dark:text-neutral-muted text-sm mb-4">
+              {isAspirant
+                ? 'Bring your idea to the community before you spend money building or pitching it.'
+                : 'Book a session with our Islamic Finance consultants.'}
+            </p>
 
-            <button
-              type="button"
-              onClick={() => setComingSoon(true)}
-              className="text-slate-900 dark:text-white font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all"
-            >
-              Schedule a Call <ChevronRight size={14} />
-            </button>
+            {isAspirant ? (
+              <Link
+                to="/dashboard/community"
+                className="text-slate-900 dark:text-white font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all"
+              >
+                Ask Community <MessageSquareText size={14} />
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setComingSoon(true)}
+                className="text-slate-900 dark:text-white font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all"
+              >
+                Schedule a Call <ChevronRight size={14} />
+              </button>
+            )}
           </div>
+          {isAspirant && <Sparkles className="hidden text-primary md:block" size={52} />}
         </div>
       </div>
     </div>

@@ -21,6 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAppDispatch } from '@/store/store';
 import { logout, setAuth, setToken, setUser } from '@/store/slices/auth-slice';
 import { getApiBaseUrl } from '@/lib/api-base';
+import { useSocket } from '@/hooks/useSocket';
 
 interface DashboardLayoutProps {
   children?: React.ReactNode; 
@@ -73,6 +74,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const lastName = profile.lastName || user.lastName || '';
   const role = user.role || 'Guest';
   const profileAvatar = profile.avatarUrl || user.avatarUrl || '';
+  const socket = useSocket(user.id || '');
   const welcomeKey = user.id || user.email ? `naajihbiz:welcome-seen:${user.id || user.email}` : '';
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
     if (!welcomeKey) return false;
@@ -82,6 +84,21 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     return true;
   });
   const [unreadMessages, setUnreadMessages] = useState(0);
+
+  const fetchUnreadMessages = useCallback(async () => {
+    if (!hasValidAuthToken) return;
+
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/messages/unread-count`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setUnreadMessages(Number(data?.count) || 0);
+    } catch {
+      // Keep the existing badge value if this optional count fails.
+    }
+  }, [authToken, hasValidAuthToken]);
 
   useEffect(() => {
     if (authToken && !hasValidAuthToken) {
@@ -120,35 +137,31 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   useEffect(() => {
     if (!hasValidAuthToken) return;
 
-    let cancelled = false;
-
-    const fetchUnreadMessages = async () => {
-      try {
-        const res = await fetch(`${getApiBaseUrl()}/messages/unread-count`, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!cancelled) {
-          setUnreadMessages(Number(data?.count) || 0);
-        }
-      } catch {
-        // Keep the existing badge value if this optional count fails.
-      }
-    };
-
     fetchUnreadMessages();
     const interval = window.setInterval(fetchUnreadMessages, 30000);
     window.addEventListener('messages:read', fetchUnreadMessages);
     window.addEventListener('messages:sent', fetchUnreadMessages);
 
     return () => {
-      cancelled = true;
       window.clearInterval(interval);
       window.removeEventListener('messages:read', fetchUnreadMessages);
       window.removeEventListener('messages:sent', fetchUnreadMessages);
     };
-  }, [authToken, hasValidAuthToken, location.pathname]);
+  }, [fetchUnreadMessages, hasValidAuthToken, location.pathname]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleIncomingMessage = () => {
+      fetchUnreadMessages();
+    };
+
+    socket.on('receive_message', handleIncomingMessage);
+
+    return () => {
+      socket.off('receive_message', handleIncomingMessage);
+    };
+  }, [fetchUnreadMessages, socket]);
 
   const isAspirant = user.role === 'ASPIRING_BUSINESS_OWNER';
   const isInvestor = user.role === 'INVESTOR';
@@ -290,6 +303,22 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <div className="flex items-center gap-4">
             
             <ThemeToggle />
+
+            {!isAspirant && (
+              <Link
+                to="/dashboard/messages"
+                className="relative p-2 text-slate-500 dark:text-gray-400 hover:text-black dark:hover:text-white bg-slate-100 dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-lg transition-colors"
+                aria-label={unreadMessages > 0 ? `${unreadMessages} unread messages` : 'Messages'}
+                title={unreadMessages > 0 ? `${unreadMessages} unread messages` : 'Messages'}
+              >
+                <MessageSquare size={20} />
+                {unreadMessages > 0 && (
+                  <span className="absolute -right-1.5 -top-1.5 min-w-5 rounded-full bg-red-500 px-1.5 py-0.5 text-center text-[10px] font-black leading-none text-white ring-2 ring-white dark:ring-[#111113]">
+                    {unreadMessages > 99 ? '99+' : unreadMessages}
+                  </span>
+                )}
+              </Link>
+            )}
             
             <NotificationBell />
 

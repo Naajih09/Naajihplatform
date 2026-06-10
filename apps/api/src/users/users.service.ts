@@ -89,11 +89,13 @@ export class UsersService {
     );
   }
 
-  private shouldExposePasswordResetLink() {
+  private shouldExposePasswordResetLink(emailDelivered?: boolean) {
     return (
       process.env.NODE_ENV !== 'production' ||
       (process.env.BETA_TEST_MODE === 'true' &&
-        process.env.PASSWORD_RESET_EXPOSE_LINK === 'true')
+        process.env.PASSWORD_RESET_EXPOSE_LINK === 'true') ||
+      (emailDelivered === false &&
+        process.env.PASSWORD_RESET_FALLBACK_LINK_ON_EMAIL_FAILURE === 'true')
     );
   }
 
@@ -522,8 +524,15 @@ export class UsersService {
       emailed,
     };
 
-    if (this.shouldExposePasswordResetLink()) {
-      return { ...response, resetUrl };
+    if (this.shouldExposePasswordResetLink(emailed)) {
+      return {
+        ...response,
+        resetUrl,
+        deliveryFallback:
+          emailed === false
+            ? 'Email delivery failed, so a temporary reset link is shown for this beta environment.'
+            : undefined,
+      };
     }
 
     return response;

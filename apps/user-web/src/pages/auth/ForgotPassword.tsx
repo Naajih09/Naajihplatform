@@ -9,6 +9,7 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [resetUrl, setResetUrl] = useState('');
+  const [deliveryFallback, setDeliveryFallback] = useState('');
   const [error, setError] = useState('');
   const API_BASE = getApiBaseUrl();
 
@@ -17,6 +18,7 @@ const ForgotPassword = () => {
     setLoading(true);
     setMessage('');
     setResetUrl('');
+    setDeliveryFallback('');
     setError('');
 
     try {
@@ -33,6 +35,7 @@ const ForgotPassword = () => {
 
       setMessage(data.message || 'If the email exists, a reset link has been sent.');
       setResetUrl(typeof data.resetUrl === 'string' ? data.resetUrl : '');
+      setDeliveryFallback(typeof data.deliveryFallback === 'string' ? data.deliveryFallback : '');
     } catch (err: any) {
       setError(err.message || 'Unable to send reset link.');
     } finally {
@@ -52,6 +55,11 @@ const ForgotPassword = () => {
         {message && (
           <div className="mb-6 p-3 bg-green-500/10 border border-green-500/20 text-green-600 rounded-lg text-sm">
             <p>{message}</p>
+            {deliveryFallback && (
+              <p className="mt-2 text-xs font-medium text-green-700 dark:text-green-300">
+                {deliveryFallback}
+              </p>
+            )}
             {resetUrl && (
               <a
                 href={resetUrl}

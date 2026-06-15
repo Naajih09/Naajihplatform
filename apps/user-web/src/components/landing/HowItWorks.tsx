@@ -13,7 +13,7 @@ const HowItWorks = () => {
       <div className="max-w-[960px] mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 text-slate-900 dark:text-white">The Naajih Path</h2>
-          <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto">From application to impact — a transparent journey designed for ethical success.</p>
+          <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto">From application to impact - a transparent journey designed for ethical success.</p>
         </div>
         
         <div className="relative space-y-12">

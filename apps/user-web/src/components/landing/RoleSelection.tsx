@@ -14,7 +14,7 @@ const RoleSelection = () => {
           </div>
           <h3 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">For Entrepreneurs</h3>
           <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-            Access capital through Mudabah (Profit-Sharing). Grow without compromising values.
+            Access capital through Mudarabah (profit-sharing). Grow without compromising values.
           </p>
           <ul className="space-y-4 mb-8">
             {['100% Interest-Free (Riba-Free)', 'Mentorship from Leaders', 'Fast-Track Vetting'].map(item => (

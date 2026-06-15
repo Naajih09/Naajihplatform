@@ -17,6 +17,7 @@ import { PitchesModule } from './pitches/pitches.module';
 import { UsersModule } from './users/users.module';
 import { VerificationModule } from './verification/verification.module';
 import { AppCacheModule } from './cache/app-cache.module';
+import { KeepAliveService } from './keep-alive.service';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { AppCacheModule } from './cache/app-cache.module';
   ],
   controllers: [],
   providers: [
+    KeepAliveService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

@@ -67,7 +67,7 @@ const Landing = () => {
 
         </div>
         <div className="max-w-[1200px] mx-auto px-6 mt-16 pt-8 border-t border-slate-200 dark:border-white/5 text-center text-slate-500 text-xs">
-          © 2026 NaajihBiz Investment Platform. All rights reserved.
+          (c) 2026 NaajihBiz Investment Platform. All rights reserved.
         </div>
       </footer>
 

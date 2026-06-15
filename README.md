@@ -72,6 +72,9 @@ Backend (apps/api/.env):
 - `OPAY_WEBHOOK_SECRET`
 - `FRONTEND_URL`
 - `BACKEND_URL`
+- `KEEP_ALIVE_URL`
+
+Set `KEEP_ALIVE_URL` to the deployed API origin, for example `https://your-api.example.com`, if the host sleeps after inactivity. The API will ping `KEEP_ALIVE_URL/health` every 10 minutes. If unset, it falls back to `BACKEND_URL` or `APP_BASE_URL`; if none are present, keep-alive stays disabled.
 
 For Gmail delivery, set `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_USER` to the Gmail address, and `SMTP_PASS` to a Gmail app password.
 

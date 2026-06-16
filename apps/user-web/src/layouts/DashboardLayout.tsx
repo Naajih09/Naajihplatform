@@ -196,10 +196,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   }
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] dark:bg-[#111113] text-slate-900 dark:text-white font-sans overflow-hidden transition-colors duration-300">
+    <div className="flex h-[100dvh] bg-[#f8fafc] dark:bg-[#111113] text-slate-900 dark:text-white font-sans overflow-hidden transition-colors duration-300">
       {showWelcomeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-[#151518]">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-gray-800 dark:bg-[#151518] sm:rounded-3xl sm:p-6">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
               Welcome
             </p>
@@ -239,8 +239,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       )}
 
       {/* SIDEBAR */}
-      <aside className={`fixed md:static inset-y-0 left-0 z-30 w-64 bg-white dark:bg-[#1d1d20] border-r border-slate-200 dark:border-gray-800 flex flex-col transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-        <div className="p-6 flex items-center gap-3">
+      <aside className={`fixed md:static inset-y-0 left-0 z-30 flex w-[min(86vw,18rem)] flex-col border-r border-slate-200 bg-white transition-transform duration-300 dark:border-gray-800 dark:bg-[#1d1d20] md:w-64 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="p-5 sm:p-6 flex items-center gap-3">
           <div className="size-10 bg-primary rounded-xl flex items-center justify-center text-black font-extrabold">
             N
           </div>
@@ -251,13 +251,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden ml-auto text-gray-400" aria-label="Close menu"><X size={24}/></button>
         </div>
 
-        <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 space-y-2 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
           {navItems.map((item) => (
             <Link 
               key={item.path} 
               to={item.path} 
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+              className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-all duration-200 sm:px-4 ${
                 location.pathname === item.path 
                 ? 'bg-primary text-black font-bold shadow-md' 
                 : 'text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-black dark:hover:text-white'
@@ -277,7 +277,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-200 dark:border-gray-800 space-y-2">
+        <div className="space-y-2 border-t border-slate-200 p-3 dark:border-gray-800 sm:p-4">
           {user.role === 'ENTREPRENEUR' && (
             <Link to="/dashboard/create-pitch" className="w-full flex items-center justify-center gap-2 bg-primary py-3 px-4 rounded-xl text-black font-bold text-sm shadow-lg hover:brightness-110 transition-shadow">
               <PlusCircle size={18} />
@@ -290,9 +290,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-        <header className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-[#111113]/80 backdrop-blur-md border-b border-slate-200 dark:border-gray-800 transition-colors duration-300">
-          <div className="flex items-center gap-4 md:hidden">
-             <button onClick={() => setIsMobileMenuOpen(true)} aria-label="Open menu"><Menu size={24} className="text-gray-500"/></button>
+        <header className="sticky top-0 z-10 flex min-w-0 items-center justify-between gap-2 border-b border-slate-200 bg-white/90 px-3 py-3 backdrop-blur-md transition-colors duration-300 dark:border-gray-800 dark:bg-[#111113]/90 sm:px-5 md:px-6 md:py-4">
+          <div className="flex min-w-0 items-center gap-2 md:hidden">
+             <button onClick={() => setIsMobileMenuOpen(true)} className="rounded-lg border border-slate-200 bg-slate-100 p-2 dark:border-gray-800 dark:bg-[#1d1d20]" aria-label="Open menu"><Menu size={20} className="text-gray-500"/></button>
+             <div className="min-w-0">
+               <p className="truncate text-xs font-bold leading-none text-slate-900 dark:text-white">Hi, {firstName}</p>
+               <p className="mt-0.5 truncate text-[10px] font-medium uppercase text-slate-500 dark:text-gray-400">{role}</p>
+             </div>
           </div>
 
           <div className="hidden md:flex items-center flex-1 max-w-md">
@@ -300,14 +304,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="ml-auto flex min-w-0 items-center gap-1.5 sm:gap-3 md:gap-4">
             
             <ThemeToggle />
 
             {!isAspirant && (
               <Link
                 to="/dashboard/messages"
-                className="relative p-2 text-slate-500 dark:text-gray-400 hover:text-black dark:hover:text-white bg-slate-100 dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-lg transition-colors"
+                className="relative rounded-lg border border-slate-200 bg-slate-100 p-2 text-slate-500 transition-colors hover:text-black dark:border-gray-800 dark:bg-[#1d1d20] dark:text-gray-400 dark:hover:text-white"
                 aria-label={unreadMessages > 0 ? `${unreadMessages} unread messages` : 'Messages'}
                 title={unreadMessages > 0 ? `${unreadMessages} unread messages` : 'Messages'}
               >
@@ -322,17 +326,17 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             
             <NotificationBell />
 
-            <Link to="/dashboard/settings">
+            <Link to="/dashboard/settings" className="hidden sm:block">
               <button className="p-2 text-slate-500 dark:text-gray-400 hover:text-black dark:hover:text-white bg-slate-100 dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-lg transition-colors" aria-label="Settings">
                 <Settings size={20} />
               </button>
             </Link>
 
-            <div className="h-8 w-px bg-slate-200 dark:bg-gray-800 mx-2"></div>
+            <div className="mx-1 hidden h-8 w-px bg-slate-200 dark:bg-gray-800 sm:block md:mx-2"></div>
             
             <Link
               to="/dashboard/profile"
-              className="flex items-center gap-3 rounded-xl px-2 py-1 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+              className="flex min-w-0 items-center gap-2 rounded-xl px-1 py-1 transition-colors hover:bg-slate-100 dark:hover:bg-white/5 sm:gap-3 sm:px-2"
               aria-label="Open profile"
             >
               <div className="text-right hidden sm:block">
@@ -354,7 +358,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 pb-24 sm:p-4 md:p-8 md:pb-8">
           {children ? children : <Outlet />} 
         </div>
       </main>

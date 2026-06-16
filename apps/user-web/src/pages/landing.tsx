@@ -14,8 +14,8 @@ const Landing = () => {
             <RoleSelection />
             <HowItWorks />
             <TrustSection />
-      <footer className="bg-white dark:bg-background-dark border-t border-slate-200 dark:border-white/5 py-12 md:py-16 transition-colors duration-300" id="about">
-        <div className="max-w-[1200px] mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-left">
+      <footer className="border-t border-slate-200 bg-white py-12 transition-colors duration-300 dark:border-white/5 dark:bg-background-dark md:py-16" id="about">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 px-4 text-center sm:px-6 md:grid-cols-4 md:gap-12 md:text-left">
           
           <div className="col-span-1">
             <div className="flex items-center justify-center md:justify-start gap-2 mb-6">

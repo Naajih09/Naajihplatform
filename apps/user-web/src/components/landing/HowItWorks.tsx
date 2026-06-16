@@ -9,10 +9,10 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section className="py-24 bg-background-light dark:bg-background-dark" id="how-it-works">
-      <div className="max-w-[960px] mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 text-slate-900 dark:text-white">The Naajih Path</h2>
+    <section className="bg-background-light py-16 dark:bg-background-dark md:py-24" id="how-it-works">
+      <div className="mx-auto max-w-[960px] px-4 sm:px-6">
+        <div className="mb-12 text-center md:mb-16">
+          <h2 className="mb-4 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-5xl">The Naajih Path</h2>
           <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto">From application to impact - a transparent journey designed for ethical success.</p>
         </div>
         

@@ -94,14 +94,14 @@ const Signup = () => {
   // --- STEP 1: ROLE SELECTION ---
   if (step === 1) {
     return (
-      <div className="bg-background-light dark:bg-background-dark text-gray-900 dark:text-white min-h-screen flex flex-col font-sans">
+      <div className="flex min-h-[100dvh] flex-col bg-background-light font-sans text-gray-900 dark:bg-background-dark dark:text-white">
         <header className="w-full border-b border-gray-200 dark:border-white/5 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-50">
-          <div className="max-w-[1200px] mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:h-20 sm:px-6">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
               <div className="size-10 bg-primary flex items-center justify-center rounded text-black font-extrabold">
                 N
               </div>
-              <h2 className="text-2xl font-bold tracking-tighter uppercase">NaajihBiz</h2>
+              <h2 className="text-xl font-bold tracking-tighter uppercase sm:text-2xl">NaajihBiz</h2>
             </div>
             <Link to="/login" className="bg-primary/10 text-primary border border-primary/20 px-5 py-2 rounded font-bold text-sm hover:bg-primary/20 transition-all uppercase tracking-wider">
               Log in
@@ -109,31 +109,31 @@ const Signup = () => {
           </div>
         </header>
 
-        <main className="flex-grow flex flex-col items-center justify-center px-6 py-12">
+        <main className="flex-grow px-4 py-10 sm:px-6 sm:py-12">
           <div className="w-full max-w-6xl">
-            <div className="mb-12 flex flex-col items-center">
+            <div className="mb-8 flex flex-col items-center sm:mb-12">
               <div className="w-full max-w-md bg-gray-200 dark:bg-white/10 h-1 rounded-full overflow-hidden mb-4">
                 <div className="bg-primary h-full w-1/3 transition-all duration-500"></div>
               </div>
               <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-500 dark:text-gray-400">Step 01: Identity Selection</span>
             </div>
 
-            <div className="text-center mb-16 space-y-4">
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase">
+            <div className="mb-10 space-y-3 text-center sm:mb-16 sm:space-y-4">
+              <h1 className="text-4xl font-bold uppercase tracking-tighter sm:text-5xl md:text-7xl">
                 Choose your <span className="text-primary">path.</span>
               </h1>
-              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto font-light">
+              <p className="mx-auto max-w-2xl text-base font-light text-gray-600 dark:text-gray-400 sm:text-lg md:text-xl">
                 Build your legacy on ethical foundations. Select the role that best defines your journey.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-8">
               <RoleCard title="Entrepreneur" icon={Rocket} desc="Scale your Halal-certified business and access Sharia-compliant funding." features={['Equity-based funding', 'Halal compliance tools']} onClick={() => handleRoleSelect('ENTREPRENEUR')} />
               <RoleCard title="Investor" icon={Wallet} desc="Invest in Sharia-compliant opportunities. Diversify your portfolio." features={['Ethical vetting reports', 'Dividend tracking']} onClick={() => handleRoleSelect('INVESTOR')} />
               <RoleCard title="Aspiring Owner" icon={GraduationCap} desc="Start from scratch. Access the Naajih Academy to learn and build." features={['Mentorship access', 'Certification paths']} onClick={() => handleRoleSelect('ASPIRING_BUSINESS_OWNER')} />
             </div>
 
-            <div className="mt-20 text-center">
+            <div className="mt-10 text-center sm:mt-20">
               <Link to="/login" className="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors text-sm font-medium underline underline-offset-8 decoration-primary/30 hover:decoration-primary">
                 Already have an account? Log in to your dashboard
               </Link>
@@ -146,8 +146,8 @@ const Signup = () => {
 
   // --- STEP 2: FORM ---
   return (
-    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col font-sans">
-      <header className="w-full px-6 md:px-20 py-5 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-white/5">
+    <div className="flex min-h-[100dvh] flex-col bg-background-light font-sans text-slate-900 dark:bg-background-dark dark:text-white">
+      <header className="w-full border-b border-slate-200 bg-background-light px-4 py-4 dark:border-white/5 dark:bg-background-dark sm:px-6 md:px-20 md:py-5">
         <div className="max-w-[1200px] mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => setStep(1)}>
                 <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-black font-extrabold">
@@ -161,15 +161,15 @@ const Signup = () => {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-12">
-        <div className="w-full max-w-[520px] bg-white dark:bg-[#1a1a1a] p-8 md:p-10 rounded-xl shadow-sm border border-slate-100 dark:border-white/5">
+      <main className="flex-1 px-4 py-8 sm:py-12">
+        <div className="mx-auto w-full max-w-[520px] rounded-xl border border-slate-100 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-[#1a1a1a] sm:p-8 md:p-10">
             
             <div className="flex flex-col items-center mb-8">
                 <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary/20 px-4 mb-4 border border-primary/30">
                     <Rocket size={16} className="text-slate-900 dark:text-primary" />
                     <p className="text-slate-900 dark:text-primary text-xs font-bold uppercase tracking-wider">Signing up as {role.replace(/_/g, ' ')}</p>
                 </div>
-                <h1 className="text-3xl font-bold text-center tracking-tight text-slate-900 dark:text-white">Fuel Your Vision</h1>
+                <h1 className="text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">Fuel Your Vision</h1>
                 <p className="text-slate-500 dark:text-slate-400 text-base mt-2 text-center">Join Nigeria's premier Sharia-compliant investment bridge.</p>
             </div>
 
@@ -210,7 +210,7 @@ const Signup = () => {
                     </select>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="flex flex-col gap-2">
                         <label className="text-slate-900 dark:text-slate-200 text-sm font-bold">Password</label>
                         <div className="relative">
@@ -257,7 +257,7 @@ const Signup = () => {
             </div>
         </div>
 
-        <div className="mt-8 flex items-center gap-6 opacity-50 grayscale hover:grayscale-0 transition-all cursor-default">
+        <div className="mx-auto mt-8 flex max-w-[520px] flex-wrap items-center justify-center gap-3 opacity-70 grayscale transition-all hover:grayscale-0 sm:gap-6">
             <div className="flex items-center gap-1 text-slate-900 dark:text-white">
                 <ShieldCheck size={16} />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Sharia Certified</span>
@@ -280,9 +280,9 @@ const Signup = () => {
 
 // Helper Component for Role Card
 const RoleCard = ({ title, icon: Icon, desc, features, onClick }: any) => (
-  <div className="group relative bg-white dark:bg-[#141414] border-2 border-slate-200 dark:border-[#262626] p-8 flex flex-col h-full transition-all duration-200 hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_#aaff00]">
-    <div className="mb-8">
-      <Icon className="size-12 text-primary mb-6" strokeWidth={1.5} />
+  <div className="group relative flex h-full flex-col border-2 border-slate-200 bg-white p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_#aaff00] dark:border-[#262626] dark:bg-[#141414] sm:p-8">
+    <div className="mb-6 sm:mb-8">
+      <Icon className="mb-4 size-10 text-primary sm:mb-6 sm:size-12" strokeWidth={1.5} />
       <h3 className="text-2xl font-bold uppercase tracking-tight mb-4 text-slate-900 dark:text-white">{title}</h3>
       <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6">{desc}</p>
     </div>
@@ -294,7 +294,7 @@ const RoleCard = ({ title, icon: Icon, desc, features, onClick }: any) => (
           </li>
         ))}
       </ul>
-      <button onClick={onClick} className="w-full bg-primary text-background-dark py-4 font-black uppercase tracking-widest text-sm hover:brightness-110 transition-all flex items-center justify-center gap-2">
+      <button onClick={onClick} className="flex min-h-12 w-full items-center justify-center gap-2 bg-primary py-3 text-sm font-black uppercase tracking-widest text-background-dark transition-all hover:brightness-110 sm:py-4">
         Select Role <ArrowRight size={18} />
       </button>
     </div>

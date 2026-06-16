@@ -164,17 +164,17 @@ export default function Subscription() {
     subscription?.trialEndsAt && new Date(subscription.trialEndsAt) > new Date();
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 dark:bg-background-dark dark:text-white px-6 md:px-10 py-8 pb-24">
+    <div className="min-h-screen bg-[#f8fafc] px-0 py-2 pb-24 text-slate-900 dark:bg-background-dark dark:text-white md:py-8">
       {toast.show && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+        <div className={`fixed left-3 right-3 top-4 z-50 flex items-center gap-2 rounded px-4 py-3 font-medium text-white shadow-lg sm:left-auto sm:right-4 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
           {toast.message}
         </div>
       )}
-      <div className="max-w-[1000px] mx-auto space-y-8">
+      <div className="mx-auto max-w-[1000px] space-y-6 md:space-y-8">
         
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <h1 className="text-4xl font-black mb-4">
+        <div className="mx-auto mb-8 max-w-2xl text-center md:mb-12">
+          <h1 className="mb-4 text-3xl font-black sm:text-4xl">
             {isAspirant ? 'Unlock Premium Learning' : 'Unlock Pitch Submissions'}
           </h1>
           <p className="text-slate-500 dark:text-white/60">
@@ -204,7 +204,7 @@ export default function Subscription() {
         )}
 
         {/* Current Plan Alert */}
-        <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
+        <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/10 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
                 <div className="bg-primary/20 p-2 rounded-full text-primary">
                     <Info size={20} />
@@ -227,13 +227,13 @@ export default function Subscription() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-8">
             
             {/* Free Tier */}
-            <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-white/10 rounded-2xl p-8 flex flex-col">
+            <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-[#1d1d20] sm:p-8">
                 <h3 className="text-2xl font-bold mb-2">Basic Access</h3>
                 <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-5xl font-black">NGN 0</span>
+                    <span className="text-4xl font-black sm:text-5xl">NGN 0</span>
                     <span className="text-slate-400 dark:text-white/50">/ forever</span>
                 </div>
                 <p className="text-sm text-slate-600 dark:text-white/70 mb-8 flex-grow">
@@ -259,7 +259,7 @@ export default function Subscription() {
             </div>
 
             {/* Premium Tier */}
-            <div className="bg-gradient-to-b from-white to-slate-100 dark:from-[#262626] dark:to-[#1a1a1a] border-2 border-primary rounded-2xl p-8 relative flex flex-col shadow-2xl shadow-primary/10 scale-[1.01]">
+            <div className="relative flex flex-col rounded-2xl border-2 border-primary bg-gradient-to-b from-white to-slate-100 p-5 shadow-2xl shadow-primary/10 dark:from-[#262626] dark:to-[#1a1a1a] sm:p-8 md:scale-[1.01]">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-black px-4 py-1 rounded-full text-xs font-black tracking-widest uppercase flex items-center gap-1">
                     <Zap size={14} /> Most founders choose this
                 </div>
@@ -268,7 +268,7 @@ export default function Subscription() {
                   {isAspirant ? 'Premium Learning' : 'Premium Network'}
                 </h3>
                 <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-5xl font-black">NGN {subscriptionAmount.toLocaleString()}</span>
+                    <span className="text-4xl font-black sm:text-5xl">NGN {subscriptionAmount.toLocaleString()}</span>
                     <span className="text-slate-400 dark:text-white/50">/ month</span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-white/50 mb-4 font-bold uppercase tracking-widest">
@@ -282,7 +282,7 @@ export default function Subscription() {
                 
                 <div className="mb-6 space-y-3">
                   <p className="text-xs font-bold text-slate-400 dark:text-white/50 uppercase tracking-widest">Select Payment Method</p>
-                  <div className="flex gap-4">
+                  <div className="flex gap-3 sm:gap-4">
                     <button 
                       onClick={() => setSelectedProvider('paystack')}
                       className={`flex-1 py-2 rounded-lg border text-xs font-bold transition-all ${selectedProvider === 'paystack' ? 'bg-primary text-black border-primary' : 'bg-slate-100 text-slate-600 border-slate-200 hover:border-slate-300 dark:bg-white/5 dark:text-white/60 dark:border-white/10 dark:hover:border-white/20'}`}
@@ -338,12 +338,12 @@ export default function Subscription() {
         </div>
 
         {/* Trust Footer */}
-        <div className="mt-16 text-center text-slate-400 dark:text-white/40 text-xs flex items-center justify-center gap-2">
+        <div className="mt-10 flex items-center justify-center gap-2 text-center text-xs text-slate-400 dark:text-white/40 md:mt-16">
             <Shield size={14} /> Payments are processed securely. Cancel anytime.
         </div>
 
         {!isAspirant && (
-          <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-white/10 rounded-2xl p-6 md:p-8">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-[#1d1d20] md:p-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-2xl font-black text-slate-900 dark:text-white">Free vs Premium</h2>

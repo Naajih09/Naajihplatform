@@ -6,14 +6,51 @@
   html {
   scroll-behavior: smooth;
 }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    min-width: 0;
+    max-width: 100%;
+  }
+
   body {
     /* Default (Light Mode) */
     @apply bg-[#f8fafc] text-slate-900 transition-colors duration-300;
+    overflow-x: hidden;
   }
 
   .dark body {
     /* Dark Mode */
     @apply bg-[#111113] text-white;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
+  }
+}
+
+@layer utilities {
+  .mobile-scrollbar-hide {
+    scrollbar-width: none;
+  }
+
+  .mobile-scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 

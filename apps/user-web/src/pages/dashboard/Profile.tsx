@@ -238,30 +238,30 @@ const Profile = () => {
   const labelStyle = "block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2";
 
   return (
-    <div className="max-w-[1200px] mx-auto pb-20 font-sans text-slate-900 dark:text-white">
+    <div className="mx-auto max-w-[1200px] pb-20 font-sans text-slate-900 dark:text-white">
       {toast.show && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+        <div className={`fixed left-3 right-3 top-4 z-50 flex items-center gap-2 rounded px-4 py-3 font-medium text-white shadow-lg sm:left-auto sm:right-4 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
           {toast.message}
         </div>
       )}
       
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-6 flex items-center justify-between sm:mb-8">
         <div>
            <h1 className="text-3xl font-black tracking-tight">My Profile</h1>
            <p className="text-slate-500 dark:text-gray-400 mt-1">Manage your public identity and business details.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
         
         {/* --- LEFT SIDEBAR (Portfolio) --- */}
         <aside className="lg:col-span-4 flex flex-col gap-6 order-2 lg:order-1">
-          <div className="bg-white dark:bg-[#1d1f23]/50 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-[#1d1f23]/50 sm:p-6">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles size={16} className="text-primary" />
               <h3 className="text-primary text-sm font-bold uppercase tracking-widest">Portfolio Snapshot</h3>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {portfolioHighlights.map((item) => (
                 <div key={item.label} className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-3">
                   <p className="text-[10px] uppercase tracking-widest text-slate-500 dark:text-white/40 font-bold">{item.label}</p>
@@ -271,7 +271,7 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#1d1f23]/50 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-[#1d1f23]/50 sm:p-6">
             <div className="flex items-center gap-2 mb-4">
               <Briefcase size={16} className="text-primary" />
               <h3 className="text-primary text-sm font-bold uppercase tracking-widest">Focus Areas</h3>
@@ -288,18 +288,18 @@ const Profile = () => {
         <div className="lg:col-span-8 flex flex-col gap-6 order-1 lg:order-2">
           
           {/* Header Card */}
-          <div className="bg-gradient-to-br from-slate-900 via-[#111216] to-[#131315] border border-white/10 rounded-xl p-8 shadow-lg relative text-white overflow-hidden">
+          <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900 via-[#111216] to-[#131315] p-5 text-white shadow-lg sm:p-8">
             <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_right,rgba(255,193,7,0.15),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(255,193,7,0.08),transparent_25%)]" />
             <button 
               type="button"
               onClick={() => setIsEditing(!isEditing)} 
-              className="absolute top-6 right-6 z-10 p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-all text-white"
+              className="absolute right-4 top-4 z-10 rounded-lg bg-white/10 p-2 text-white transition-all hover:bg-white/20 sm:right-6 sm:top-6"
               aria-label="Edit Profile"
             >
               {isEditing ? <X size={20} /> : <Edit3 size={20} />}
             </button>
 
-            <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
+            <div className="relative z-10 flex flex-col items-center gap-6 text-center md:flex-row md:items-start md:gap-8 md:text-left">
               <div className="relative">
                 <div className="w-28 h-28 bg-gray-800 rounded-2xl flex items-center justify-center text-4xl font-bold border-2 border-primary text-white">
                   {profileAvatar ? (
@@ -352,10 +352,10 @@ const Profile = () => {
 
           {/* --- EDIT MODE FORM --- */}
           {isEditing ? (
-            <div className="bg-white dark:bg-[#1d1f23] border border-slate-200 dark:border-white/10 rounded-xl p-8 animate-in fade-in slide-in-from-top-4 shadow-sm">
+            <div className="animate-in rounded-xl border border-slate-200 bg-white p-5 shadow-sm fade-in slide-in-from-top-4 dark:border-white/10 dark:bg-[#1d1f23] sm:p-8">
                <h3 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">Edit Profile</h3>
                <form onSubmit={handleUpdate} className="space-y-6">
-                 <div className="grid grid-cols-2 gap-4">
+                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                         <label className={labelStyle}>First Name</label>
                         <input aria-label="First Name" className={inputStyle} value={formData.firstName || ''} onChange={e => setFormData({...formData, firstName: e.target.value})} />
@@ -397,7 +397,7 @@ const Profile = () => {
 
                  {user.role === 'ENTREPRENEUR' && (
                     <>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <label className={labelStyle}>Business Name</label>
                                 <input aria-label="Business Name" className={inputStyle} value={formData.businessName || ''} onChange={e => setFormData({...formData, businessName: e.target.value})} />
@@ -409,7 +409,7 @@ const Profile = () => {
                                 </select>
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                           <div>
                               <label className={labelStyle}>Location</label>
                               <input aria-label="Location" className={inputStyle} value={formData.location || ''} onChange={e => setFormData({...formData, location: e.target.value})} />
@@ -426,7 +426,7 @@ const Profile = () => {
                  )}
 
                  {user.role === 'INVESTOR' && (
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <label className={labelStyle}>Organization</label>
                             <input aria-label="Organization Name" className={inputStyle} value={formData.organization || ''} onChange={e => setFormData({...formData, organization: e.target.value})} />
@@ -451,14 +451,14 @@ const Profile = () => {
                     </div>
                  )}
 
-                 <div className="flex justify-end pt-4">
+                 <div className="flex justify-stretch pt-4 sm:justify-end">
                     <Button type="submit" isLoading={loading} className="bg-primary text-black font-bold">Save Changes</Button>
                  </div>
                </form>
             </div>
           ) : (
             // --- VIEW MODE STATS ---
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
                 {profileStats.map(stat => (
                     <div key={stat.l} className="bg-white dark:bg-[#1d1f23]/50 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-center shadow-sm">
                         <span className="text-slate-500 dark:text-[#abb89d] text-[10px] font-bold uppercase">{stat.l}</span>
@@ -470,7 +470,7 @@ const Profile = () => {
           )}
 
           {!isEditing && (
-            <div className="bg-white dark:bg-[#1d1f23] border border-slate-200 dark:border-white/10 rounded-xl p-8 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#1d1f23] sm:p-8">
               <div className="flex items-center justify-between gap-4 mb-6">
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white">Portfolio Overview</h3>

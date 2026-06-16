@@ -107,14 +107,14 @@ const CreatePitch = () => {
   const isAspiringOwner = user.role === 'ASPIRING_BUSINESS_OWNER';
 
   return (
-    <div className='max-w-3xl mx-auto pb-20 font-sans'>
+    <div className='mx-auto max-w-3xl pb-20 font-sans'>
       {toast.show && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+        <div className={`fixed left-3 right-3 top-4 z-50 flex items-center gap-2 rounded px-4 py-3 font-medium text-white shadow-lg sm:left-auto sm:right-4 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
           {toast.message}
         </div>
       )}
       {user.role && user.role !== 'ENTREPRENEUR' ? (
-        <div className="bg-white dark:bg-[#1d1d20] rounded-2xl border border-slate-200 dark:border-gray-800 p-8 shadow-xl">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-gray-800 dark:bg-[#1d1d20] sm:p-8">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
             {isAspiringOwner ? 'Keep building your business foundation' : 'Pitch creation is for entrepreneurs'}
           </h2>
@@ -131,7 +131,7 @@ const CreatePitch = () => {
           </Button>
         </div>
       ) : !isVerified ? (
-        <div className="bg-white dark:bg-[#1d1d20] rounded-2xl border border-slate-200 dark:border-gray-800 p-8 shadow-xl">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-gray-800 dark:bg-[#1d1d20] sm:p-8">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
             Verify your account to unlock this feature
           </h2>
@@ -146,7 +146,7 @@ const CreatePitch = () => {
           </Button>
         </div>
       ) : !pitchAccessLoading && !canCreatePitch ? (
-      <div className="bg-white dark:bg-[#1d1d20] rounded-2xl border border-slate-200 dark:border-gray-800 p-8 shadow-xl">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-gray-800 dark:bg-[#1d1d20] sm:p-8">
         <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Payment required</p>
@@ -162,7 +162,7 @@ const CreatePitch = () => {
       </div>
       ) : (
       <>
-      <div className="flex justify-between items-center mb-8">
+      <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Create New Pitch</h1>
         <Button variant="ghost" onClick={() => navigate('/dashboard/opportunities')}>Cancel</Button>
       </div>
@@ -173,7 +173,7 @@ const CreatePitch = () => {
         </div>
       )}
 
-      <div className='bg-white dark:bg-[#1d1d20] rounded-2xl border border-slate-200 dark:border-gray-800 p-8 shadow-xl'>
+      <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-gray-800 dark:bg-[#1d1d20] sm:p-8'>
         <form onSubmit={handleSubmit} className='space-y-6'>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             <div>
@@ -192,7 +192,7 @@ const CreatePitch = () => {
           </div>
           <div>
             <label className={labelStyles}>Investment Type</label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {[
                 { value: 'SHARIA_COMPLIANT', label: 'Sharia Compliant' },
                 { value: 'CONVENTIONAL', label: 'Conventional' },
@@ -226,7 +226,7 @@ const CreatePitch = () => {
             <div><label className={labelStyles}>Traction</label><input name="traction" onChange={handleChange} className={inputStyles} placeholder="e.g. 1M rev" required aria-label="Traction" /></div>
             <div><label className={labelStyles}>Market Size</label><input name="marketSize" onChange={handleChange} className={inputStyles} placeholder="e.g. 50M users" required aria-label="Market Size" /></div>
           </div>
-          <div className='p-6 bg-slate-100 dark:bg-black/30 rounded-xl border border-slate-200 dark:border-gray-800 grid grid-cols-1 md:grid-cols-2 gap-6'>
+          <div className='grid grid-cols-1 gap-5 rounded-xl border border-slate-200 bg-slate-100 p-4 dark:border-gray-800 dark:bg-black/30 sm:p-6 md:grid-cols-2 md:gap-6'>
             <div><label className={labelStyles}>Ask (NGN)</label><input name="fundingAsk" type="number" required onChange={handleChange} className={inputStyles} aria-label="Funding Ask" /></div>
             <div><label className={labelStyles}>Equity (%)</label><input name="equityOffer" type="number" min="0" max="100" step="0.01" required onChange={handleChange} className={inputStyles} aria-label="Equity Offer" /></div>
           </div>

@@ -16,7 +16,7 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const baseStyle =
-    "px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed";
+    "min-h-11 px-5 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variants: Record<ButtonVariant, string> = {
     primary: `

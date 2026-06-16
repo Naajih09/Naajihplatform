@@ -16,14 +16,14 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md transition-colors duration-300">
-      <div className="max-w-[1200px] mx-auto flex items-center justify-between px-6 py-4">
+      <div className="max-w-[1200px] mx-auto flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
         
         {/* LOGO */}
         <div className="flex items-center gap-2 cursor-pointer z-50">
           <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-background-dark">
             <Landmark size={20} strokeWidth={3} />
           </div>
-          <h2 className="text-xl font-extrabold tracking-tighter uppercase text-slate-900 dark:text-white">
+          <h2 className="text-lg font-extrabold tracking-tighter uppercase text-slate-900 dark:text-white sm:text-xl">
             Naajih<span className="text-primary">Biz</span>
           </h2>
         </div>
@@ -55,13 +55,13 @@ const Navbar = () => {
 
       {/* MOBILE MENU */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-background-light dark:bg-background-dark z-40 flex flex-col items-center justify-center space-y-8 animate-in slide-in-from-top duration-300">
+        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center space-y-7 bg-background-light px-6 text-center animate-in slide-in-from-top duration-300 dark:bg-background-dark">
           {navLinks.map((item) => (
-            <a key={item.name} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-bold text-slate-900 dark:text-white hover:text-primary">
+            <a key={item.name} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-bold text-slate-900 hover:text-primary dark:text-white">
               {item.name}
             </a>
           ))}
-          <div className="flex flex-col gap-4 mt-8 w-full px-10">
+          <div className="mt-6 flex w-full max-w-sm flex-col gap-3">
             <Link to="/login" className="w-full text-center py-4 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white font-bold">Log In</Link>
             <Link to="/signup" className="w-full text-center py-4 bg-primary text-background-dark rounded-xl font-extrabold">Get Started</Link>
           </div>

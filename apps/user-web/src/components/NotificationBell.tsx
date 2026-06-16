@@ -85,7 +85,8 @@ const NotificationBell = () => {
     <div className="relative">
       <button
         onClick={() => setShowDropdown(!showDropdown)}
-        className="relative p-2 text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white transition-colors"
+        className="relative rounded-lg p-2 text-slate-500 transition-colors hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
+        aria-label={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'}
       >
         <Bell size={20} />
         {unreadCount > 0 && (
@@ -96,7 +97,7 @@ const NotificationBell = () => {
       </button>
 
       {showDropdown && (
-        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-white/5 rounded-xl shadow-2xl z-50 overflow-hidden">
+        <div className="fixed left-3 right-3 top-16 z-50 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-white/5 dark:bg-[#1d1d20] sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-80">
           <div className="p-4 border-b border-slate-200 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-white/[0.02]">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Notifications</h3>
             <button onClick={() => setShowDropdown(false)} className="text-slate-500 hover:text-slate-900 dark:text-gray-500 dark:hover:text-white">

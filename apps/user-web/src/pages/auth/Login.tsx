@@ -57,7 +57,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-background-light dark:bg-background-dark font-sans text-slate-900 dark:text-white">
+    <div className="flex min-h-[100dvh] bg-background-light font-sans text-slate-900 dark:bg-background-dark dark:text-white">
       {/* BRANDING SIDE */}
       <div className="hidden lg:flex w-1/2 bg-background-dark border-r border-white/10 p-12 flex-col justify-between relative overflow-hidden">
         <div className="z-10 flex items-center gap-2">
@@ -75,9 +75,15 @@ const Login = () => {
       </div>
 
       {/* FORM SIDE */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+      <div className="flex w-full items-center justify-center px-4 py-8 sm:p-8 lg:w-1/2">
         <div className="max-w-md w-full">
-          <h2 className="text-3xl font-bold mb-2">Log In</h2>
+          <Link to="/" className="mb-8 flex items-center gap-2 lg:hidden">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-primary font-extrabold text-black">
+              N
+            </div>
+            <span className="text-lg font-extrabold tracking-tight">NaajihBiz</span>
+          </Link>
+          <h2 className="mb-2 text-3xl font-bold">Log In</h2>
           <p className="text-slate-500 mb-8">Enter your credentials to access your dashboard.</p>
           
           {error && (
@@ -86,7 +92,7 @@ const Login = () => {
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-slate-500 mb-2">Email Address</label>
               <div className="relative">
@@ -96,7 +102,7 @@ const Login = () => {
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full pl-10 pr-4 py-3 bg-transparent border border-slate-300 dark:border-white/10 rounded-lg focus:border-primary focus:outline-none transition-colors"
+                  className="min-h-12 w-full rounded-lg border border-slate-300 bg-white pl-10 pr-4 py-3 transition-colors focus:border-primary focus:outline-none dark:border-white/10 dark:bg-transparent"
                   placeholder="name@example.com"
                 />
               </div>
@@ -114,7 +120,7 @@ const Login = () => {
                   required
                   value={formData.password}
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  className="w-full pl-10 pr-12 py-3 bg-transparent border border-slate-300 dark:border-white/10 rounded-lg focus:border-primary focus:outline-none transition-colors"
+                  className="min-h-12 w-full rounded-lg border border-slate-300 bg-white pl-10 pr-12 py-3 transition-colors focus:border-primary focus:outline-none dark:border-white/10 dark:bg-transparent"
                   placeholder="********"
                 />
                 <button

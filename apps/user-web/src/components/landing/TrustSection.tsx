@@ -42,7 +42,7 @@ const TrustSection = () => {
                 ))}
               </div>
             </div>
-            <div className="absolute -bottom-6 -left-6 md:-bottom-10 md:-left-10 bg-primary p-6 md:p-8 rounded-2xl text-background-dark max-w-[240px] md:max-w-[280px]">
+            <div className="mt-4 bg-primary p-6 md:p-8 rounded-2xl text-background-dark max-w-none sm:max-w-[320px] lg:ml-auto">
               <span className="material-symbols-outlined text-4xl mb-4 block">verified_user</span>
               <h4 className="text-xl font-900 mb-2">Built for trust</h4>
               <p className="text-sm font-bold opacity-80">Every profile, pitch, and payment step is designed to feel clear and dependable.</p>

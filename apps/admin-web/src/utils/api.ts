@@ -62,8 +62,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      clearStoredAuth();
-      window.location.href = '/login';
+      const url = error.config?.url || '';
+      // Don't redirect if the 401 is from the login endpoint itself
+      if (!isAuthEndpoint(url)) {
+        clearStoredAuth();
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

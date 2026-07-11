@@ -53,8 +53,11 @@ export class RolesGuard implements CanActivate {
       ? user.adminPermissions
       : [];
 
+    // If the adminPermissions array is empty, deny access to mapped admin
+    // areas. Admin accounts should be provisioned with explicit
+    // `adminPermissions` (see UsersService.createAdmin) to grant access.
     if (permissions.length === 0) {
-      return true;
+      return false;
     }
 
     return permissions.includes(permission);

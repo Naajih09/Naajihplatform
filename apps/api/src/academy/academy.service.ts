@@ -19,11 +19,17 @@ export class AcademyService {
     );
   }
 
+  private getCertificateMaxAgeSeconds() {
+    const days = Number(process.env.CERTIFICATE_TOKEN_MAX_AGE_DAYS || 365);
+    return (Number.isFinite(days) && days > 0 ? days : 365) * 24 * 60 * 60;
+  }
+
   private createCertificateVerificationToken(
     programId: string,
     userId: string,
   ) {
-    const payload = `${programId}:${userId}`;
+    const now = Math.floor(Date.now() / 1000);
+    const payload = `${programId}:${userId}:${now}`;
     const signature = crypto
       .createHmac('sha256', this.getCertificateVerificationSecret())
       .update(payload)
@@ -37,14 +43,39 @@ export class AcademyService {
   private parseCertificateVerificationToken(token: string) {
     try {
       const decoded = Buffer.from(token, 'base64url').toString('utf-8');
-      const [programId, userId, signature] = decoded.split(':');
+      const parts = decoded.split(':');
+      // Accept old format (programId:userId:signature) and new format (programId:userId:timestamp:signature)
+      if (parts.length !== 3 && parts.length !== 4) {
+        return null;
+      }
+
+      const [programId, userId, maybeTimestamp, maybeSignature] = parts;
+      let issuedAt: number | null = null;
+      let signature: string;
+
+      if (parts.length === 4) {
+        // New format: programId:userId:timestamp:signature
+        issuedAt = Number(maybeTimestamp);
+        if (!Number.isFinite(issuedAt) || issuedAt <= 0) {
+          return null;
+        }
+        signature = maybeSignature;
+      } else {
+        // Old format: programId:userId:signature
+        signature = maybeTimestamp;
+      }
+
       if (!programId || !userId || !signature) {
         return null;
       }
 
+      const payload = issuedAt
+        ? `${programId}:${userId}:${issuedAt}`
+        : `${programId}:${userId}`;
+
       const expectedSignature = crypto
         .createHmac('sha256', this.getCertificateVerificationSecret())
-        .update(`${programId}:${userId}`)
+        .update(payload)
         .digest('hex');
 
       const expectedBuffer = Buffer.from(expectedSignature, 'hex');
@@ -54,6 +85,14 @@ export class AcademyService {
         !crypto.timingSafeEqual(expectedBuffer, actualBuffer)
       ) {
         return null;
+      }
+
+      // Check expiry for new-format tokens
+      if (issuedAt) {
+        const now = Math.floor(Date.now() / 1000);
+        if (now - issuedAt > this.getCertificateMaxAgeSeconds()) {
+          return null;
+        }
       }
 
       return { programId, userId };
@@ -70,11 +109,11 @@ export class AcademyService {
   ) {}
 
   private clearAcademyCache(userId?: string) {
-    this.cache.deleteByPrefix('academy:');
-    this.cache.deleteByPrefix('academy-admin:');
-    this.cache.deleteByPrefix('certificate:');
+    void this.cache.deleteByPrefix('academy:');
+    void this.cache.deleteByPrefix('academy-admin:');
+    void this.cache.deleteByPrefix('certificate:');
     if (userId) {
-      this.cache.deleteByPrefix(`academy-user:${userId}:`);
+      void this.cache.deleteByPrefix(`academy-user:${userId}:`);
     }
   }
 

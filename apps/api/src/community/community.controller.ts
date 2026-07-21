@@ -10,6 +10,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   IsArray,
   IsEnum,
@@ -112,6 +113,7 @@ export class CommunityController {
     return this.communityService.getPost(id, req.user);
   }
 
+  @Throttle({ short: { limit: 5, ttl: 60000 } })
   @Post('posts')
   @Roles(
     UserRole.ASPIRING_BUSINESS_OWNER,
@@ -123,6 +125,7 @@ export class CommunityController {
     return this.communityService.createPost(req.user.id, body);
   }
 
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
   @Post('posts/:id/comments')
   @Roles(
     UserRole.ASPIRING_BUSINESS_OWNER,
@@ -180,6 +183,7 @@ export class CommunityController {
     return this.communityService.setPostPinned(id, Boolean(body.isPinned));
   }
 
+  @Throttle({ short: { limit: 5, ttl: 60000 } })
   @Post('reports/:id')
   @Roles(
     UserRole.ASPIRING_BUSINESS_OWNER,

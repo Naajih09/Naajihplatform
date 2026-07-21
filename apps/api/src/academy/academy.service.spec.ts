@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { AppCacheService } from '../cache/app-cache.service';
 import { DatabaseService } from '../database/database.service';
 import { MailerService } from '../mailer/mailer.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -14,6 +15,7 @@ describe('AcademyService', () => {
         { provide: DatabaseService, useValue: {} },
         { provide: NotificationsService, useValue: {} },
         { provide: MailerService, useValue: {} },
+        { provide: AppCacheService, useValue: {} },
       ],
     }).compile();
 

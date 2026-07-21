@@ -380,9 +380,12 @@ export class PaymentsService {
     const expected = crypto
       .createHmac('sha512', paystackSecret)
       .update(rawBody ?? Buffer.from(JSON.stringify(payload)))
-      .digest('hex');
+      .digest();
 
-    if (!signature || signature !== expected) {
+    if (
+      !signature ||
+      !crypto.timingSafeEqual(Buffer.from(signature, 'utf-8'), expected)
+    ) {
       throw new BadRequestException('Invalid Paystack signature');
     }
 
@@ -420,9 +423,12 @@ export class PaymentsService {
     const expected = crypto
       .createHmac('sha256', this.opayWebhookSecret)
       .update(rawBody ?? Buffer.from(JSON.stringify(payload)))
-      .digest('hex');
+      .digest();
 
-    if (!signature || signature !== expected) {
+    if (
+      !signature ||
+      !crypto.timingSafeEqual(Buffer.from(signature, 'utf-8'), expected)
+    ) {
       throw new BadRequestException('Invalid OPay signature');
     }
 

@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  # ---- Database ----
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-naajih}
+      POSTGRES_DB: naajih
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d naajih"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---- Redis (caching + Socket.io pub/sub) ----
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---- API (NestJS) ----
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - apps/api/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-naajih}@postgres:5432/naajih?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

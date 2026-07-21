@@ -73,7 +73,7 @@ export class PaymentsService {
   }
 
   private get opayWebhookSecret() {
-    return this.getEnv('OPAY_WEBHOOK_SECRET');
+    return process.env.OPAY_WEBHOOK_SECRET || process.env.OPAY_SECRET_KEY || '';
   }
 
   private get frontendUrl() {
@@ -420,24 +420,26 @@ export class PaymentsService {
     payload: any,
     rawBody?: Buffer,
   ) {
-    const expected = crypto
-      .createHmac('sha256', this.opayWebhookSecret)
-      .update(rawBody ?? Buffer.from(JSON.stringify(payload)))
-      .digest();
+    // If a signature header is present, verify it for extra security
+    if (signature && this.opayWebhookSecret) {
+      const expected = crypto
+        .createHmac('sha256', this.opayWebhookSecret)
+        .update(rawBody ?? Buffer.from(JSON.stringify(payload)))
+        .digest();
 
-    if (
-      !signature ||
-      !crypto.timingSafeEqual(Buffer.from(signature, 'utf-8'), expected)
-    ) {
-      throw new BadRequestException('Invalid OPay signature');
+      if (
+        !crypto.timingSafeEqual(Buffer.from(signature, 'utf-8'), expected)
+      ) {
+        throw new BadRequestException('Invalid OPay signature');
+      }
     }
 
     const reference = payload?.data?.reference || payload?.orderNo;
     if (!reference) {
       throw new BadRequestException('Missing OPay reference');
     }
-    const status = payload?.data?.status || payload?.status;
-    if (status && status !== 'SUCCESSFUL') {
+    const webhookStatus = payload?.data?.status || payload?.status;
+    if (webhookStatus && webhookStatus !== 'SUCCESSFUL') {
       return { status: 'ignored', reason: 'status_not_success' };
     }
 

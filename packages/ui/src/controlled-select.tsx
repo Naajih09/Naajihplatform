@@ -1,5 +1,5 @@
-import * as SelectPrimitive from '@radix-ui/react-select';
-import * as React from 'react';
+import * as SelectPrimitive from "@radix-ui/react-select";
+import * as React from "react";
 import {
   Control,
   Controller,
@@ -8,7 +8,7 @@ import {
   FieldValues,
   Path,
   RegisterOptions,
-} from 'react-hook-form';
+} from "react-hook-form";
 import {
   cn,
   Select,
@@ -17,7 +17,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '.';
+} from ".";
 
 type SelectRootProps = SelectPrimitive.SelectProps;
 
@@ -54,21 +54,21 @@ export const BaseSelect = React.forwardRef<HTMLButtonElement, BaseSelectProps>(
       isLoading,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
-      <div className={cn('w-full mb-4', containerClass)}>
+      <div className={cn("w-full mb-4", containerClass)}>
         {label && (
-          <div className='flex items-center gap-1 '>
+          <div className="flex items-center gap-1 ">
             {isRequired && (
-              <span className={cn('text-sm text-red-500', labelClassName)}>
+              <span className={cn("text-sm text-red-500", labelClassName)}>
                 *
               </span>
             )}
             <label
               className={cn(
-                'text-sm font-medium text-gray-700 capitalize',
-                labelClassName
+                "text-sm font-medium text-gray-700 capitalize",
+                labelClassName,
               )}
               htmlFor={props.name}
             >
@@ -86,18 +86,18 @@ export const BaseSelect = React.forwardRef<HTMLButtonElement, BaseSelectProps>(
         >
           <SelectTrigger
             className={cn(
-              'w-full h-11',
-              props.disabled && 'cursor-not-allowed',
+              "w-full h-11",
+              props.disabled && "cursor-not-allowed",
               triggerClassName,
               error
-                ? 'border-red-400 focus:ring-red-500'
-                : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'
+                ? "border-red-400 focus:ring-red-500"
+                : "border-gray-300 focus:border-primary-500 focus:ring-primary-500",
             )}
             ref={ref}
           >
-            <SelectValue placeholder={placeholder || 'Select an option'} />
+            <SelectValue placeholder={placeholder || "Select an option"} />
           </SelectTrigger>
-          <SelectContent className='bg-white'>
+          <SelectContent className="bg-white">
             {!isLoading ? (
               <SelectGroup>
                 {options?.map((option) => (
@@ -108,35 +108,38 @@ export const BaseSelect = React.forwardRef<HTMLButtonElement, BaseSelectProps>(
               </SelectGroup>
             ) : (
               <SelectGroup>
-                <SelectItem value={String('')}>Fetching data...</SelectItem>
+                <SelectItem value={String("")}>Fetching data...</SelectItem>
               </SelectGroup>
             )}
           </SelectContent>
         </Select>
 
-        {error && <p className='mt-1 text-sm text-red-600'>{error.message}</p>}
+        {error && <p className="mt-1 text-sm text-red-600">{error.message}</p>}
       </div>
     );
-  }
+  },
 );
 
-BaseSelect.displayName = 'BaseSelect';
+BaseSelect.displayName = "BaseSelect";
 
 // Omit some props for the controlled version
-export interface ControlledSelectBaseProps
-  extends Omit<BaseSelectProps, 'name' | 'error' | 'onValueChange'> {
+export interface ControlledSelectBaseProps extends Omit<
+  BaseSelectProps,
+  "name" | "error" | "onValueChange"
+> {
   subText?: string;
 }
 
 // Controlled Select component
-export interface ControlledSelectProps<TFieldValues extends FieldValues>
-  extends ControlledSelectBaseProps {
+export interface ControlledSelectProps<
+  TFieldValues extends FieldValues,
+> extends ControlledSelectBaseProps {
   errors?: Partial<FieldErrorsImpl<TFieldValues>>;
   control: Control<TFieldValues, any>;
   name: Path<TFieldValues>;
   rules?: Omit<
     RegisterOptions<TFieldValues, Path<TFieldValues>>,
-    'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'
+    "valueAsNumber" | "valueAsDate" | "setValueAs" | "disabled"
   >;
 }
 

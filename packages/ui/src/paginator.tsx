@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Pagination } from 'react-headless-pagination';
+import { Pagination } from "react-headless-pagination";
 
 import {
   Button,
@@ -9,7 +9,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '.';
+} from ".";
 
 type Props = {
   page: number;
@@ -38,7 +38,7 @@ export function Paginator({
   middlePageSiblingsCount = 2,
   className,
 }: Props) {
-  const truncableDisplay = 'hidden lg:!flex'; // hide truncable on mobile
+  const truncableDisplay = "hidden lg:!flex"; // hide truncable on mobile
   return (
     <>
       <style>
@@ -61,9 +61,9 @@ export function Paginator({
 
       <div
         className={cn(
-          'flex flex-wrap items-center space-x-3 space-y-6 w-full px-3',
-          'justify-center lg:!justify-between  ',
-          className
+          "flex flex-wrap items-center space-x-3 space-y-6 w-full px-3",
+          "justify-center lg:!justify-between  ",
+          className,
         )}
       >
         <Pagination

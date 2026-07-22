@@ -1,11 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
-import { CheckCircle, XCircle, ClipboardCheck, Filter } from 'lucide-react';
-import api from '../utils/api';
-import EmptyState from '../components/EmptyState';
+import { useCallback, useEffect, useState } from "react";
+import { CheckCircle, XCircle, ClipboardCheck, Filter } from "lucide-react";
+import api from "../utils/api";
+import EmptyState from "../components/EmptyState";
 
-const statusOptions = ['ALL', 'PENDING', 'SUBMITTED', 'APPROVED', 'REJECTED'] as const;
+const statusOptions = [
+  "ALL",
+  "PENDING",
+  "SUBMITTED",
+  "APPROVED",
+  "REJECTED",
+] as const;
 type SubmissionFilter = (typeof statusOptions)[number];
-type SubmissionStatus = Exclude<SubmissionFilter, 'ALL'>;
+type SubmissionStatus = Exclude<SubmissionFilter, "ALL">;
 
 interface SubmissionUser {
   email?: string;
@@ -36,33 +42,36 @@ interface SubmissionRecord {
 const AcademySubmissions = () => {
   const [submissions, setSubmissions] = useState<SubmissionRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<SubmissionFilter>('ALL');
+  const [statusFilter, setStatusFilter] = useState<SubmissionFilter>("ALL");
   const [feedbackMap, setFeedbackMap] = useState<Record<string, string>>({});
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{
     show: boolean;
     message: string;
-    type: 'success' | 'error';
+    type: "success" | "error";
   }>({
     show: false,
-    message: '',
-    type: 'success',
+    message: "",
+    type: "success",
   });
 
-  const showToast = useCallback((message: string, type: 'success' | 'error') => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: '', type }), 2500);
-  }, []);
+  const showToast = useCallback(
+    (message: string, type: "success" | "error") => {
+      setToast({ show: true, message, type });
+      setTimeout(() => setToast({ show: false, message: "", type }), 2500);
+    },
+    [],
+  );
 
   const fetchSubmissions = useCallback(async () => {
     setLoading(true);
     try {
       const params =
-        statusFilter !== 'ALL' ? { status: statusFilter } : undefined;
-      const res = await api.get('/academy/admin/submissions', { params });
+        statusFilter !== "ALL" ? { status: statusFilter } : undefined;
+      const res = await api.get("/academy/admin/submissions", { params });
       setSubmissions(res.data || []);
     } catch {
-      showToast('Failed to load submissions.', 'error');
+      showToast("Failed to load submissions.", "error");
     } finally {
       setLoading(false);
     }
@@ -72,17 +81,20 @@ const AcademySubmissions = () => {
     fetchSubmissions();
   }, [fetchSubmissions]);
 
-  const handleUpdate = async (submissionId: string, status: SubmissionStatus) => {
+  const handleUpdate = async (
+    submissionId: string,
+    status: SubmissionStatus,
+  ) => {
     setUpdatingId(submissionId);
     try {
       await api.patch(`/academy/admin/submissions/${submissionId}`, {
         status,
         feedback: feedbackMap[submissionId],
       });
-      showToast(`Submission ${status.toLowerCase()}.`, 'success');
+      showToast(`Submission ${status.toLowerCase()}.`, "success");
       fetchSubmissions();
     } catch {
-      showToast('Failed to update submission.', 'error');
+      showToast("Failed to update submission.", "error");
     } finally {
       setUpdatingId(null);
     }
@@ -120,7 +132,9 @@ const AcademySubmissions = () => {
       </div>
 
       {loading ? (
-        <div className="text-slate-500 dark:text-gray-400">Loading submissions...</div>
+        <div className="text-slate-500 dark:text-gray-400">
+          Loading submissions...
+        </div>
       ) : submissions.length === 0 ? (
         <div className="admin-surface">
           <EmptyState
@@ -137,9 +151,11 @@ const AcademySubmissions = () => {
               submission.user?.entrepreneurProfile ||
               submission.user?.investorProfile ||
               {};
-            const userName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim();
-            const programTitle = submission.task?.module?.program?.title || 'Unknown Program';
-            const moduleTitle = submission.task?.module?.title || 'Module';
+            const userName =
+              `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
+            const programTitle =
+              submission.task?.module?.program?.title || "Unknown Program";
+            const moduleTitle = submission.task?.module?.title || "Module";
 
             return (
               <div
@@ -159,19 +175,21 @@ const AcademySubmissions = () => {
                     </p>
                     <p className="text-xs text-slate-500 dark:text-gray-500">
                       {submission.submittedAt
-                        ? new Date(submission.submittedAt).toLocaleString('en-NG')
-                        : 'Unknown submission date'}
+                        ? new Date(submission.submittedAt).toLocaleString(
+                            "en-NG",
+                          )
+                        : "Unknown submission date"}
                     </p>
                   </div>
                   <span
                     className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full ${
-                      submission.status === 'APPROVED'
-                        ? 'bg-green-500/20 text-green-400'
-                        : submission.status === 'REJECTED'
-                        ? 'bg-red-500/20 text-red-400'
-                        : submission.status === 'SUBMITTED'
-                        ? 'bg-yellow-500/20 text-yellow-400'
-                        : 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-gray-400'
+                      submission.status === "APPROVED"
+                        ? "bg-green-500/20 text-green-400"
+                        : submission.status === "REJECTED"
+                          ? "bg-red-500/20 text-red-400"
+                          : submission.status === "SUBMITTED"
+                            ? "bg-yellow-500/20 text-yellow-400"
+                            : "bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-gray-400"
                     }`}
                   >
                     {submission.status}
@@ -191,27 +209,29 @@ const AcademySubmissions = () => {
 
                 <textarea
                   placeholder="Feedback (optional)"
-                  value={feedbackMap[submission.id] || submission.feedback || ''}
+                  value={
+                    feedbackMap[submission.id] || submission.feedback || ""
+                  }
                   onChange={(event) =>
                     setFeedbackMap((prev) => ({
                       ...prev,
                       [submission.id]: event.target.value,
                     }))
                   }
-                  aria-label={`Feedback for ${submission.task?.title || 'submission'}`}
+                  aria-label={`Feedback for ${submission.task?.title || "submission"}`}
                   className="admin-input px-3 py-2 text-xs w-full min-h-[80px]"
                 />
 
                 <div className="flex flex-wrap gap-3">
                   <button
-                    onClick={() => handleUpdate(submission.id, 'APPROVED')}
+                    onClick={() => handleUpdate(submission.id, "APPROVED")}
                     disabled={updatingId === submission.id}
                     className="bg-green-500 text-black font-bold px-4 py-2 rounded-lg text-xs"
                   >
                     Approve
                   </button>
                   <button
-                    onClick={() => handleUpdate(submission.id, 'REJECTED')}
+                    onClick={() => handleUpdate(submission.id, "REJECTED")}
                     disabled={updatingId === submission.id}
                     className="bg-red-500 text-white font-bold px-4 py-2 rounded-lg text-xs"
                   >
@@ -227,10 +247,14 @@ const AcademySubmissions = () => {
       {toast.show && (
         <div
           className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${
-            toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+            toast.type === "success" ? "bg-green-600" : "bg-red-600"
           }`}
         >
-          {toast.type === 'success' ? <CheckCircle size={18} /> : <XCircle size={18} />}
+          {toast.type === "success" ? (
+            <CheckCircle size={18} />
+          ) : (
+            <XCircle size={18} />
+          )}
           {toast.message}
         </div>
       )}

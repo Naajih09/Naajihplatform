@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { CheckCircle, ChevronLeft, Download } from 'lucide-react';
-import Button from '../../components/Button';
-import { getApiBaseUrl } from '../../lib/api-base';
-import { showToast } from '../../lib/utils';
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { CheckCircle, ChevronLeft, Download } from "lucide-react";
+import Button from "../../components/Button";
+import { getApiBaseUrl } from "../../lib/api-base";
+import { showToast } from "../../lib/utils";
 
 const Certificate = () => {
   const { programId } = useParams();
@@ -14,21 +14,22 @@ const Certificate = () => {
 
   const API_BASE = getApiBaseUrl();
   const authToken =
-    localStorage.getItem('accessToken') ||
-    localStorage.getItem('access_token') ||
-    '';
-  const authHeaders = authToken
-    ? { Authorization: `Bearer ${authToken}` }
-    : {};
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("access_token") ||
+    "";
+  const authHeaders = authToken ? { Authorization: `Bearer ${authToken}` } : {};
 
   useEffect(() => {
     const fetchCertificate = async () => {
       if (!programId) return;
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/academy/certificate/${programId}`, {
-          headers: authHeaders,
-        });
+        const res = await fetch(
+          `${API_BASE}/academy/certificate/${programId}`,
+          {
+            headers: authHeaders,
+          },
+        );
         if (res.status === 403) {
           setCertificate(null);
           return;
@@ -49,26 +50,30 @@ const Certificate = () => {
   }, [API_BASE, authToken, programId]);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (!user?.email || !authToken) return;
     fetch(`${API_BASE}/users/${user.email}`, { headers: authHeaders })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data) {
           setSubscription(data.subscription || null);
-          localStorage.setItem('user', JSON.stringify(data));
+          localStorage.setItem("user", JSON.stringify(data));
         }
       })
       .catch(() => null);
   }, [API_BASE, authToken]);
 
   if (loading) {
-    return <div className="text-center py-20 text-gray-500">Loading certificate...</div>;
+    return (
+      <div className="text-center py-20 text-gray-500">
+        Loading certificate...
+      </div>
+    );
   }
 
   const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
   const hasPremium =
-    subscription?.plan === 'PREMIUM' &&
+    subscription?.plan === "PREMIUM" &&
     (!activeUntil || new Date(activeUntil) > new Date());
 
   if (!certificate) {
@@ -77,11 +82,13 @@ const Certificate = () => {
         <p className="text-red-500">Certificate not available.</p>
         {!hasPremium && (
           <div className="space-y-3">
-            <p className="text-slate-500">Certificates are a Premium benefit.</p>
+            <p className="text-slate-500">
+              Certificates are a Premium benefit.
+            </p>
             <Button
               onClick={() => {
-                showToast('Premium access required.', 'error');
-                navigate('/dashboard/subscription');
+                showToast("Premium access required.", "error");
+                navigate("/dashboard/subscription");
               }}
               className="bg-primary text-neutral-dark font-bold px-6 py-3 rounded-xl"
             >
@@ -113,25 +120,29 @@ const Certificate = () => {
         </div>
 
         <div className="mt-10 text-center space-y-4">
-          <p className="text-sm uppercase tracking-[0.3em] text-gray-500">Certificate of Completion</p>
-          <h1 className="text-3xl md:text-4xl font-black">{certificate.recipient}</h1>
+          <p className="text-sm uppercase tracking-[0.3em] text-gray-500">
+            Certificate of Completion
+          </p>
+          <h1 className="text-3xl md:text-4xl font-black">
+            {certificate.recipient}
+          </h1>
           <p className="text-gray-400 max-w-xl mx-auto">
             has successfully completed the program
           </p>
-          <h2 className="text-2xl font-bold text-primary">{certificate.program?.title}</h2>
+          <h2 className="text-2xl font-bold text-primary">
+            {certificate.program?.title}
+          </h2>
           <p className="text-xs text-gray-500">
-            Awarded on{' '}
-            {new Date(certificate.achievedAt).toLocaleDateString('en-NG', { dateStyle: 'long' })}
+            Awarded on{" "}
+            {new Date(certificate.achievedAt).toLocaleDateString("en-NG", {
+              dateStyle: "long",
+            })}
           </p>
         </div>
 
         <div className="mt-12 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-gray-500">
-          <div>
-            Cohort: {certificate.program?.cohort || 'N/A'}
-          </div>
-          <div>
-            Certificate ID: {certificate.milestone?.id?.slice(0, 10)}
-          </div>
+          <div>Cohort: {certificate.program?.cohort || "N/A"}</div>
+          <div>Certificate ID: {certificate.milestone?.id?.slice(0, 10)}</div>
           <div className="flex items-center gap-3">
             <img
               src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(verificationUrl)}`}
@@ -140,7 +151,9 @@ const Certificate = () => {
             />
             <div className="text-[10px]">
               Scan to verify
-              <div className="text-gray-400 break-all max-w-[160px]">{verificationUrl}</div>
+              <div className="text-gray-400 break-all max-w-[160px]">
+                {verificationUrl}
+              </div>
             </div>
           </div>
         </div>
@@ -162,9 +175,9 @@ const Certificate = () => {
             );
             if (!res.ok) return;
             const blob = await res.blob();
-            const link = document.createElement('a');
+            const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = 'naajihbiz-certificate.pdf';
+            link.download = "naajihbiz-certificate.pdf";
             link.click();
           } catch (err) {
             console.error(err);

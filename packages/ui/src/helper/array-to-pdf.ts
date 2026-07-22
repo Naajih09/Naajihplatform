@@ -69,7 +69,7 @@ export const arrayToPDF = <T extends Record<string, any>>(dataArray: T[]) => {
               <tr class="header_row">
                 ${Object.keys(dataArray[0] as any)
                   .map((key) => `<th>${key}</th>`)
-                  .join('')}
+                  .join("")}
               </tr>
             </thead>
             <tbody>
@@ -80,11 +80,11 @@ export const arrayToPDF = <T extends Record<string, any>>(dataArray: T[]) => {
                   ${Object.values(item)
 
                     .map((value) => `<td>${value}</td>`)
-                    .join('')}
+                    .join("")}
                 </tr>
-              `
+              `,
                 )
-                .join('')}
+                .join("")}
             </tbody>
           </table>
         </body>

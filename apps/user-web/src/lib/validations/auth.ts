@@ -1,16 +1,16 @@
-import z from 'zod';
+import z from "zod";
 
 export const PASSWORD_PATTERN_SPECS = [
   {
-    message: 'Password must be at least 8 characters long',
+    message: "Password must be at least 8 characters long",
     pattern: /^.{8,}$/,
   },
   {
-    message: 'Password must contain at least 1 uppercase letter',
+    message: "Password must contain at least 1 uppercase letter",
     pattern: /[A-Z]/,
   },
   {
-    message: 'Password must contain at least 1 lowercase letter',
+    message: "Password must contain at least 1 lowercase letter",
     pattern: /[a-z]/,
   },
 ];

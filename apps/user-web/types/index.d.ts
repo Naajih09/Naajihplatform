@@ -1,7 +1,5 @@
-
-
-type TApiResponse<T> ={
-    message:string;
-    status:boolean;
-    data:T
-}
+type TApiResponse<T> = {
+  message: string;
+  status: boolean;
+  data: T;
+};

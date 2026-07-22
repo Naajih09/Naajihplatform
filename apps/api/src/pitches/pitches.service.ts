@@ -88,11 +88,15 @@ export class PitchesService {
     }
 
     if (user.role !== UserRole.ENTREPRENEUR) {
-      throw new ForbiddenException('Only entrepreneur accounts can submit pitches.');
+      throw new ForbiddenException(
+        'Only entrepreneur accounts can submit pitches.',
+      );
     }
 
     if (!user.isVerified) {
-      throw new ForbiddenException('Verify your account to unlock this feature');
+      throw new ForbiddenException(
+        'Verify your account to unlock this feature',
+      );
     }
 
     const now = new Date();
@@ -136,8 +140,16 @@ export class PitchesService {
     page?: string;
     pageSize?: string;
   }) {
-    const { search, category, status, stage, industry, investmentType, minTicket, maxTicket } =
-      query;
+    const {
+      search,
+      category,
+      status,
+      stage,
+      industry,
+      investmentType,
+      minTicket,
+      maxTicket,
+    } = query;
     const page = Math.max(1, Number(query.page) || 1);
     const pageSize = Math.min(100, Math.max(1, Number(query.pageSize) || 20));
     const skip = (page - 1) * pageSize;

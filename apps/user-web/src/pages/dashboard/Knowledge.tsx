@@ -1,100 +1,113 @@
-import { ArrowRight, BadgeCheck, BookOpen, Handshake, Rocket, ShieldCheck, UserRoundCheck } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import {
+  ArrowRight,
+  BadgeCheck,
+  BookOpen,
+  Handshake,
+  Rocket,
+  ShieldCheck,
+  UserRoundCheck,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 
 const steps = [
   {
-    title: 'Create a trusted profile',
-    text: 'Add your name, business or investment details, focus areas, and a clear profile photo so other users know who they are dealing with.',
+    title: "Create a trusted profile",
+    text: "Add your name, business or investment details, focus areas, and a clear profile photo so other users know who they are dealing with.",
     icon: UserRoundCheck,
   },
   {
-    title: 'Verify your account',
-    text: 'Submit identity verification before taking key actions like pitching, connecting, or messaging. This keeps the network serious and safer.',
+    title: "Verify your account",
+    text: "Submit identity verification before taking key actions like pitching, connecting, or messaging. This keeps the network serious and safer.",
     icon: ShieldCheck,
   },
   {
-    title: 'Choose your path',
-    text: 'Aspirants start with Academy and Community. Entrepreneurs prepare a paid pitch. Investors browse approved opportunities and save deal flow.',
+    title: "Choose your path",
+    text: "Aspirants start with Academy and Community. Entrepreneurs prepare a paid pitch. Investors browse approved opportunities and save deal flow.",
     icon: BookOpen,
   },
   {
-    title: 'Submit or review pitches',
-    text: 'Entrepreneurs submit opportunities for admin review. Investors only see and connect around pitches that are ready for discovery.',
+    title: "Submit or review pitches",
+    text: "Entrepreneurs submit opportunities for admin review. Investors only see and connect around pitches that are ready for discovery.",
     icon: Rocket,
   },
   {
-    title: 'Connect with intent',
-    text: 'Use connection requests to start serious conversations. Pending and accepted states help everyone understand where the relationship stands.',
+    title: "Connect with intent",
+    text: "Use connection requests to start serious conversations. Pending and accepted states help everyone understand where the relationship stands.",
     icon: Handshake,
   },
   {
-    title: 'Build a quality network',
-    text: 'Use messages, focus areas, and recommendations to keep the platform useful instead of noisy.',
+    title: "Build a quality network",
+    text: "Use messages, focus areas, and recommendations to keep the platform useful instead of noisy.",
     icon: BadgeCheck,
   },
 ];
 
 const roleGuides = {
   ASPIRING_BUSINESS_OWNER: {
-    role: 'Aspiring Business Owner',
-    title: 'Learn before pitching',
-    text: 'Your account is for learning and preparation. Start with Academy programs, join community discussions, and use mentor sessions to shape your idea before moving into pitch creation.',
-    to: '/dashboard/learning-center',
-    action: 'Open Academy',
+    role: "Aspiring Business Owner",
+    title: "Learn before pitching",
+    text: "Your account is for learning and preparation. Start with Academy programs, join community discussions, and use mentor sessions to shape your idea before moving into pitch creation.",
+    to: "/dashboard/learning-center",
+    action: "Open Academy",
   },
   ENTREPRENEUR: {
-    role: 'Entrepreneur',
-    title: 'Prepare investor-ready opportunities',
-    text: 'Your account is for building and pitching. Complete verification, upgrade when ready to pitch, select the right investment type, and keep your funding ask and equity clear.',
-    to: '/dashboard/create-pitch',
-    action: 'Create Pitch',
+    role: "Entrepreneur",
+    title: "Prepare investor-ready opportunities",
+    text: "Your account is for building and pitching. Complete verification, upgrade when ready to pitch, select the right investment type, and keep your funding ask and equity clear.",
+    to: "/dashboard/create-pitch",
+    action: "Create Pitch",
   },
   INVESTOR: {
-    role: 'Investor',
-    title: 'Browse clean deal flow',
-    text: 'Your account is for reviewing opportunities, not Academy onboarding. Set focus areas and investment preferences, review approved pitches, save interesting deals, and connect with founders.',
-    to: '/dashboard/opportunities',
-    action: 'Browse Deals',
+    role: "Investor",
+    title: "Browse clean deal flow",
+    text: "Your account is for reviewing opportunities, not Academy onboarding. Set focus areas and investment preferences, review approved pitches, save interesting deals, and connect with founders.",
+    to: "/dashboard/opportunities",
+    action: "Browse Deals",
   },
 };
 
 const roleNotes = [
   {
-    role: 'Aspirants',
-    text: 'Use Academy, Community, and mentorship to build business foundations before pitching.',
+    role: "Aspirants",
+    text: "Use Academy, Community, and mentorship to build business foundations before pitching.",
   },
   {
-    role: 'Entrepreneurs',
-    text: 'Verify, upgrade, submit pitches, and respond to investor interest.',
+    role: "Entrepreneurs",
+    text: "Verify, upgrade, submit pitches, and respond to investor interest.",
   },
   {
-    role: 'Investors',
-    text: 'Set preferences, review approved deal flow, save pitches, and connect with founders.',
+    role: "Investors",
+    text: "Set preferences, review approved deal flow, save pitches, and connect with founders.",
   },
 ];
 
 export default function Knowledge() {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const currentGuide =
-    roleGuides[user.role as keyof typeof roleGuides] || roleGuides.ASPIRING_BUSINESS_OWNER;
+    roleGuides[user.role as keyof typeof roleGuides] ||
+    roleGuides.ASPIRING_BUSINESS_OWNER;
 
   return (
     <div className="mx-auto max-w-6xl space-y-10 pb-20 text-slate-900 dark:text-white">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#1d1d20] md:p-8">
-        <p className="text-xs font-black uppercase tracking-[0.3em] text-primary">Knowledge</p>
+        <p className="text-xs font-black uppercase tracking-[0.3em] text-primary">
+          Knowledge
+        </p>
         <div className="mt-3 grid gap-6 md:grid-cols-[1.4fr_0.8fr] md:items-end">
           <div>
             <h1 className="text-3xl font-black tracking-tight md:text-4xl">
               How NaajihBiz Works
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-gray-400">
-              A practical walkthrough for getting from profile setup to verified pitching, investor discovery, and meaningful connections.
+              A practical walkthrough for getting from profile setup to verified
+              pitching, investor discovery, and meaningful connections.
             </p>
           </div>
           <div className="rounded-xl border border-primary/20 bg-primary/10 p-4 text-sm text-slate-700 dark:text-white/80">
             <p className="font-bold text-primary">Recommended first move</p>
             <p className="mt-1">
-              Complete profile and verification before trying to connect, message, or submit a pitch.
+              Complete profile and verification before trying to connect,
+              message, or submit a pitch.
             </p>
           </div>
         </div>

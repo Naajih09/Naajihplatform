@@ -1,88 +1,97 @@
 import {
-    CheckCircle,
-    DollarSign,
-    Loader2,
-    Plus,
-    Search,
-    TrendingUp,
-    UploadCloud,
-    UserPlus,
-    Verified,
-    X
-} from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Button from '../../components/Button';
-import EmptyState from '../../components/EmptyState';
-import { usePitchAccess } from '../../hooks/usePitchAccess';
-import { getApiBaseUrl } from '../../lib/api-base';
-import { formatNaira, formatPercent } from '../../lib/format-money';
+  CheckCircle,
+  DollarSign,
+  Loader2,
+  Plus,
+  Search,
+  TrendingUp,
+  UploadCloud,
+  UserPlus,
+  Verified,
+  X,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Button from "../../components/Button";
+import EmptyState from "../../components/EmptyState";
+import { usePitchAccess } from "../../hooks/usePitchAccess";
+import { getApiBaseUrl } from "../../lib/api-base";
+import { formatNaira, formatPercent } from "../../lib/format-money";
 
 const Opportunities = () => {
   const [pitches, setPitches] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [connectionStates, setConnectionStates] = useState<Record<string, 'PENDING' | 'ACCEPTED'>>({});
-  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+  const [connectionStates, setConnectionStates] = useState<
+    Record<string, "PENDING" | "ACCEPTED">
+  >({});
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
     show: false,
-    message: '',
-    type: 'success',
+    message: "",
+    type: "success",
   });
-  
+
   // --- FILTER STATES ---
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
-  
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isVerified = Boolean(user.isVerified);
-  const verificationMessage = 'Verify your account to unlock this feature';
+  const verificationMessage = "Verify your account to unlock this feature";
   const API_BASE = getApiBaseUrl();
   const authToken =
-    localStorage.getItem('accessToken') ||
-    localStorage.getItem('access_token') ||
-    '';
-  const authHeaders = authToken
-    ? { Authorization: `Bearer ${authToken}` }
-    : {};
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("access_token") ||
+    "";
+  const authHeaders = authToken ? { Authorization: `Bearer ${authToken}` } : {};
   const getPitchStatusBadge = (status?: string) => {
-    const normalized = (status || 'PENDING').toUpperCase();
-    if (normalized === 'APPROVED' || normalized === 'ACTIVE') {
+    const normalized = (status || "PENDING").toUpperCase();
+    if (normalized === "APPROVED" || normalized === "ACTIVE") {
       return {
-        label: 'Published',
-        className: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300',
+        label: "Published",
+        className:
+          "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300",
       };
     }
-    if (normalized === 'REJECTED') {
+    if (normalized === "REJECTED") {
       return {
-        label: 'Rejected',
-        className: 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300',
+        label: "Rejected",
+        className:
+          "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300",
       };
     }
     return {
-      label: 'Pending review',
-      className: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300',
+      label: "Pending review",
+      className:
+        "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300",
     };
   };
   const isPitchApproved = (status?: string) =>
-    ['APPROVED', 'ACTIVE'].includes((status || 'PENDING').toUpperCase());
+    ["APPROVED", "ACTIVE"].includes((status || "PENDING").toUpperCase());
 
   // --- 1. FETCH PITCHES (With Search & Filter) ---
   const defaultInvestmentType =
-    user.role === 'INVESTOR' &&
-    ['SHARIA_COMPLIANT', 'CONVENTIONAL'].includes(user.investorProfile?.investmentPreference)
+    user.role === "INVESTOR" &&
+    ["SHARIA_COMPLIANT", "CONVENTIONAL"].includes(
+      user.investorProfile?.investmentPreference,
+    )
       ? user.investorProfile.investmentPreference
-      : 'All';
+      : "All";
   const [filters, setFilters] = useState({
-    stage: 'All',
+    stage: "All",
     investmentType: defaultInvestmentType,
-    minTicket: '',
-    maxTicket: ''
+    minTicket: "",
+    maxTicket: "",
   });
   const hasFilters =
     Boolean(searchTerm.trim()) ||
-    activeCategory !== 'All' ||
-    filters.stage !== 'All' ||
-    filters.investmentType !== 'All' ||
+    activeCategory !== "All" ||
+    filters.stage !== "All" ||
+    filters.investmentType !== "All" ||
     Boolean(filters.minTicket) ||
     Boolean(filters.maxTicket);
 
@@ -91,12 +100,14 @@ const Opportunities = () => {
     try {
       // Build Query Parameters
       const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-      if (activeCategory && activeCategory !== 'All') params.append('category', activeCategory);
-      if (filters.stage !== 'All') params.append('stage', filters.stage);
-      if (filters.investmentType !== 'All') params.append('investmentType', filters.investmentType);
-      if (filters.minTicket) params.append('minTicket', filters.minTicket);
-      if (filters.maxTicket) params.append('maxTicket', filters.maxTicket);
+      if (searchTerm) params.append("search", searchTerm);
+      if (activeCategory && activeCategory !== "All")
+        params.append("category", activeCategory);
+      if (filters.stage !== "All") params.append("stage", filters.stage);
+      if (filters.investmentType !== "All")
+        params.append("investmentType", filters.investmentType);
+      if (filters.minTicket) params.append("minTicket", filters.minTicket);
+      if (filters.maxTicket) params.append("maxTicket", filters.maxTicket);
 
       const res = await fetch(`${API_BASE}/pitches?${params.toString()}`);
       const data = await res.json();
@@ -109,7 +120,11 @@ const Opportunities = () => {
           : [];
       setPitches(items);
     } catch (error) {
-      setToast({ show: true, message: 'Failed to load pitches.', type: 'error' });
+      setToast({
+        show: true,
+        message: "Failed to load pitches.",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -134,8 +149,11 @@ const Opportunities = () => {
         if (!res.ok) return;
         const data = await res.json();
         const states = (Array.isArray(data) ? data : []).reduce(
-          (acc: Record<string, 'PENDING' | 'ACCEPTED'>, connection: any) => {
-            if (connection.receiverId && ['PENDING', 'ACCEPTED'].includes(connection.status)) {
+          (acc: Record<string, "PENDING" | "ACCEPTED">, connection: any) => {
+            if (
+              connection.receiverId &&
+              ["PENDING", "ACCEPTED"].includes(connection.status)
+            ) {
               acc[connection.receiverId] = connection.status;
             }
             return acc;
@@ -154,76 +172,108 @@ const Opportunities = () => {
   // --- 2. HANDLE CONNECT ---
   const handleConnect = async (pitch: any) => {
     if (!isVerified) {
-      setToast({ show: true, message: verificationMessage, type: 'error' });
+      setToast({ show: true, message: verificationMessage, type: "error" });
       return;
     }
 
     if (!isPitchApproved(pitch.status)) {
-      setToast({ show: true, message: 'This pitch is pending review', type: 'error' });
+      setToast({
+        show: true,
+        message: "This pitch is pending review",
+        type: "error",
+      });
       return;
     }
 
     if (pitch.userId === user.id) {
-        setToast({ show: true, message: 'You cannot connect with your own pitch.', type: 'error' });
-        return;
+      setToast({
+        show: true,
+        message: "You cannot connect with your own pitch.",
+        type: "error",
+      });
+      return;
     }
     try {
       const res = await fetch(`${API_BASE}/connections`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({
           receiverId: pitch.userId,
           pitchId: pitch.id,
-        })
+        }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to send request");
 
-      setConnectionStates((prev) => ({ ...prev, [pitch.userId]: 'PENDING' }));
-      setToast({ show: true, message: `Connection request sent to ${pitch.user?.entrepreneurProfile?.firstName || 'Entrepreneur'}!`, type: 'success' });
+      setConnectionStates((prev) => ({ ...prev, [pitch.userId]: "PENDING" }));
+      setToast({
+        show: true,
+        message: `Connection request sent to ${pitch.user?.entrepreneurProfile?.firstName || "Entrepreneur"}!`,
+        type: "success",
+      });
     } catch (error: any) {
-      const message = String(error.message || '').toLowerCase();
-      if (message.includes('accepted')) {
-        setConnectionStates((prev) => ({ ...prev, [pitch.userId]: 'ACCEPTED' }));
-      } else if (message.includes('pending')) {
-        setConnectionStates((prev) => ({ ...prev, [pitch.userId]: 'PENDING' }));
+      const message = String(error.message || "").toLowerCase();
+      if (message.includes("accepted")) {
+        setConnectionStates((prev) => ({
+          ...prev,
+          [pitch.userId]: "ACCEPTED",
+        }));
+      } else if (message.includes("pending")) {
+        setConnectionStates((prev) => ({ ...prev, [pitch.userId]: "PENDING" }));
       }
-      setToast({ show: true, message: error.message || 'Failed to send request.', type: 'error' });
+      setToast({
+        show: true,
+        message: error.message || "Failed to send request.",
+        type: "error",
+      });
     }
   };
 
   return (
     <div className="mx-auto max-w-[1440px] space-y-6 pb-20 font-sans text-slate-900 dark:text-white md:space-y-8">
       {toast.show && (
-        <div className={`fixed left-3 right-3 top-4 z-50 flex items-center gap-2 rounded px-4 py-3 font-medium text-white shadow-lg sm:left-auto sm:right-4 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+        <div
+          className={`fixed left-3 right-3 top-4 z-50 flex items-center gap-2 rounded px-4 py-3 font-medium text-white shadow-lg sm:left-auto sm:right-4 ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}
+        >
           {toast.message}
         </div>
       )}
-      
+
       {/* HEADER */}
       <div className="mb-6 flex flex-col justify-between gap-5 md:mb-10 md:flex-row md:items-end">
         <div>
-          <h1 className="mb-2 text-3xl font-bold sm:text-4xl">Ethical Opportunities</h1>
-          <p className="text-slate-500 dark:text-slate-400 max-w-lg">Discover and fund Shariah-compliant businesses.</p>
+          <h1 className="mb-2 text-3xl font-bold sm:text-4xl">
+            Ethical Opportunities
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 max-w-lg">
+            Discover and fund Shariah-compliant businesses.
+          </p>
         </div>
         <div className="flex w-full gap-3 md:w-96 md:gap-4">
           <div className="relative group flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
-            <input 
-              type="text" 
-              className="w-full bg-slate-200 dark:bg-[#1d1f23] border-none rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-1 focus:ring-primary placeholder:text-slate-500 text-slate-900 dark:text-white transition-colors outline-none" 
-              placeholder="Search..." 
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+              size={20}
+            />
+            <input
+              type="text"
+              className="w-full bg-slate-200 dark:bg-[#1d1f23] border-none rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-1 focus:ring-primary placeholder:text-slate-500 text-slate-900 dark:text-white transition-colors outline-none"
+              placeholder="Search..."
               aria-label="Search opportunities"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          {user.role === 'ENTREPRENEUR' && (
+          {user.role === "ENTREPRENEUR" && (
             <Button
               onClick={() => {
                 if (!isVerified) {
-                  setToast({ show: true, message: verificationMessage, type: 'error' });
+                  setToast({
+                    show: true,
+                    message: verificationMessage,
+                    type: "error",
+                  });
                   return;
                 }
                 setIsModalOpen(true);
@@ -239,87 +289,108 @@ const Opportunities = () => {
       {/* FILTER CHIPS */}
       <div className="mb-8 flex flex-col gap-5 border-b border-slate-200 pb-4 dark:border-white/10 md:gap-6">
         <div className="-mx-3 flex snap-x items-center gap-2 overflow-x-auto px-3 pb-1 mobile-scrollbar-hide sm:mx-0 sm:flex-wrap sm:px-0">
-            {['All', 'FinTech', 'AgriTech', 'HealthTech', 'Retail'].map((cat) => (
-            <button 
-                key={cat} 
-                onClick={() => setActiveCategory(cat)}
-                className={`snap-start whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-                activeCategory === cat 
-                ? 'bg-primary text-neutral-dark font-bold border-primary' 
-                : 'bg-slate-200 dark:bg-[#151518] text-slate-700 dark:text-slate-300 border-transparent hover:border-primary/50'
-                }`}
+          {["All", "FinTech", "AgriTech", "HealthTech", "Retail"].map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`snap-start whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                activeCategory === cat
+                  ? "bg-primary text-neutral-dark font-bold border-primary"
+                  : "bg-slate-200 dark:bg-[#151518] text-slate-700 dark:text-slate-300 border-transparent hover:border-primary/50"
+              }`}
             >
-                {cat}
+              {cat}
             </button>
-            ))}
+          ))}
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-center lg:gap-4">
-            <div className="flex min-w-0 items-center gap-2">
-                <span className="text-xs font-bold text-slate-500 uppercase">Stage:</span>
-                <label htmlFor="stage-filter-select" className="sr-only">Filter by Stage</label>
-                <select
-                    value={filters.stage}
-                    onChange={(e) => setFilters({...filters, stage: e.target.value})}
-                    className="bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none"
-                    id="stage-filter-select" // Added a unique id
-                    aria-label="Filter pitches by stage" // Added an aria-label for good measure
-                >
-                    <option value="All">All Stages</option>
-                    <option value="Idea Phase">Idea Phase</option>
-                    <option value="MVP / Prototype">MVP / Prototype</option>
-                    <option value="Generating Revenue">Generating Revenue</option>
-                    <option value="Scaling">Scaling</option>
-                </select>
-            </div>
-
-            <div className="flex min-w-0 items-center gap-2">
-                <span className="text-xs font-bold text-slate-500 uppercase">Type:</span>
-                <label htmlFor="investment-type-filter-select" className="sr-only">Filter by investment type</label>
-                <select
-                    value={filters.investmentType}
-                    onChange={(e) => setFilters({...filters, investmentType: e.target.value})}
-                    className="bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none"
-                    id="investment-type-filter-select"
-                    aria-label="Filter pitches by investment type"
-                >
-                    <option value="All">All Types</option>
-                    <option value="SHARIA_COMPLIANT">Sharia Compliant</option>
-                    <option value="CONVENTIONAL">Conventional</option>
-                </select>
-            </div>
-
-            <div className="flex min-w-0 items-center gap-2 sm:col-span-2 lg:col-span-1">
-                <span className="text-xs font-bold text-slate-500 uppercase">Ticket (NGN):</span>
-                <label htmlFor="min-ticket-input" className="sr-only">Minimum Ticket</label>
-                <input 
-                    type="number" 
-                    placeholder="Min" 
-                    className="w-24 bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
-                    value={filters.minTicket}
-                    onChange={(e) => setFilters({...filters, minTicket: e.target.value})}
-                />
-                <span className="text-slate-400">-</span>
-                <input 
-                    type="number" 
-                    placeholder="Max" 
-                    className="w-24 bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
-                    value={filters.maxTicket}
-                    onChange={(e) => setFilters({...filters, maxTicket: e.target.value})}
-                />
-            </div>
-
-            <div className="flex-grow"></div>
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest hidden sm:block">
-            Showing {pitches.length} Pitch Decks
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="text-xs font-bold text-slate-500 uppercase">
+              Stage:
             </span>
+            <label htmlFor="stage-filter-select" className="sr-only">
+              Filter by Stage
+            </label>
+            <select
+              value={filters.stage}
+              onChange={(e) =>
+                setFilters({ ...filters, stage: e.target.value })
+              }
+              className="bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none"
+              id="stage-filter-select" // Added a unique id
+              aria-label="Filter pitches by stage" // Added an aria-label for good measure
+            >
+              <option value="All">All Stages</option>
+              <option value="Idea Phase">Idea Phase</option>
+              <option value="MVP / Prototype">MVP / Prototype</option>
+              <option value="Generating Revenue">Generating Revenue</option>
+              <option value="Scaling">Scaling</option>
+            </select>
+          </div>
+
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="text-xs font-bold text-slate-500 uppercase">
+              Type:
+            </span>
+            <label htmlFor="investment-type-filter-select" className="sr-only">
+              Filter by investment type
+            </label>
+            <select
+              value={filters.investmentType}
+              onChange={(e) =>
+                setFilters({ ...filters, investmentType: e.target.value })
+              }
+              className="bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none"
+              id="investment-type-filter-select"
+              aria-label="Filter pitches by investment type"
+            >
+              <option value="All">All Types</option>
+              <option value="SHARIA_COMPLIANT">Sharia Compliant</option>
+              <option value="CONVENTIONAL">Conventional</option>
+            </select>
+          </div>
+
+          <div className="flex min-w-0 items-center gap-2 sm:col-span-2 lg:col-span-1">
+            <span className="text-xs font-bold text-slate-500 uppercase">
+              Ticket (NGN):
+            </span>
+            <label htmlFor="min-ticket-input" className="sr-only">
+              Minimum Ticket
+            </label>
+            <input
+              type="number"
+              placeholder="Min"
+              className="w-24 bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
+              value={filters.minTicket}
+              onChange={(e) =>
+                setFilters({ ...filters, minTicket: e.target.value })
+              }
+            />
+            <span className="text-slate-400">-</span>
+            <input
+              type="number"
+              placeholder="Max"
+              className="w-24 bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
+              value={filters.maxTicket}
+              onChange={(e) =>
+                setFilters({ ...filters, maxTicket: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="flex-grow"></div>
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest hidden sm:block">
+            Showing {pitches.length} Pitch Decks
+          </span>
         </div>
       </div>
 
-
       {/* FEED */}
       {loading ? (
-         <div className="text-center py-20 text-slate-500 animate-pulse">Loading opportunities...</div>
+        <div className="text-center py-20 text-slate-500 animate-pulse">
+          Loading opportunities...
+        </div>
       ) : pitches.length === 0 ? (
         hasFilters ? (
           <EmptyState
@@ -327,128 +398,190 @@ const Opportunities = () => {
             description="Try a broader search or remove your filters to see more founder pitches."
             actionLabel="Clear filters"
             onAction={() => {
-              setSearchTerm('');
-              setActiveCategory('All');
-              setFilters({ stage: 'All', investmentType: 'All', minTicket: '', maxTicket: '' });
+              setSearchTerm("");
+              setActiveCategory("All");
+              setFilters({
+                stage: "All",
+                investmentType: "All",
+                minTicket: "",
+                maxTicket: "",
+              });
             }}
           />
         ) : (
           <EmptyState
             title="No opportunities yet"
             description="Founders will see published pitches here once someone creates the first opportunity."
-            actionLabel={user.role === 'ENTREPRENEUR' ? 'Create your first opportunity' : 'Explore community'}
-            actionTo={user.role === 'ENTREPRENEUR' ? '/dashboard/create-pitch' : '/dashboard/community'}
+            actionLabel={
+              user.role === "ENTREPRENEUR"
+                ? "Create your first opportunity"
+                : "Explore community"
+            }
+            actionTo={
+              user.role === "ENTREPRENEUR"
+                ? "/dashboard/create-pitch"
+                : "/dashboard/community"
+            }
           />
         )
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
           {pitches.map((pitch) => {
-              const pitchApproved = isPitchApproved(pitch.status);
-              const connectionState = connectionStates[pitch.userId];
-              const isPending = connectionState === 'PENDING';
-              const isConnected = connectionState === 'ACCEPTED';
-              const connectLocked = !isVerified || !pitchApproved || isPending;
-              const connectTitle = !isVerified
-                ? verificationMessage
-                : !pitchApproved
-                  ? 'This pitch is pending review'
+            const pitchApproved = isPitchApproved(pitch.status);
+            const connectionState = connectionStates[pitch.userId];
+            const isPending = connectionState === "PENDING";
+            const isConnected = connectionState === "ACCEPTED";
+            const connectLocked = !isVerified || !pitchApproved || isPending;
+            const connectTitle = !isVerified
+              ? verificationMessage
+              : !pitchApproved
+                ? "This pitch is pending review"
                 : isPending
-                  ? 'Connection request pending'
+                  ? "Connection request pending"
                   : isConnected
-                    ? 'Message founder'
-                  : 'Connect with this founder';
+                    ? "Message founder"
+                    : "Connect with this founder";
 
-              return (
-            <div key={pitch.id} className="group flex flex-col rounded-xl border border-slate-200 bg-white p-4 transition-all duration-300 hover:shadow-lg dark:border-white/5 dark:bg-[#151518] sm:p-5">
-              
-              <div className="flex items-start justify-between mb-6">
-                <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-[#1d1d20] flex items-center justify-center text-2xl font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/5 overflow-hidden">
-                  {pitch.user?.entrepreneurProfile?.avatarUrl || pitch.user?.investorProfile?.avatarUrl || pitch.user?.avatarUrl ? (
-                    <img
-                      src={pitch.user?.entrepreneurProfile?.avatarUrl || pitch.user?.investorProfile?.avatarUrl || pitch.user?.avatarUrl}
-                      alt={pitch.user?.entrepreneurProfile?.firstName || pitch.user?.investorProfile?.firstName || pitch.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    pitch.title.charAt(0)
+            return (
+              <div
+                key={pitch.id}
+                className="group flex flex-col rounded-xl border border-slate-200 bg-white p-4 transition-all duration-300 hover:shadow-lg dark:border-white/5 dark:bg-[#151518] sm:p-5"
+              >
+                <div className="flex items-start justify-between mb-6">
+                  <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-[#1d1d20] flex items-center justify-center text-2xl font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/5 overflow-hidden">
+                    {pitch.user?.entrepreneurProfile?.avatarUrl ||
+                    pitch.user?.investorProfile?.avatarUrl ||
+                    pitch.user?.avatarUrl ? (
+                      <img
+                        src={
+                          pitch.user?.entrepreneurProfile?.avatarUrl ||
+                          pitch.user?.investorProfile?.avatarUrl ||
+                          pitch.user?.avatarUrl
+                        }
+                        alt={
+                          pitch.user?.entrepreneurProfile?.firstName ||
+                          pitch.user?.investorProfile?.firstName ||
+                          pitch.title
+                        }
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      pitch.title.charAt(0)
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full">
+                      <Verified
+                        size={14}
+                        className="text-primary fill-current"
+                      />
+                      <span className="text-[10px] font-bold text-primary uppercase">
+                        Verified
+                      </span>
+                    </div>
+                    <div
+                      className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-widest ${getPitchStatusBadge(pitch.status).className}`}
+                    >
+                      {getPitchStatusBadge(pitch.status).label}
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase">
+                      {pitch.category}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase">
+                      {pitch.investmentType === "CONVENTIONAL"
+                        ? "Conventional"
+                        : "Sharia Compliant"}
+                    </span>
+                  </div>
+                </div>
+
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                  {pitch.title}
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 line-clamp-2">
+                  {pitch.tagline}
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-slate-100 dark:bg-black/20 rounded-xl border border-slate-200 dark:border-transparent">
+                  <div>
+                    <p className="text-[10px] uppercase text-slate-500 font-bold">
+                      Ask
+                    </p>
+                    <div className="flex items-center gap-1 text-slate-900 dark:text-white font-bold">
+                      <DollarSign size={14} className="text-primary" />{" "}
+                      {formatNaira(pitch.fundingAsk)}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase text-slate-500 font-bold">
+                      Equity
+                    </p>
+                    <div className="flex items-center gap-1 text-slate-900 dark:text-white font-bold">
+                      <TrendingUp size={14} className="text-primary" />{" "}
+                      {formatPercent(pitch.equityOffer)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-auto flex flex-col gap-3 border-t border-slate-200 pt-4 dark:border-white/5 sm:flex-row">
+                  <Link
+                    to={`/dashboard/opportunities/${pitch.id}`}
+                    className="flex-1"
+                  >
+                    <button className="w-full py-2.5 rounded-lg border border-primary/40 text-primary text-xs font-bold hover:bg-primary/5 transition-colors">
+                      View Details
+                    </button>
+                  </Link>
+                  {user.role === "INVESTOR" && (
+                    <button
+                      onClick={() => {
+                        if (isConnected) {
+                          navigate("/dashboard/messages");
+                          return;
+                        }
+                        handleConnect(pitch);
+                      }}
+                      disabled={!pitchApproved || isPending}
+                      title={connectTitle}
+                      className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                        isConnected
+                          ? "bg-green-600 text-white hover:bg-green-700"
+                          : isPending
+                            ? "bg-amber-500/20 text-amber-600 cursor-default dark:text-amber-400"
+                            : connectLocked
+                              ? "bg-slate-200 text-slate-500 cursor-not-allowed dark:bg-white/10 dark:text-slate-400"
+                              : "bg-primary text-neutral-dark hover:opacity-90"
+                      }`}
+                    >
+                      {isConnected || isPending ? (
+                        <CheckCircle size={16} />
+                      ) : (
+                        <UserPlus size={16} />
+                      )}
+                      {isConnected
+                        ? "Message"
+                        : isPending
+                          ? "Pending"
+                          : !isVerified
+                            ? "Verify"
+                            : "Connect"}
+                    </button>
                   )}
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                  <div className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full">
-                    <Verified size={14} className="text-primary fill-current" />
-                    <span className="text-[10px] font-bold text-primary uppercase">Verified</span>
-                  </div>
-                  <div className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-widest ${getPitchStatusBadge(pitch.status).className}`}>
-                    {getPitchStatusBadge(pitch.status).label}
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-semibold uppercase">{pitch.category}</span>
-                  <span className="text-[10px] text-slate-400 font-semibold uppercase">
-                    {pitch.investmentType === 'CONVENTIONAL' ? 'Conventional' : 'Sharia Compliant'}
-                  </span>
-                </div>
               </div>
-
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{pitch.title}</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 line-clamp-2">{pitch.tagline}</p>
-
-              <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-slate-100 dark:bg-black/20 rounded-xl border border-slate-200 dark:border-transparent">
-                <div>
-                    <p className="text-[10px] uppercase text-slate-500 font-bold">Ask</p>
-                    <div className="flex items-center gap-1 text-slate-900 dark:text-white font-bold">
-                        <DollarSign size={14} className="text-primary"/> {formatNaira(pitch.fundingAsk)}
-                    </div>
-                </div>
-                <div>
-                    <p className="text-[10px] uppercase text-slate-500 font-bold">Equity</p>
-                    <div className="flex items-center gap-1 text-slate-900 dark:text-white font-bold">
-                        <TrendingUp size={14} className="text-primary"/> {formatPercent(pitch.equityOffer)}
-                    </div>
-                </div>
-              </div>
-
-              <div className="mt-auto flex flex-col gap-3 border-t border-slate-200 pt-4 dark:border-white/5 sm:flex-row">
-                <Link to={`/dashboard/opportunities/${pitch.id}`} className="flex-1">
-                  <button className="w-full py-2.5 rounded-lg border border-primary/40 text-primary text-xs font-bold hover:bg-primary/5 transition-colors">
-                      View Details
-                  </button>
-                </Link>
-                {user.role === 'INVESTOR' && (
-                    <button 
-                        onClick={() => {
-                          if (isConnected) {
-                            navigate('/dashboard/messages');
-                            return;
-                          }
-                          handleConnect(pitch);
-                        }}
-                        disabled={!pitchApproved || isPending}
-                        title={connectTitle}
-                        className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${
-                            isConnected
-                            ? 'bg-green-600 text-white hover:bg-green-700'
-                            : isPending
-                              ? 'bg-amber-500/20 text-amber-600 cursor-default dark:text-amber-400'
-                            : connectLocked
-                              ? 'bg-slate-200 text-slate-500 cursor-not-allowed dark:bg-white/10 dark:text-slate-400'
-                            : 'bg-primary text-neutral-dark hover:opacity-90'
-                        }`}
-                    >
-                        {isConnected || isPending ? <CheckCircle size={16} /> : <UserPlus size={16} />}
-                        {isConnected ? 'Message' : isPending ? 'Pending' : !isVerified ? 'Verify' : 'Connect'}
-                    </button>
-                )}
-              </div>
-            </div>
-              );
+            );
           })}
         </div>
       )}
 
       {/* MODAL */}
       {isModalOpen && (
-        <CreatePitchModal 
-          onClose={() => setIsModalOpen(false)} 
-          onSuccess={() => { setIsModalOpen(false); fetchPitches(); }}
+        <CreatePitchModal
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={() => {
+            setIsModalOpen(false);
+            fetchPitches();
+          }}
           authHeaders={authHeaders}
           apiBase={API_BASE}
           isVerified={isVerified}
@@ -469,18 +602,33 @@ const CreatePitchModal = ({
   verificationMessage,
 }: any) => {
   const navigate = useNavigate();
-  const { loading: pitchAccessLoading, canCreatePitch, hasPremium } = usePitchAccess();
+  const {
+    loading: pitchAccessLoading,
+    canCreatePitch,
+    hasPremium,
+  } = usePitchAccess();
   const [formData, setFormData] = useState({
-    title: '', tagline: '', problemStatement: '', solution: '', 
-    traction: '', marketSize: '', fundingAsk: '', equityOffer: '', category: 'FinTech',
-    pitchDeckUrl: '',
-    investmentType: 'SHARIA_COMPLIANT',
+    title: "",
+    tagline: "",
+    problemStatement: "",
+    solution: "",
+    traction: "",
+    marketSize: "",
+    fundingAsk: "",
+    equityOffer: "",
+    category: "FinTech",
+    pitchDeckUrl: "",
+    investmentType: "SHARIA_COMPLIANT",
   });
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -488,11 +636,14 @@ const CreatePitchModal = ({
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    setError('');
+    setError("");
     const uploadData = new FormData();
-    uploadData.append('file', file);
+    uploadData.append("file", file);
     try {
-      const res = await fetch(`${apiBase}/upload`, { method: 'POST', body: uploadData });
+      const res = await fetch(`${apiBase}/upload`, {
+        method: "POST",
+        body: uploadData,
+      });
       const data = await res.json();
       const uploadUrl = data.secure_url || data.url;
       if (uploadUrl) {
@@ -500,8 +651,10 @@ const CreatePitchModal = ({
         // No-op: show success in UI
       }
     } catch (err) {
-      setError('Failed to upload file.');
-    } finally { setUploading(false); }
+      setError("Failed to upload file.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -511,29 +664,31 @@ const CreatePitchModal = ({
       return;
     }
     if (!pitchAccessLoading && !canCreatePitch) {
-      setError('Premium is required before you can submit a pitch.');
+      setError("Premium is required before you can submit a pitch.");
       return;
     }
     setSubmitting(true);
-    setError('');
+    setError("");
     try {
       const res = await fetch(`${apiBase}/pitches`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({ ...formData }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(data?.message || "Failed to post");
       onSuccess();
     } catch (err: any) {
-      setError(err.message || 'Failed to post pitch.');
+      setError(err.message || "Failed to post pitch.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const inputStyle = "w-full p-3 bg-slate-100 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded-lg text-slate-900 dark:text-white focus:border-primary focus:outline-none transition-colors";
-  const labelStyle = "block text-sm font-bold text-slate-500 dark:text-gray-400 mb-1";
+  const inputStyle =
+    "w-full p-3 bg-slate-100 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded-lg text-slate-900 dark:text-white focus:border-primary focus:outline-none transition-colors";
+  const labelStyle =
+    "block text-sm font-bold text-slate-500 dark:text-gray-400 mb-1";
   const locked = !pitchAccessLoading && !canCreatePitch;
 
   if (locked) {
@@ -542,19 +697,33 @@ const CreatePitchModal = ({
         <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-2xl w-full max-w-2xl shadow-2xl p-8">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Upgrade required</p>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Payment required to pitch</h2>
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">
+                Upgrade required
+              </p>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                Payment required to pitch
+              </h2>
               <p className="text-slate-500 dark:text-gray-400 max-w-xl">
-                Entrepreneurs need an active Premium plan before submitting opportunities for review and investor discovery.
+                Entrepreneurs need an active Premium plan before submitting
+                opportunities for review and investor discovery.
               </p>
             </div>
-            <button onClick={onClose} className="text-slate-500 hover:text-red-500" aria-label="Close modal">
+            <button
+              onClick={onClose}
+              className="text-slate-500 hover:text-red-500"
+              aria-label="Close modal"
+            >
               <X size={24} />
             </button>
           </div>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <Button onClick={() => navigate('/dashboard/subscription?reason=pitch-payment')} className="bg-primary text-neutral-dark font-bold flex-1">
+            <Button
+              onClick={() =>
+                navigate("/dashboard/subscription?reason=pitch-payment")
+              }
+              className="bg-primary text-neutral-dark font-bold flex-1"
+            >
               Upgrade to Premium
             </Button>
             <Button variant="ghost" onClick={onClose} className="flex-1">
@@ -564,7 +733,8 @@ const CreatePitchModal = ({
 
           {!hasPremium && (
             <p className="mt-6 text-xs text-slate-500 dark:text-gray-400">
-              You can still review your existing pitch history and investor activity while upgrading.
+              You can still review your existing pitch history and investor
+              activity while upgrading.
             </p>
           )}
         </div>
@@ -578,19 +748,31 @@ const CreatePitchModal = ({
         <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-2xl w-full max-w-2xl shadow-2xl p-8">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Verification required</p>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Verify your account to unlock this feature</h2>
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">
+                Verification required
+              </p>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                Verify your account to unlock this feature
+              </h2>
               <p className="text-slate-500 dark:text-gray-400 max-w-xl">
-                Pitch submissions open after your account verification is approved.
+                Pitch submissions open after your account verification is
+                approved.
               </p>
             </div>
-            <button onClick={onClose} className="text-slate-500 hover:text-red-500" aria-label="Close modal">
+            <button
+              onClick={onClose}
+              className="text-slate-500 hover:text-red-500"
+              aria-label="Close modal"
+            >
               <X size={24} />
             </button>
           </div>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <Button onClick={() => navigate('/dashboard/verification')} className="bg-primary text-neutral-dark font-bold flex-1">
+            <Button
+              onClick={() => navigate("/dashboard/verification")}
+              className="bg-primary text-neutral-dark font-bold flex-1"
+            >
               Go to Verification
             </Button>
             <Button variant="ghost" onClick={onClose} className="flex-1">
@@ -606,10 +788,18 @@ const CreatePitchModal = ({
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm p-4">
       <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="p-6 border-b border-slate-200 dark:border-gray-800 flex justify-between items-center sticky top-0 bg-white dark:bg-[#1d1d20] z-10">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create New Pitch</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-red-500" aria-label="Close modal"><X size={24} /></button>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            Create New Pitch
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-slate-500 hover:text-red-500"
+            aria-label="Close modal"
+          >
+            <X size={24} />
+          </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
             <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg text-sm">
@@ -618,32 +808,60 @@ const CreatePitchModal = ({
           )}
           <div className="grid grid-cols-2 gap-4">
             <div>
-                <label className={labelStyle}>Business Name</label>
-                <input name="title" required className={inputStyle} onChange={handleChange} aria-label="Business Name" />
+              <label className={labelStyle}>Business Name</label>
+              <input
+                name="title"
+                required
+                className={inputStyle}
+                onChange={handleChange}
+                aria-label="Business Name"
+              />
             </div>
             <div>
-                <label className={labelStyle}>Industry</label>
-                <select name="category" className={inputStyle} onChange={handleChange} aria-label="Select Industry">
-                    <option value="FinTech">FinTech</option><option value="AgriTech">AgriTech</option><option value="HealthTech">HealthTech</option><option value="Retail">Retail</option>
-                </select>
+              <label className={labelStyle}>Industry</label>
+              <select
+                name="category"
+                className={inputStyle}
+                onChange={handleChange}
+                aria-label="Select Industry"
+              >
+                <option value="FinTech">FinTech</option>
+                <option value="AgriTech">AgriTech</option>
+                <option value="HealthTech">HealthTech</option>
+                <option value="Retail">Retail</option>
+              </select>
             </div>
           </div>
-          <div><label className={labelStyle}>Tagline</label><input name="tagline" required className={inputStyle} onChange={handleChange} aria-label="Tagline" /></div>
+          <div>
+            <label className={labelStyle}>Tagline</label>
+            <input
+              name="tagline"
+              required
+              className={inputStyle}
+              onChange={handleChange}
+              aria-label="Tagline"
+            />
+          </div>
           <div>
             <label className={labelStyle}>Investment Type</label>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { value: 'SHARIA_COMPLIANT', label: 'Sharia Compliant' },
-                { value: 'CONVENTIONAL', label: 'Conventional' },
+                { value: "SHARIA_COMPLIANT", label: "Sharia Compliant" },
+                { value: "CONVENTIONAL", label: "Conventional" },
               ].map((option) => (
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => setFormData((prev) => ({ ...prev, investmentType: option.value }))}
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      investmentType: option.value,
+                    }))
+                  }
                   className={`rounded-lg border px-4 py-3 text-sm font-bold transition-colors ${
                     formData.investmentType === option.value
-                      ? 'border-primary bg-primary text-black'
-                      : 'border-slate-300 bg-slate-100 text-slate-700 hover:border-primary/50 dark:border-gray-700 dark:bg-[#151518] dark:text-white'
+                      ? "border-primary bg-primary text-black"
+                      : "border-slate-300 bg-slate-100 text-slate-700 hover:border-primary/50 dark:border-gray-700 dark:bg-[#151518] dark:text-white"
                   }`}
                   aria-pressed={formData.investmentType === option.value}
                 >
@@ -652,26 +870,120 @@ const CreatePitchModal = ({
               ))}
             </div>
           </div>
-          <div><label className={labelStyle}>Problem Statement</label><textarea name="problemStatement" required className={`${inputStyle} h-24`} onChange={handleChange} aria-label="Problem Statement"></textarea></div>
-          <div><label className={labelStyle}>Solution</label><textarea name="solution" required className={`${inputStyle} h-24`} onChange={handleChange} aria-label="Solution"></textarea></div>
-          
+          <div>
+            <label className={labelStyle}>Problem Statement</label>
+            <textarea
+              name="problemStatement"
+              required
+              className={`${inputStyle} h-24`}
+              onChange={handleChange}
+              aria-label="Problem Statement"
+            ></textarea>
+          </div>
+          <div>
+            <label className={labelStyle}>Solution</label>
+            <textarea
+              name="solution"
+              required
+              className={`${inputStyle} h-24`}
+              onChange={handleChange}
+              aria-label="Solution"
+            ></textarea>
+          </div>
+
           <div>
             <label className={labelStyle}>Pitch Deck</label>
-            <div className={`border-2 border-dashed border-slate-300 dark:border-gray-700 rounded-xl p-6 text-center cursor-pointer ${formData.pitchDeckUrl ? 'border-primary bg-primary/5' : 'hover:border-primary/50'}`}>
-                {uploading ? <div className="flex justify-center gap-2 text-primary"><Loader2 className="animate-spin" /> Uploading...</div> : formData.pitchDeckUrl ? <div className="flex justify-center gap-2 text-primary font-bold"><CheckCircle /> Uploaded</div> : <><input type="file" className="hidden" id="file" onChange={handleFileUpload} accept=".pdf,image/*" /><label htmlFor="file" className="cursor-pointer flex flex-col items-center gap-2 w-full"><UploadCloud className="text-slate-400" size={32} /><span className="text-sm text-slate-500">Click to upload</span></label></>}
+            <div
+              className={`border-2 border-dashed border-slate-300 dark:border-gray-700 rounded-xl p-6 text-center cursor-pointer ${formData.pitchDeckUrl ? "border-primary bg-primary/5" : "hover:border-primary/50"}`}
+            >
+              {uploading ? (
+                <div className="flex justify-center gap-2 text-primary">
+                  <Loader2 className="animate-spin" /> Uploading...
+                </div>
+              ) : formData.pitchDeckUrl ? (
+                <div className="flex justify-center gap-2 text-primary font-bold">
+                  <CheckCircle /> Uploaded
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="file"
+                    className="hidden"
+                    id="file"
+                    onChange={handleFileUpload}
+                    accept=".pdf,image/*"
+                  />
+                  <label
+                    htmlFor="file"
+                    className="cursor-pointer flex flex-col items-center gap-2 w-full"
+                  >
+                    <UploadCloud className="text-slate-400" size={32} />
+                    <span className="text-sm text-slate-500">
+                      Click to upload
+                    </span>
+                  </label>
+                </>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div><label className={labelStyle}>Traction</label><input name="traction" required className={inputStyle} onChange={handleChange} aria-label="Traction" /></div>
-            <div><label className={labelStyle}>Market Size</label><input name="marketSize" required className={inputStyle} onChange={handleChange} aria-label="Market Size" /></div>
+            <div>
+              <label className={labelStyle}>Traction</label>
+              <input
+                name="traction"
+                required
+                className={inputStyle}
+                onChange={handleChange}
+                aria-label="Traction"
+              />
+            </div>
+            <div>
+              <label className={labelStyle}>Market Size</label>
+              <input
+                name="marketSize"
+                required
+                className={inputStyle}
+                onChange={handleChange}
+                aria-label="Market Size"
+              />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><label className={labelStyle}>Funding Ask (NGN)</label><input name="fundingAsk" type="number" required className={inputStyle} onChange={handleChange} aria-label="Funding Ask" /></div>
-            <div><label className={labelStyle}>Equity Offer (%)</label><input name="equityOffer" type="number" min="0" max="100" step="0.01" required className={inputStyle} onChange={handleChange} aria-label="Equity Offer" /></div>
+            <div>
+              <label className={labelStyle}>Funding Ask (NGN)</label>
+              <input
+                name="fundingAsk"
+                type="number"
+                required
+                className={inputStyle}
+                onChange={handleChange}
+                aria-label="Funding Ask"
+              />
+            </div>
+            <div>
+              <label className={labelStyle}>Equity Offer (%)</label>
+              <input
+                name="equityOffer"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                required
+                className={inputStyle}
+                onChange={handleChange}
+                aria-label="Equity Offer"
+              />
+            </div>
           </div>
           <div className="pt-4">
-            <Button type="submit" className="w-full bg-primary text-neutral-dark font-bold hover:brightness-110" isLoading={submitting}>Submit Pitch</Button>
+            <Button
+              type="submit"
+              className="w-full bg-primary text-neutral-dark font-bold hover:brightness-110"
+              isLoading={submitting}
+            >
+              Submit Pitch
+            </Button>
           </div>
         </form>
       </div>

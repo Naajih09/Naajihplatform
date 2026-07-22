@@ -220,7 +220,9 @@ export class PaymentsService {
           reference,
           returnUrl: `${this.frontendUrl}/dashboard/subscription?provider=opay`,
           callbackUrl: `${this.backendUrl}/api/payments/webhook/opay`,
-          merchantId: Number.isFinite(merchantIdNum) ? merchantIdNum : this.opayMerchantId,
+          merchantId: Number.isFinite(merchantIdNum)
+            ? merchantIdNum
+            : this.opayMerchantId,
           productName: 'Najih Premium Subscription',
           productDescription:
             'Subscription for Premium access on Naajihplatform',
@@ -430,9 +432,7 @@ export class PaymentsService {
         .update(rawBody ?? Buffer.from(JSON.stringify(payload)))
         .digest();
 
-      if (
-        !crypto.timingSafeEqual(Buffer.from(signature, 'utf-8'), expected)
-      ) {
+      if (!crypto.timingSafeEqual(Buffer.from(signature, 'utf-8'), expected)) {
         throw new BadRequestException('Invalid OPay signature');
       }
     }

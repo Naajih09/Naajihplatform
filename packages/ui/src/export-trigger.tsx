@@ -1,5 +1,5 @@
-'use client';
-import { useCallback, useMemo, useRef } from 'react';
+"use client";
+import { useCallback, useMemo, useRef } from "react";
 import {
   Button,
   DropdownMenu,
@@ -11,8 +11,8 @@ import {
   flattenObject,
   arrayToPDF,
   cn,
-} from '.';
-import { useReactToPrint } from 'react-to-print';
+} from ".";
+import { useReactToPrint } from "react-to-print";
 
 const PrintPdfButton = ({
   htmlContent,
@@ -30,14 +30,14 @@ const PrintPdfButton = ({
   return (
     <>
       <DropdownMenuItem
-        className=' text-sm font-normal leading-5 text-brand-gray-200'
+        className=" text-sm font-normal leading-5 text-brand-gray-200"
         onSelect={handlePrint}
         disabled={isDisabled}
       >
         PDF
       </DropdownMenuItem>
 
-      <div style={{ display: 'none' }}>
+      <div style={{ display: "none" }}>
         <div
           ref={componentRef}
           dangerouslySetInnerHTML={{ __html: htmlContent }}
@@ -66,18 +66,18 @@ export function ExportTrigger({ data, className }: Props) {
       const { convertArrayToTable } = arrayToExcel;
       await convertArrayToTable(flattenedData, Date.now().toString());
     } catch (error) {
-      console.error('Error exporting to Excel:', error);
+      console.error("Error exporting to Excel:", error);
     }
   }, [data, flattenedData]);
 
   const pdfContent = useMemo(() => {
-    if (!data || !data.length) return '';
+    if (!data || !data.length) return "";
 
     try {
       return arrayToPDF(flattenedData);
     } catch (error) {
-      console.error('Error exporting to PDF:', error);
-      return '';
+      console.error("Error exporting to PDF:", error);
+      return "";
     }
   }, [data, flattenedData]);
 
@@ -85,21 +85,21 @@ export function ExportTrigger({ data, className }: Props) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant='ghost'
+          variant="ghost"
           className={cn(
-            'py-3 px-4 w-[155px] rounded-[12px] bg-[#2F2B430D]',
-            'hover:bg-[#2F2B430D] text-base leading-[24px] font-[500] h-[48px]',
-            className
+            "py-3 px-4 w-[155px] rounded-[12px] bg-[#2F2B430D]",
+            "hover:bg-[#2F2B430D] text-base leading-[24px] font-[500] h-[48px]",
+            className,
           )}
         >
           <ExportIcon />
-          <span className=' mr-2'>Export </span>
+          <span className=" mr-2">Export </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <PrintPdfButton htmlContent={pdfContent} isDisabled={!data} />
         <DropdownMenuItem
-          className='text-sm font-normal leading-5 text-brand-gray-200'
+          className="text-sm font-normal leading-5 text-brand-gray-200"
           onSelect={excelExportHandler}
           disabled={!data}
         >

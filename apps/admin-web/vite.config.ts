@@ -1,11 +1,11 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: '0.0.0.0',
+    host: "0.0.0.0",
     port: 5174,
     strictPort: false,
   },
@@ -13,26 +13,34 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (!id.includes('node_modules')) {
-            return
+          if (!id.includes("node_modules")) {
+            return;
           }
 
-          if (id.includes('react-router-dom') || id.includes('@remix-run/router')) return 'router'
           if (
-            id.includes('/react/') ||
-            id.includes('/react-dom/') ||
-            id.includes('/scheduler/')
+            id.includes("react-router-dom") ||
+            id.includes("@remix-run/router")
+          )
+            return "router";
+          if (
+            id.includes("/react/") ||
+            id.includes("/react-dom/") ||
+            id.includes("/scheduler/")
           ) {
-            return 'react-vendor'
+            return "react-vendor";
           }
-          if (id.includes('recharts') || id.includes('d3-')) return 'charts'
-          if (id.includes('lucide-react')) return 'icons'
-          if (id.includes('axios')) return 'network'
-          if (id.includes('@radix-ui') || id.includes('cmdk') || id.includes('class-variance-authority')) {
-            return 'ui-vendor'
+          if (id.includes("recharts") || id.includes("d3-")) return "charts";
+          if (id.includes("lucide-react")) return "icons";
+          if (id.includes("axios")) return "network";
+          if (
+            id.includes("@radix-ui") ||
+            id.includes("cmdk") ||
+            id.includes("class-variance-authority")
+          ) {
+            return "ui-vendor";
           }
         },
       },
     },
   },
-})
+});

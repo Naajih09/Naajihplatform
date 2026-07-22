@@ -1,7 +1,13 @@
-import { useEffect, useState } from 'react';
-import { CheckCircle, Flag, Loader2, RefreshCw, ShieldAlert } from 'lucide-react';
-import api from '../utils/api';
-import EmptyState from '../components/EmptyState';
+import { useEffect, useState } from "react";
+import {
+  CheckCircle,
+  Flag,
+  Loader2,
+  RefreshCw,
+  ShieldAlert,
+} from "lucide-react";
+import api from "../utils/api";
+import EmptyState from "../components/EmptyState";
 
 interface UserSummary {
   id: string;
@@ -29,29 +35,40 @@ interface MessageReport {
 }
 
 const getName = (user?: UserSummary | null) => {
-  if (!user) return 'System';
+  if (!user) return "System";
   const profile = user.entrepreneurProfile || user.investorProfile || {};
-  return [profile.firstName, profile.lastName].filter(Boolean).join(' ') || user.email;
+  return (
+    [profile.firstName, profile.lastName].filter(Boolean).join(" ") ||
+    user.email
+  );
 };
 
 const MessageReports = () => {
   const [reports, setReports] = useState<MessageReport[]>([]);
-  const [selectedReport, setSelectedReport] = useState<MessageReport | null>(null);
+  const [selectedReport, setSelectedReport] = useState<MessageReport | null>(
+    null,
+  );
   const [conversation, setConversation] = useState<any[]>([]);
-  const [status, setStatus] = useState('OPEN');
+  const [status, setStatus] = useState("OPEN");
   const [loading, setLoading] = useState(true);
   const [conversationLoading, setConversationLoading] = useState(false);
-  const [resolvingId, setResolvingId] = useState('');
+  const [resolvingId, setResolvingId] = useState("");
 
   const loadReports = async () => {
     setLoading(true);
     try {
-      const response = await api.get(`/messages/admin/reports?status=${status}`);
+      const response = await api.get(
+        `/messages/admin/reports?status=${status}`,
+      );
       const list = Array.isArray(response.data) ? response.data : [];
       setReports(list);
       setSelectedReport((current) => {
         if (!current) return list[0] || null;
-        return list.find((report: MessageReport) => report.id === current.id) || list[0] || null;
+        return (
+          list.find((report: MessageReport) => report.id === current.id) ||
+          list[0] ||
+          null
+        );
       });
     } finally {
       setLoading(false);
@@ -71,7 +88,9 @@ const MessageReports = () => {
     const loadConversation = async () => {
       setConversationLoading(true);
       try {
-        const response = await api.get(`/messages/admin/reports/${selectedReport.id}/conversation`);
+        const response = await api.get(
+          `/messages/admin/reports/${selectedReport.id}/conversation`,
+        );
         setConversation(Array.isArray(response.data) ? response.data : []);
       } finally {
         setConversationLoading(false);
@@ -87,7 +106,7 @@ const MessageReports = () => {
       await api.patch(`/messages/admin/reports/${report.id}/resolve`);
       await loadReports();
     } finally {
-      setResolvingId('');
+      setResolvingId("");
     }
   };
 
@@ -95,10 +114,15 @@ const MessageReports = () => {
     <div className="space-y-6 pb-20">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.25em] text-primary">Safety Moderation</p>
-          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Message Reports</h1>
+          <p className="text-xs font-bold uppercase tracking-[0.25em] text-primary">
+            Safety Moderation
+          </p>
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+            Message Reports
+          </h1>
           <p className="mt-1 text-slate-500 dark:text-gray-400">
-            Review user-reported and system-flagged conversations for off-platform deal risk.
+            Review user-reported and system-flagged conversations for
+            off-platform deal risk.
           </p>
         </div>
         <div className="flex gap-2">
@@ -152,19 +176,23 @@ const MessageReports = () => {
                   onClick={() => setSelectedReport(report)}
                   className={`w-full border-b border-slate-200 p-4 text-left transition dark:border-gray-800 ${
                     selectedReport?.id === report.id
-                      ? 'bg-primary/10'
-                      : 'hover:bg-slate-50 dark:hover:bg-white/5'
+                      ? "bg-primary/10"
+                      : "hover:bg-slate-50 dark:hover:bg-white/5"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-xs font-black uppercase tracking-widest text-primary">
-                      {report.source === 'SYSTEM_FLAG' ? 'System Flag' : 'User Report'}
+                      {report.source === "SYSTEM_FLAG"
+                        ? "System Flag"
+                        : "User Report"}
                     </span>
-                    <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${
-                      report.status === 'RESOLVED'
-                        ? 'bg-emerald-500/10 text-emerald-500'
-                        : 'bg-red-500/10 text-red-500'
-                    }`}>
+                    <span
+                      className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${
+                        report.status === "RESOLVED"
+                          ? "bg-emerald-500/10 text-emerald-500"
+                          : "bg-red-500/10 text-red-500"
+                      }`}
+                    >
                       {report.status}
                     </span>
                   </div>
@@ -190,7 +218,9 @@ const MessageReports = () => {
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.25em] text-primary">
-                      {selectedReport.source === 'SYSTEM_FLAG' ? 'Automatically flagged' : 'Reported by user'}
+                      {selectedReport.source === "SYSTEM_FLAG"
+                        ? "Automatically flagged"
+                        : "Reported by user"}
                     </p>
                     <h2 className="mt-2 text-xl font-black text-slate-900 dark:text-white">
                       {getName(selectedReport.reportedUser)}
@@ -199,14 +229,18 @@ const MessageReports = () => {
                       Reporter: {getName(selectedReport.reporter)}
                     </p>
                   </div>
-                  {selectedReport.status !== 'RESOLVED' ? (
+                  {selectedReport.status !== "RESOLVED" ? (
                     <button
                       type="button"
                       onClick={() => resolveReport(selectedReport)}
                       disabled={resolvingId === selectedReport.id}
                       className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-black hover:brightness-110 disabled:opacity-60"
                     >
-                      {resolvingId === selectedReport.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+                      {resolvingId === selectedReport.id ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <CheckCircle size={16} />
+                      )}
                       Mark Resolved
                     </button>
                   ) : null}
@@ -233,17 +267,27 @@ const MessageReports = () => {
                   />
                 ) : (
                   conversation.map((message) => {
-                    const isReportedUser = message.senderId === selectedReport.reportedUser?.id;
+                    const isReportedUser =
+                      message.senderId === selectedReport.reportedUser?.id;
                     return (
-                      <div key={message.id} className={`flex ${isReportedUser ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[82%] rounded-2xl p-3 text-sm ${
-                          isReportedUser
-                            ? 'rounded-tr-none bg-red-500/10 text-slate-900 dark:text-white'
-                            : 'rounded-tl-none bg-slate-100 text-slate-900 dark:bg-white/5 dark:text-gray-200'
-                        }`}>
-                          <p>{message.content || `[${message.type || 'Attachment'}]`}</p>
+                      <div
+                        key={message.id}
+                        className={`flex ${isReportedUser ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`max-w-[82%] rounded-2xl p-3 text-sm ${
+                            isReportedUser
+                              ? "rounded-tr-none bg-red-500/10 text-slate-900 dark:text-white"
+                              : "rounded-tl-none bg-slate-100 text-slate-900 dark:bg-white/5 dark:text-gray-200"
+                          }`}
+                        >
+                          <p>
+                            {message.content ||
+                              `[${message.type || "Attachment"}]`}
+                          </p>
                           <p className="mt-2 text-[10px] font-bold uppercase tracking-widest opacity-50">
-                            {getName(message.sender)} • {new Date(message.createdAt).toLocaleString()}
+                            {getName(message.sender)} •{" "}
+                            {new Date(message.createdAt).toLocaleString()}
                           </p>
                         </div>
                       </div>

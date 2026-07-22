@@ -5,9 +5,9 @@ import {
   FetchBaseQueryError,
   QueryActionCreatorResult,
   QueryDefinition,
-} from '@reduxjs/toolkit/query';
+} from "@reduxjs/toolkit/query";
 
-export const apiTagTypes = ['Users', 'User'] as const;
+export const apiTagTypes = ["Users", "User"] as const;
 
 export type TApiTag = (typeof apiTagTypes)[number];
 
@@ -17,12 +17,12 @@ export type TQueryActionCreatorResult = QueryActionCreatorResult<
     BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError>,
     TApiTag,
     unknown,
-    'api'
+    "api"
   >
 >;
 
 export type TAppEndpointBuilder = EndpointBuilder<
   BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError>,
   TApiTag,
-  'api'
+  "api"
 >;

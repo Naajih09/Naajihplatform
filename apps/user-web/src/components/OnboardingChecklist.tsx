@@ -1,8 +1,15 @@
-import { Check, ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Check, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-type ChecklistKey = 'profile' | 'opportunity' | 'explore' | 'message' | 'learning' | 'community' | 'mentor';
+type ChecklistKey =
+  | "profile"
+  | "opportunity"
+  | "explore"
+  | "message"
+  | "learning"
+  | "community"
+  | "mentor";
 
 type ChecklistState = Record<ChecklistKey, boolean>;
 
@@ -25,102 +32,115 @@ type ChecklistStep = {
 
 const defaultSteps: ChecklistStep[] = [
   {
-    key: 'profile',
-    label: 'Complete profile',
-    description: 'Set up your public profile so people can find you.',
-    path: '/dashboard/profile',
+    key: "profile",
+    label: "Complete profile",
+    description: "Set up your public profile so people can find you.",
+    path: "/dashboard/profile",
   },
   {
-    key: 'opportunity',
-    label: 'Create your first opportunity',
-    description: 'Share a pitch or business opportunity with the community.',
-    path: '/dashboard/create-pitch',
+    key: "opportunity",
+    label: "Create your first opportunity",
+    description: "Share a pitch or business opportunity with the community.",
+    path: "/dashboard/create-pitch",
   },
   {
-    key: 'explore',
-    label: 'Explore opportunities',
-    description: 'Browse available opportunities and programs.',
-    path: '/dashboard/opportunities',
+    key: "explore",
+    label: "Explore opportunities",
+    description: "Browse available opportunities and programs.",
+    path: "/dashboard/opportunities",
   },
   {
-    key: 'message',
-    label: 'Send your first message',
-    description: 'Start a conversation with a founder, investor, or mentor.',
-    path: '/dashboard/messages',
+    key: "message",
+    label: "Send your first message",
+    description: "Start a conversation with a founder, investor, or mentor.",
+    path: "/dashboard/messages",
   },
 ];
 
 const investorSteps: ChecklistStep[] = [
   {
-    key: 'profile',
-    label: 'Complete profile',
-    description: 'Set up your investor profile so founders understand your mandate.',
-    path: '/dashboard/profile',
+    key: "profile",
+    label: "Complete profile",
+    description:
+      "Set up your investor profile so founders understand your mandate.",
+    path: "/dashboard/profile",
   },
   {
-    key: 'explore',
-    label: 'Browse approved pitches',
-    description: 'Review active opportunities and save deals you want to revisit.',
-    path: '/dashboard/opportunities',
+    key: "explore",
+    label: "Browse approved pitches",
+    description:
+      "Review active opportunities and save deals you want to revisit.",
+    path: "/dashboard/opportunities",
   },
   {
-    key: 'community',
-    label: 'Build your network',
-    description: 'Track founders you connect with after pitch review.',
-    path: '/dashboard/connections',
+    key: "community",
+    label: "Build your network",
+    description: "Track founders you connect with after pitch review.",
+    path: "/dashboard/connections",
   },
   {
-    key: 'message',
-    label: 'Continue conversations',
-    description: 'Message connected founders after your requests are accepted.',
-    path: '/dashboard/messages',
+    key: "message",
+    label: "Continue conversations",
+    description: "Message connected founders after your requests are accepted.",
+    path: "/dashboard/messages",
   },
 ];
 
 const aspiringOwnerSteps: ChecklistStep[] = [
   {
-    key: 'profile',
-    label: 'Complete profile',
-    description: 'Set up your learner profile so mentors can understand your goals.',
-    path: '/dashboard/profile',
+    key: "profile",
+    label: "Complete profile",
+    description:
+      "Set up your learner profile so mentors can understand your goals.",
+    path: "/dashboard/profile",
   },
   {
-    key: 'learning',
-    label: 'Start your first lesson',
-    description: 'Begin with business foundations before moving toward pitch creation.',
-    path: '/dashboard/learning-center',
+    key: "learning",
+    label: "Start your first lesson",
+    description:
+      "Begin with business foundations before moving toward pitch creation.",
+    path: "/dashboard/learning-center",
   },
   {
-    key: 'community',
-    label: 'Join the community',
-    description: 'Ask questions, share progress, and learn with other aspiring owners.',
-    path: '/dashboard/community',
+    key: "community",
+    label: "Join the community",
+    description:
+      "Ask questions, share progress, and learn with other aspiring owners.",
+    path: "/dashboard/community",
   },
   {
-    key: 'mentor',
-    label: 'Book mentor guidance',
-    description: 'Get support when you are ready to shape your business idea.',
-    path: '/dashboard/mentors',
+    key: "mentor",
+    label: "Book mentor guidance",
+    description: "Get support when you are ready to shape your business idea.",
+    path: "/dashboard/mentors",
   },
 ];
 
 export default function OnboardingChecklist() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const isAspirant = user.role === 'ASPIRING_BUSINESS_OWNER';
-  const isInvestor = user.role === 'INVESTOR';
-  const steps = isAspirant ? aspiringOwnerSteps : isInvestor ? investorSteps : defaultSteps;
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isAspirant = user.role === "ASPIRING_BUSINESS_OWNER";
+  const isInvestor = user.role === "INVESTOR";
+  const steps = isAspirant
+    ? aspiringOwnerSteps
+    : isInvestor
+      ? investorSteps
+      : defaultSteps;
   const profile = user.entrepreneurProfile || user.investorProfile || {};
-  const storageKey = `onboarding-checklist:${user.id || 'guest'}`;
+  const storageKey = `onboarding-checklist:${user.id || "guest"}`;
 
   const [completed, setCompleted] = useState<ChecklistState>(() => {
     try {
       const stored = localStorage.getItem(storageKey);
-      const parsed = stored ? (JSON.parse(stored) as Partial<ChecklistState>) : {};
+      const parsed = stored
+        ? (JSON.parse(stored) as Partial<ChecklistState>)
+        : {};
       return {
         ...defaultState,
         ...parsed,
-        profile: Boolean(profile.firstName && profile.lastName) || Boolean(parsed.profile),
+        profile:
+          Boolean(profile.firstName && profile.lastName) ||
+          Boolean(parsed.profile),
       };
     } catch {
       return {
@@ -168,15 +188,15 @@ export default function OnboardingChecklist() {
               onClick={() => handleStepClick(step)}
               className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left transition ${
                 isDone
-                  ? 'border-primary/30 bg-primary/5'
-                  : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:hover:bg-white/5'
+                  ? "border-primary/30 bg-primary/5"
+                  : "border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:hover:bg-white/5"
               }`}
             >
               <span
                 className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
                   isDone
-                    ? 'border-primary bg-primary text-black'
-                    : 'border-slate-300 text-transparent dark:border-gray-700'
+                    ? "border-primary bg-primary text-black"
+                    : "border-slate-300 text-transparent dark:border-gray-700"
                 }`}
                 aria-hidden="true"
               >
@@ -186,7 +206,9 @@ export default function OnboardingChecklist() {
               <span className="flex-1">
                 <span
                   className={`block text-sm font-semibold ${
-                    isDone ? 'text-slate-500 line-through dark:text-gray-500' : 'text-slate-900 dark:text-white'
+                    isDone
+                      ? "text-slate-500 line-through dark:text-gray-500"
+                      : "text-slate-900 dark:text-white"
                   }`}
                 >
                   {step.label}

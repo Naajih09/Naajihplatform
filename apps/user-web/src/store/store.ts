@@ -1,48 +1,45 @@
 import {
-    Action,
-    ThunkAction,
-    combineReducers,
-    configureStore,
-} from '@reduxjs/toolkit';
+  Action,
+  ThunkAction,
+  combineReducers,
+  configureStore,
+} from "@reduxjs/toolkit";
 
-import { setupListeners } from '@reduxjs/toolkit/query';
-import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import { setupListeners } from "@reduxjs/toolkit/query";
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 
-import createWebStorage from 'redux-persist/es/storage/createWebStorage';
+import createWebStorage from "redux-persist/es/storage/createWebStorage";
 
-import authSlice, { setAuth, setToken, setUser } from './slices/auth-slice';
+import authSlice, { setAuth, setToken, setUser } from "./slices/auth-slice";
 
-
-import { authApi } from '@/services/auth-api';
+import { authApi } from "@/services/auth-api";
 import {
-    FLUSH,
-    PAUSE,
-    PERSIST,
-    PURGE,
-    REGISTER,
-    REHYDRATE,
-    persistReducer,
-    persistStore,
-} from 'redux-persist';
+  FLUSH,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+  REHYDRATE,
+  persistReducer,
+  persistStore,
+} from "redux-persist";
 
-const storage = createWebStorage('local');
+const storage = createWebStorage("local");
 
 const persistConfig = {
-  key: 'root',
+  key: "root",
   storage,
-  whitelist: ['auth'],
+  whitelist: ["auth"],
 };
 
 const appReducer = combineReducers({
   auth: authSlice,
 
- 
-//   [collectionApi.reducerPath]: collectionApi.reducer,
-
+  //   [collectionApi.reducerPath]: collectionApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
-  if (action.type === 'RESET_STORE') {
+  if (action.type === "RESET_STORE") {
     state = undefined; // Reset whole state
   }
   return appReducer(state, action);
@@ -52,8 +49,8 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 const hydrateAuthFromStorage = () => {
   try {
-    const rawUser = localStorage.getItem('user');
-    const token = localStorage.getItem('accessToken');
+    const rawUser = localStorage.getItem("user");
+    const token = localStorage.getItem("accessToken");
 
     if (rawUser && token) {
       const user = JSON.parse(rawUser);
@@ -73,11 +70,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    })
-   
-    
-    
-      .concat(authApi.middleware),
+    }).concat(authApi.middleware),
   devTools: import.meta.env.DEV,
 });
 

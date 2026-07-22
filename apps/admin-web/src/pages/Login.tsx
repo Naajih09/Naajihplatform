@@ -1,44 +1,44 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
-import api from '../utils/api';
-import { useAuth } from '../hooks/useAuth';
-import { UserRole } from '../types/enums';
-import { storeAdminPermissions } from '../utils/admin-access';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
+import api from "../utils/api";
+import { useAuth } from "../hooks/useAuth";
+import { UserRole } from "../types/enums";
+import { storeAdminPermissions } from "../utils/admin-access";
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setErrorMessage('');
+    setErrorMessage("");
     setIsSubmitting(true);
 
     try {
-      const response = await api.post('/users/login', { email, password });
+      const response = await api.post("/users/login", { email, password });
       const { access_token: accessToken, user } = response.data || {};
 
       if (!accessToken) {
-        throw new Error('Login failed. Missing access token.');
+        throw new Error("Login failed. Missing access token.");
       }
 
       if (user?.role !== UserRole.ADMIN) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('token');
-        localStorage.removeItem('userRole');
-        setErrorMessage('You do not have admin access.');
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userRole");
+        setErrorMessage("You do not have admin access.");
         return;
       }
 
       storeAdminPermissions(user.adminPermissions);
       login(accessToken, user.role);
-      navigate('/admin/dashboard', { replace: true });
+      navigate("/admin/dashboard", { replace: true });
     } catch (error: any) {
       const backendMessage =
         error?.response?.data?.message ||
@@ -46,9 +46,9 @@ const Login = () => {
         error?.message;
 
       setErrorMessage(
-        typeof backendMessage === 'string' && backendMessage.trim()
+        typeof backendMessage === "string" && backendMessage.trim()
           ? backendMessage
-          : 'Invalid email or password. Please try again.',
+          : "Invalid email or password. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -101,7 +101,10 @@ const Login = () => {
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 text-slate-500 dark:text-gray-500" size={20} />
+                <Mail
+                  className="absolute left-3 top-3 text-slate-500 dark:text-gray-500"
+                  size={20}
+                />
                 <input
                   type="email"
                   required
@@ -118,9 +121,12 @@ const Login = () => {
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 text-slate-500 dark:text-gray-500" size={20} />
+                <Lock
+                  className="absolute left-3 top-3 text-slate-500 dark:text-gray-500"
+                  size={20}
+                />
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -131,7 +137,7 @@ const Login = () => {
                   type="button"
                   onClick={() => setShowPassword((current) => !current)}
                   className="absolute right-3 top-3 text-slate-500 hover:text-slate-800 dark:text-gray-500 dark:hover:text-white"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -143,7 +149,7 @@ const Login = () => {
               disabled={isSubmitting}
               className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-black hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {isSubmitting ? 'Signing in...' : 'Sign in'}
+              {isSubmitting ? "Signing in..." : "Sign in"}
               <ArrowRight size={18} />
             </button>
           </form>

@@ -1,6 +1,6 @@
-import type React from 'react';
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import type React from "react";
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -11,16 +11,18 @@ type FormatNumberOptions = {
   fractionDigits?: number;
 };
 
-export const API_BASE_URL = (import.meta.env && import.meta.env.VITE_API_BASE_URL) || 'http://localhost:3000/api';
+export const API_BASE_URL =
+  (import.meta.env && import.meta.env.VITE_API_BASE_URL) ||
+  "http://localhost:3000/api";
 
 export const getApiUrl = (endpoint: string): string => {
   // Ensure we don't end up with double slashes
-  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
   return `${API_BASE_URL}/${cleanEndpoint}`;
 };
 
 export function formatNumber(number: number, opts: FormatNumberOptions = {}) {
-  const { locale = 'en-NG', fractionDigits = 0 } = opts;
+  const { locale = "en-NG", fractionDigits = 0 } = opts;
 
   return Intl.NumberFormat(locale, {
     maximumFractionDigits: fractionDigits,
@@ -35,10 +37,10 @@ type FormatPriceOptions = {
 };
 
 export function formatPrice(value: number, opts: FormatPriceOptions = {}) {
-  const { locale = 'en-US', currency = 'NGN', fractionDigits = 0 } = opts;
+  const { locale = "en-US", currency = "NGN", fractionDigits = 0 } = opts;
   const formatter = new Intl.NumberFormat(locale, {
     currency,
-    style: 'currency',
+    style: "currency",
     maximumFractionDigits: fractionDigits,
     minimumFractionDigits: fractionDigits,
   });
@@ -55,8 +57,8 @@ export function getAsValidNumber(n: number | string = 0): number {
 
 type ShortenNumberOptions = {
   locale?: string;
-  notation?: 'standard' | 'scientific' | 'engineering' | 'compact';
-  compactDisplay?: 'short' | 'long';
+  notation?: "standard" | "scientific" | "engineering" | "compact";
+  compactDisplay?: "short" | "long";
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
   minimumSignificantDigits?: number;
@@ -65,7 +67,11 @@ type ShortenNumberOptions = {
 
 export function shortenNumber(
   n: string | number,
-  { locale = 'en-US', notation = 'compact', ...opts }: ShortenNumberOptions = {}
+  {
+    locale = "en-US",
+    notation = "compact",
+    ...opts
+  }: ShortenNumberOptions = {},
 ) {
   const parsedNumber = isValidNumber(n) ? +n : 0;
 
@@ -83,11 +89,11 @@ export const DEFAULT_QUERY_PAGE_SIZE = 10;
 export const onNumberValidator = (
   e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
   onChange: (
-    d: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) => void
+    d: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => void,
 ) => {
   const re = /^[.0-9\b]+$/;
-  if (e.target.value === '' || re.test(e.target.value)) {
+  if (e.target.value === "" || re.test(e.target.value)) {
     onChange(e);
   }
 };

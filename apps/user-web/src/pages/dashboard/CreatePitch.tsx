@@ -1,32 +1,52 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Lightbulb, UploadCloud, CheckCircle, Loader2 } from 'lucide-react';
-import Button from '../../components/Button';
-import { usePitchAccess } from '../../hooks/usePitchAccess';
-import { getApiBaseUrl } from '../../lib/api-base';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Lightbulb, UploadCloud, CheckCircle, Loader2 } from "lucide-react";
+import Button from "../../components/Button";
+import { usePitchAccess } from "../../hooks/usePitchAccess";
+import { getApiBaseUrl } from "../../lib/api-base";
 
 const CreatePitch = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const { loading: pitchAccessLoading, canCreatePitch, hasPremium } = usePitchAccess();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const {
+    loading: pitchAccessLoading,
+    canCreatePitch,
+    hasPremium,
+  } = usePitchAccess();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
     show: false,
-    message: '',
-    type: 'success',
+    message: "",
+    type: "success",
   });
   const API_BASE = getApiBaseUrl();
   const isVerified = Boolean(user.isVerified);
-  const verificationMessage = 'Verify your account to unlock this feature';
-  
+  const verificationMessage = "Verify your account to unlock this feature";
+
   const [formData, setFormData] = useState({
-    title: '', tagline: '', problemStatement: '', solution: '', 
-    traction: '', marketSize: '', fundingAsk: '', equityOffer: '', category: 'FinTech', pitchDeckUrl: '',
-    investmentType: 'SHARIA_COMPLIANT',
+    title: "",
+    tagline: "",
+    problemStatement: "",
+    solution: "",
+    traction: "",
+    marketSize: "",
+    fundingAsk: "",
+    equityOffer: "",
+    category: "FinTech",
+    pitchDeckUrl: "",
+    investmentType: "SHARIA_COMPLIANT",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -35,18 +55,31 @@ const CreatePitch = () => {
     if (!file) return;
     setUploading(true);
     const uploadData = new FormData();
-    uploadData.append('file', file);
+    uploadData.append("file", file);
     try {
-      const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: uploadData });
+      const res = await fetch(`${API_BASE}/upload`, {
+        method: "POST",
+        body: uploadData,
+      });
       const data = await res.json();
       const uploadUrl = data.secure_url || data.url;
       if (uploadUrl) {
         setFormData((prev) => ({ ...prev, pitchDeckUrl: uploadUrl }));
-        setToast({ show: true, message: 'File uploaded successfully.', type: 'success' });
+        setToast({
+          show: true,
+          message: "File uploaded successfully.",
+          type: "success",
+        });
       } else throw new Error("No URL returned");
     } catch (err) {
-      setToast({ show: true, message: 'Failed to upload file.', type: 'error' });
-    } finally { setUploading(false); }
+      setToast({
+        show: true,
+        message: "Failed to upload file.",
+        type: "error",
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,28 +87,32 @@ const CreatePitch = () => {
 
     // 1. Get the token stored securely
     const token =
-      localStorage.getItem('accessToken') ||
-      localStorage.getItem('access_token');
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("access_token");
 
     if (!token) {
-        setToast({ show: true, message: 'You are not logged in.', type: 'error' });
-        navigate('/login');
-        return;
+      setToast({
+        show: true,
+        message: "You are not logged in.",
+        type: "error",
+      });
+      navigate("/login");
+      return;
     }
 
     if (!isVerified) {
-      setToast({ show: true, message: verificationMessage, type: 'error' });
-      navigate('/dashboard/verification');
+      setToast({ show: true, message: verificationMessage, type: "error" });
+      navigate("/dashboard/verification");
       return;
     }
 
     if (!pitchAccessLoading && !canCreatePitch) {
       setToast({
         show: true,
-        message: 'Premium is required before you can submit a pitch.',
-        type: 'error',
+        message: "Premium is required before you can submit a pitch.",
+        type: "error",
       });
-      navigate('/dashboard/subscription?reason=pitch-payment');
+      navigate("/dashboard/subscription?reason=pitch-payment");
       return;
     }
 
@@ -83,51 +120,73 @@ const CreatePitch = () => {
 
     try {
       const res = await fetch(`${API_BASE}/pitches`, {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` 
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           ...formData,
         }),
       });
       const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.message || 'Failed to post pitch');
-      setToast({ show: true, message: 'Pitch posted successfully.', type: 'success' });
-      navigate('/dashboard/opportunities');
+      if (!res.ok) throw new Error(data?.message || "Failed to post pitch");
+      setToast({
+        show: true,
+        message: "Pitch posted successfully.",
+        type: "success",
+      });
+      navigate("/dashboard/opportunities");
     } catch (err: any) {
-      setToast({ show: true, message: err.message || 'Failed to post pitch.', type: 'error' });
-    } finally { setLoading(false); }
+      setToast({
+        show: true,
+        message: err.message || "Failed to post pitch.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const inputStyles = "w-full p-3 bg-slate-50 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded-xl text-slate-900 dark:text-white focus:border-primary focus:outline-none transition-colors placeholder:text-gray-400";
-  const labelStyles = "block text-sm font-bold text-slate-600 dark:text-gray-400 mb-2";
+  const inputStyles =
+    "w-full p-3 bg-slate-50 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded-xl text-slate-900 dark:text-white focus:border-primary focus:outline-none transition-colors placeholder:text-gray-400";
+  const labelStyles =
+    "block text-sm font-bold text-slate-600 dark:text-gray-400 mb-2";
   const showPremiumNotice = !pitchAccessLoading && !hasPremium;
-  const isAspiringOwner = user.role === 'ASPIRING_BUSINESS_OWNER';
+  const isAspiringOwner = user.role === "ASPIRING_BUSINESS_OWNER";
 
   return (
-    <div className='mx-auto max-w-3xl pb-20 font-sans'>
+    <div className="mx-auto max-w-3xl pb-20 font-sans">
       {toast.show && (
-        <div className={`fixed left-3 right-3 top-4 z-50 flex items-center gap-2 rounded px-4 py-3 font-medium text-white shadow-lg sm:left-auto sm:right-4 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+        <div
+          className={`fixed left-3 right-3 top-4 z-50 flex items-center gap-2 rounded px-4 py-3 font-medium text-white shadow-lg sm:left-auto sm:right-4 ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}
+        >
           {toast.message}
         </div>
       )}
-      {user.role && user.role !== 'ENTREPRENEUR' ? (
+      {user.role && user.role !== "ENTREPRENEUR" ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-gray-800 dark:bg-[#1d1d20] sm:p-8">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-            {isAspiringOwner ? 'Keep building your business foundation' : 'Pitch creation is for entrepreneurs'}
+            {isAspiringOwner
+              ? "Keep building your business foundation"
+              : "Pitch creation is for entrepreneurs"}
           </h2>
           <p className="text-slate-500 dark:text-gray-400 mb-6">
             {isAspiringOwner
-              ? 'You are still in the learning stage, so pitch submissions are not open for this account yet. Continue through the Learning Center to develop your idea before moving into pitch creation.'
-              : 'Your current role does not allow pitch submissions. Switch to an entrepreneur account to create pitches.'}
+              ? "You are still in the learning stage, so pitch submissions are not open for this account yet. Continue through the Learning Center to develop your idea before moving into pitch creation."
+              : "Your current role does not allow pitch submissions. Switch to an entrepreneur account to create pitches."}
           </p>
           <Button
-            onClick={() => navigate(isAspiringOwner ? '/dashboard/learning-center' : '/dashboard/opportunities')}
+            onClick={() =>
+              navigate(
+                isAspiringOwner
+                  ? "/dashboard/learning-center"
+                  : "/dashboard/opportunities",
+              )
+            }
             className="bg-primary text-neutral-dark font-bold"
           >
-            {isAspiringOwner ? 'Go to Learning Center' : 'Browse Opportunities'}
+            {isAspiringOwner ? "Go to Learning Center" : "Browse Opportunities"}
           </Button>
         </div>
       ) : !isVerified ? (
@@ -139,101 +198,253 @@ const CreatePitch = () => {
             Pitch submissions open after your account verification is approved.
           </p>
           <Button
-            onClick={() => navigate('/dashboard/verification')}
+            onClick={() => navigate("/dashboard/verification")}
             className="bg-primary text-neutral-dark font-bold"
           >
             Go to Verification
           </Button>
         </div>
       ) : !pitchAccessLoading && !canCreatePitch ? (
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-gray-800 dark:bg-[#1d1d20] sm:p-8">
-        <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Payment required</p>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Upgrade to submit your pitch</h2>
-            <p className="text-slate-500 dark:text-gray-400 max-w-2xl">
-              Entrepreneurs need an active Premium plan before submitting opportunities for review and investor discovery.
-            </p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-gray-800 dark:bg-[#1d1d20] sm:p-8">
+          <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">
+                Payment required
+              </p>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                Upgrade to submit your pitch
+              </h2>
+              <p className="text-slate-500 dark:text-gray-400 max-w-2xl">
+                Entrepreneurs need an active Premium plan before submitting
+                opportunities for review and investor discovery.
+              </p>
+            </div>
+            <Button
+              onClick={() =>
+                navigate("/dashboard/subscription?reason=pitch-payment")
+              }
+              className="bg-primary text-neutral-dark font-bold"
+            >
+              Upgrade Now
+            </Button>
           </div>
-          <Button onClick={() => navigate('/dashboard/subscription?reason=pitch-payment')} className="bg-primary text-neutral-dark font-bold">
-            Upgrade Now
-          </Button>
         </div>
-      </div>
       ) : (
-      <>
-      <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Create New Pitch</h1>
-        <Button variant="ghost" onClick={() => navigate('/dashboard/opportunities')}>Cancel</Button>
-      </div>
+        <>
+          <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+              Create New Pitch
+            </h1>
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/dashboard/opportunities")}
+            >
+              Cancel
+            </Button>
+          </div>
 
-      {showPremiumNotice && (
-        <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/10 p-4 text-sm text-slate-700 dark:text-white/80">
-          <strong className="text-primary">Premium required:</strong> pitch submissions are opened after payment, so your opportunity can enter review and investor discovery.
-        </div>
-      )}
+          {showPremiumNotice && (
+            <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/10 p-4 text-sm text-slate-700 dark:text-white/80">
+              <strong className="text-primary">Premium required:</strong> pitch
+              submissions are opened after payment, so your opportunity can
+              enter review and investor discovery.
+            </div>
+          )}
 
-      <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-gray-800 dark:bg-[#1d1d20] sm:p-8'>
-        <form onSubmit={handleSubmit} className='space-y-6'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-            <div>
-                <label className={labelStyles}>Business Title</label>
-                <div className="relative">
-                    <Lightbulb className="absolute left-3 top-3.5 text-slate-400" size={18} />
-                    <input name="title" required onChange={handleChange} className={`${inputStyles} pl-10`} placeholder="e.g. SolarMax" aria-label="Business Title" />
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-gray-800 dark:bg-[#1d1d20] sm:p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className={labelStyles}>Business Title</label>
+                  <div className="relative">
+                    <Lightbulb
+                      className="absolute left-3 top-3.5 text-slate-400"
+                      size={18}
+                    />
+                    <input
+                      name="title"
+                      required
+                      onChange={handleChange}
+                      className={`${inputStyles} pl-10`}
+                      placeholder="e.g. SolarMax"
+                      aria-label="Business Title"
+                    />
+                  </div>
                 </div>
-            </div>
-            <div>
-                <label className={labelStyles}>Industry</label>
-                <select name="category" className={inputStyles} onChange={handleChange} aria-label="Select Industry">
-                    <option value="FinTech">FinTech</option><option value="AgriTech">AgriTech</option><option value="HealthTech">HealthTech</option><option value="Retail">Retail</option>
-                </select>
-            </div>
-          </div>
-          <div>
-            <label className={labelStyles}>Investment Type</label>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {[
-                { value: 'SHARIA_COMPLIANT', label: 'Sharia Compliant' },
-                { value: 'CONVENTIONAL', label: 'Conventional' },
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setFormData((prev) => ({ ...prev, investmentType: option.value }))}
-                  className={`rounded-xl border px-4 py-3 text-sm font-bold transition-colors ${
-                    formData.investmentType === option.value
-                      ? 'border-primary bg-primary text-black'
-                      : 'border-slate-300 bg-slate-50 text-slate-700 hover:border-primary/50 dark:border-gray-700 dark:bg-[#151518] dark:text-white'
-                  }`}
-                  aria-pressed={formData.investmentType === option.value}
+                <div>
+                  <label className={labelStyles}>Industry</label>
+                  <select
+                    name="category"
+                    className={inputStyles}
+                    onChange={handleChange}
+                    aria-label="Select Industry"
+                  >
+                    <option value="FinTech">FinTech</option>
+                    <option value="AgriTech">AgriTech</option>
+                    <option value="HealthTech">HealthTech</option>
+                    <option value="Retail">Retail</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className={labelStyles}>Investment Type</label>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {[
+                    { value: "SHARIA_COMPLIANT", label: "Sharia Compliant" },
+                    { value: "CONVENTIONAL", label: "Conventional" },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          investmentType: option.value,
+                        }))
+                      }
+                      className={`rounded-xl border px-4 py-3 text-sm font-bold transition-colors ${
+                        formData.investmentType === option.value
+                          ? "border-primary bg-primary text-black"
+                          : "border-slate-300 bg-slate-50 text-slate-700 hover:border-primary/50 dark:border-gray-700 dark:bg-[#151518] dark:text-white"
+                      }`}
+                      aria-pressed={formData.investmentType === option.value}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className={labelStyles}>Tagline</label>
+                <input
+                  name="tagline"
+                  required
+                  onChange={handleChange}
+                  className={inputStyles}
+                  placeholder="Short description..."
+                  aria-label="Tagline"
+                />
+              </div>
+              <div>
+                <label className={labelStyles}>Problem</label>
+                <textarea
+                  name="problemStatement"
+                  rows={4}
+                  onChange={handleChange}
+                  className={inputStyles}
+                  placeholder="Problem..."
+                  required
+                  aria-label="Problem Statement"
+                />
+              </div>
+              <div>
+                <label className={labelStyles}>Solution</label>
+                <textarea
+                  name="solution"
+                  rows={4}
+                  onChange={handleChange}
+                  className={inputStyles}
+                  placeholder="Solution..."
+                  required
+                  aria-label="Solution"
+                />
+              </div>
+              <div>
+                <label className={labelStyles}>Pitch Deck</label>
+                <div
+                  className={`border-2 border-dashed border-slate-300 dark:border-gray-700 rounded-xl p-6 text-center cursor-pointer ${formData.pitchDeckUrl ? "border-primary bg-primary/5" : "hover:border-primary/50"}`}
                 >
-                  {option.label}
-                </button>
-              ))}
-            </div>
+                  {uploading ? (
+                    <div className="flex justify-center gap-2 text-primary">
+                      <Loader2 className="animate-spin" /> Uploading...
+                    </div>
+                  ) : formData.pitchDeckUrl ? (
+                    <div className="flex justify-center gap-2 text-primary font-bold">
+                      <CheckCircle /> Uploaded
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        type="file"
+                        className="hidden"
+                        id="file"
+                        onChange={handleFileUpload}
+                        accept=".pdf,image/*"
+                      />
+                      <label
+                        htmlFor="file"
+                        className="cursor-pointer flex flex-col items-center gap-2 w-full"
+                      >
+                        <UploadCloud className="text-slate-400" size={32} />
+                        <span className="text-sm text-slate-500">
+                          Click to upload
+                        </span>
+                      </label>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className={labelStyles}>Traction</label>
+                  <input
+                    name="traction"
+                    onChange={handleChange}
+                    className={inputStyles}
+                    placeholder="e.g. 1M rev"
+                    required
+                    aria-label="Traction"
+                  />
+                </div>
+                <div>
+                  <label className={labelStyles}>Market Size</label>
+                  <input
+                    name="marketSize"
+                    onChange={handleChange}
+                    className={inputStyles}
+                    placeholder="e.g. 50M users"
+                    required
+                    aria-label="Market Size"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-5 rounded-xl border border-slate-200 bg-slate-100 p-4 dark:border-gray-800 dark:bg-black/30 sm:p-6 md:grid-cols-2 md:gap-6">
+                <div>
+                  <label className={labelStyles}>Ask (NGN)</label>
+                  <input
+                    name="fundingAsk"
+                    type="number"
+                    required
+                    onChange={handleChange}
+                    className={inputStyles}
+                    aria-label="Funding Ask"
+                  />
+                </div>
+                <div>
+                  <label className={labelStyles}>Equity (%)</label>
+                  <input
+                    name="equityOffer"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    required
+                    onChange={handleChange}
+                    className={inputStyles}
+                    aria-label="Equity Offer"
+                  />
+                </div>
+              </div>
+              <Button
+                type="submit"
+                className="w-full bg-primary text-neutral-dark font-bold hover:brightness-110"
+                isLoading={loading}
+              >
+                Post Pitch
+              </Button>
+            </form>
           </div>
-          <div><label className={labelStyles}>Tagline</label><input name="tagline" required onChange={handleChange} className={inputStyles} placeholder="Short description..." aria-label="Tagline" /></div>
-          <div><label className={labelStyles}>Problem</label><textarea name="problemStatement" rows={4} onChange={handleChange} className={inputStyles} placeholder="Problem..." required aria-label="Problem Statement" /></div>
-          <div><label className={labelStyles}>Solution</label><textarea name="solution" rows={4} onChange={handleChange} className={inputStyles} placeholder="Solution..." required aria-label="Solution" /></div>
-          <div>
-            <label className={labelStyles}>Pitch Deck</label>
-            <div className={`border-2 border-dashed border-slate-300 dark:border-gray-700 rounded-xl p-6 text-center cursor-pointer ${formData.pitchDeckUrl ? 'border-primary bg-primary/5' : 'hover:border-primary/50'}`}>
-                {uploading ? <div className="flex justify-center gap-2 text-primary"><Loader2 className="animate-spin" /> Uploading...</div> : formData.pitchDeckUrl ? <div className="flex justify-center gap-2 text-primary font-bold"><CheckCircle /> Uploaded</div> : <><input type="file" className="hidden" id="file" onChange={handleFileUpload} accept=".pdf,image/*" /><label htmlFor="file" className="cursor-pointer flex flex-col items-center gap-2 w-full"><UploadCloud className="text-slate-400" size={32} /><span className="text-sm text-slate-500">Click to upload</span></label></>}
-            </div>
-          </div>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-            <div><label className={labelStyles}>Traction</label><input name="traction" onChange={handleChange} className={inputStyles} placeholder="e.g. 1M rev" required aria-label="Traction" /></div>
-            <div><label className={labelStyles}>Market Size</label><input name="marketSize" onChange={handleChange} className={inputStyles} placeholder="e.g. 50M users" required aria-label="Market Size" /></div>
-          </div>
-          <div className='grid grid-cols-1 gap-5 rounded-xl border border-slate-200 bg-slate-100 p-4 dark:border-gray-800 dark:bg-black/30 sm:p-6 md:grid-cols-2 md:gap-6'>
-            <div><label className={labelStyles}>Ask (NGN)</label><input name="fundingAsk" type="number" required onChange={handleChange} className={inputStyles} aria-label="Funding Ask" /></div>
-            <div><label className={labelStyles}>Equity (%)</label><input name="equityOffer" type="number" min="0" max="100" step="0.01" required onChange={handleChange} className={inputStyles} aria-label="Equity Offer" /></div>
-          </div>
-          <Button type='submit' className='w-full bg-primary text-neutral-dark font-bold hover:brightness-110' isLoading={loading}>Post Pitch</Button>
-        </form>
-      </div>
-      </>
+        </>
       )}
     </div>
   );

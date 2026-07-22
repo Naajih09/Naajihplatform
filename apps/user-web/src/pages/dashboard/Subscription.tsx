@@ -1,91 +1,126 @@
-import { Check, Info, Shield, Wallet, Zap } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { getApiBaseUrl } from '../../lib/api-base';
+import { Check, Info, Shield, Wallet, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { getApiBaseUrl } from "../../lib/api-base";
 
 export default function Subscription() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState<'paystack' | 'opay'>('paystack');
+  const [selectedProvider, setSelectedProvider] = useState<"paystack" | "opay">(
+    "paystack",
+  );
   const [searchParams] = useSearchParams();
-  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
     show: false,
-    message: '',
-    type: 'success',
+    message: "",
+    type: "success",
   });
   const [subscription, setSubscription] = useState<any>(null);
   const API_BASE = getApiBaseUrl();
   const trialDays = Number(import.meta.env.VITE_TRIAL_DAYS || 14);
   const pitchPaymentReason =
-    searchParams.get('reason') === 'pitch-payment' ||
-    searchParams.get('reason') === 'pitch-limit';
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const isAspirant = user?.role === 'ASPIRING_BUSINESS_OWNER';
-  const defaultSubscriptionAmount = Number(import.meta.env.VITE_SUBSCRIPTION_AMOUNT_NGN || 15000);
+    searchParams.get("reason") === "pitch-payment" ||
+    searchParams.get("reason") === "pitch-limit";
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isAspirant = user?.role === "ASPIRING_BUSINESS_OWNER";
+  const defaultSubscriptionAmount = Number(
+    import.meta.env.VITE_SUBSCRIPTION_AMOUNT_NGN || 15000,
+  );
   const subscriptionAmount = isAspirant ? 5000 : defaultSubscriptionAmount;
   const estimatedAnnualValue = subscriptionAmount * 10;
   const authToken =
-    localStorage.getItem('accessToken') ||
-    localStorage.getItem('access_token') ||
-    '';
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("access_token") ||
+    "";
 
   const refreshCurrentUser = async () => {
-    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
     if (!storedUser?.email || !authToken) return null;
 
-    const res = await fetch(`${API_BASE}/users/${encodeURIComponent(storedUser.email)}?_=${Date.now()}`, {
-      cache: 'no-store',
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-        'Cache-Control': 'no-store',
+    const res = await fetch(
+      `${API_BASE}/users/${encodeURIComponent(storedUser.email)}?_=${Date.now()}`,
+      {
+        cache: "no-store",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Cache-Control": "no-store",
+        },
       },
-    });
+    );
     if (!res.ok) return null;
 
     const data = await res.json();
     setSubscription(data.subscription || null);
-    localStorage.setItem('user', JSON.stringify(data));
+    localStorage.setItem("user", JSON.stringify(data));
     return data;
   };
 
   useEffect(() => {
-    const reference = searchParams.get('reference') || searchParams.get('trxref') || searchParams.get('orderNo');
-    const provider = (searchParams.get('provider') as 'paystack' | 'opay') || 'paystack';
+    const reference =
+      searchParams.get("reference") ||
+      searchParams.get("trxref") ||
+      searchParams.get("orderNo");
+    const provider =
+      (searchParams.get("provider") as "paystack" | "opay") || "paystack";
     if (reference) {
       verifyPayment(provider, reference);
     }
   }, [searchParams]);
 
   useEffect(() => {
-    refreshCurrentUser()
-      .catch(() => null);
+    refreshCurrentUser().catch(() => null);
   }, [authToken]);
 
-  const verifyPayment = async (provider: 'paystack' | 'opay', reference: string) => {
+  const verifyPayment = async (
+    provider: "paystack" | "opay",
+    reference: string,
+  ) => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/payments/verify?provider=${provider}&reference=${reference}&_=${Date.now()}`, {
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-store' },
-      });
+      const res = await fetch(
+        `${API_BASE}/payments/verify?provider=${provider}&reference=${reference}&_=${Date.now()}`,
+        {
+          cache: "no-store",
+          headers: { "Cache-Control": "no-store" },
+        },
+      );
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(data?.message || 'Payment verification failed.');
+        throw new Error(data?.message || "Payment verification failed.");
       }
-      if (data.status === 'success') {
+      if (data.status === "success") {
         const refreshedUser = await refreshCurrentUser();
-        setToast({ show: true, message: 'Subscription successful! You are now a Premium member.', type: 'success' });
+        setToast({
+          show: true,
+          message: "Subscription successful! You are now a Premium member.",
+          type: "success",
+        });
         if (
-          searchParams.get('reason') === 'pitch-payment' &&
-          refreshedUser?.role === 'ENTREPRENEUR'
+          searchParams.get("reason") === "pitch-payment" &&
+          refreshedUser?.role === "ENTREPRENEUR"
         ) {
-          setTimeout(() => navigate('/dashboard/create-pitch', { replace: true }), 800);
+          setTimeout(
+            () => navigate("/dashboard/create-pitch", { replace: true }),
+            800,
+          );
         }
       } else {
-        setToast({ show: true, message: 'Payment verification failed.', type: 'error' });
+        setToast({
+          show: true,
+          message: "Payment verification failed.",
+          type: "error",
+        });
       }
     } catch (error: any) {
-      setToast({ show: true, message: error?.message || 'Verification error.', type: 'error' });
+      setToast({
+        show: true,
+        message: error?.message || "Verification error.",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -94,37 +129,49 @@ export default function Subscription() {
   const handleUpgrade = async () => {
     setLoading(true);
     try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (!user?.email) {
-        setToast({ show: true, message: 'Please log in to upgrade your plan.', type: 'error' });
+        setToast({
+          show: true,
+          message: "Please log in to upgrade your plan.",
+          type: "error",
+        });
         setLoading(false);
         return;
       }
       const res = await fetch(`${API_BASE}/payments/initialize`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           provider: selectedProvider,
-          email: user.email, 
+          email: user.email,
           amount: subscriptionAmount,
           userId: user.id,
-          reason: pitchPaymentReason ? 'pitch-payment' : undefined,
+          reason: pitchPaymentReason ? "pitch-payment" : undefined,
         }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(data?.message || 'Failed to initialize payment.');
+        throw new Error(data?.message || "Failed to initialize payment.");
       }
       if (data.authorization_url) {
         window.location.href = data.authorization_url;
       } else {
-        setToast({ show: true, message: 'Payment provider did not return a checkout URL.', type: 'error' });
+        setToast({
+          show: true,
+          message: "Payment provider did not return a checkout URL.",
+          type: "error",
+        });
       }
     } catch (error: any) {
-      setToast({ show: true, message: error?.message || 'Payment error occurred.', type: 'error' });
+      setToast({
+        show: true,
+        message: error?.message || "Payment error occurred.",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -134,23 +181,31 @@ export default function Subscription() {
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/users/subscription/trial`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         },
       });
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        throw new Error(data?.message || 'Trial start failed.');
+        throw new Error(data?.message || "Trial start failed.");
       }
-      setToast({ show: true, message: `Trial started. You have ${trialDays} days of Premium.`, type: 'success' });
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      setToast({
+        show: true,
+        message: `Trial started. You have ${trialDays} days of Premium.`,
+        type: "success",
+      });
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (user?.email) {
         await refreshCurrentUser();
       }
     } catch (error: any) {
-      setToast({ show: true, message: error?.message || 'Unable to start trial.', type: 'error' });
+      setToast({
+        show: true,
+        message: error?.message || "Unable to start trial.",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -158,29 +213,33 @@ export default function Subscription() {
 
   const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
   const hasPremium =
-    subscription?.plan === 'PREMIUM' &&
+    subscription?.plan === "PREMIUM" &&
     (!activeUntil || new Date(activeUntil) > new Date());
   const trialActive =
-    subscription?.trialEndsAt && new Date(subscription.trialEndsAt) > new Date();
+    subscription?.trialEndsAt &&
+    new Date(subscription.trialEndsAt) > new Date();
 
   return (
     <div className="min-h-screen bg-[#f8fafc] px-0 py-2 pb-24 text-slate-900 dark:bg-background-dark dark:text-white md:py-8">
       {toast.show && (
-        <div className={`fixed left-3 right-3 top-4 z-50 flex items-center gap-2 rounded px-4 py-3 font-medium text-white shadow-lg sm:left-auto sm:right-4 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+        <div
+          className={`fixed left-3 right-3 top-4 z-50 flex items-center gap-2 rounded px-4 py-3 font-medium text-white shadow-lg sm:left-auto sm:right-4 ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}
+        >
           {toast.message}
         </div>
       )}
       <div className="mx-auto max-w-[1000px] space-y-6 md:space-y-8">
-        
         {/* Header */}
         <div className="mx-auto mb-8 max-w-2xl text-center md:mb-12">
           <h1 className="mb-4 text-3xl font-black sm:text-4xl">
-            {isAspirant ? 'Unlock Premium Learning' : 'Unlock Pitch Submissions'}
+            {isAspirant
+              ? "Unlock Premium Learning"
+              : "Unlock Pitch Submissions"}
           </h1>
           <p className="text-slate-500 dark:text-white/60">
             {isAspirant
-              ? 'Premium is for advanced courses, mentor sessions, and completion certificates.'
-              : 'Premium is required before entrepreneurs can submit opportunities for review and investor discovery.'}
+              ? "Premium is for advanced courses, mentor sessions, and completion certificates."
+              : "Premium is required before entrepreneurs can submit opportunities for review and investor discovery."}
           </p>
           {!isAspirant && (
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs font-bold uppercase tracking-widest">
@@ -199,156 +258,214 @@ export default function Subscription() {
 
         {pitchPaymentReason && !isAspirant && (
           <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 text-sm text-slate-700 dark:text-white/80">
-            Upgrade to Premium to submit your pitch for review and open investor discovery.
+            Upgrade to Premium to submit your pitch for review and open investor
+            discovery.
           </div>
         )}
 
         {/* Current Plan Alert */}
         <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/10 p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-                <div className="bg-primary/20 p-2 rounded-full text-primary">
-                    <Info size={20} />
-                </div>
-                <div>
-                    <h4 className="font-bold text-sm">Your Current Plan: <span className="text-primary tracking-widest uppercase">{hasPremium ? 'Premium' : 'Free Tier'}</span></h4>
-                    <p className="text-xs text-slate-500 dark:text-white/60">
-                      {trialActive
-                        ? `Trial active until ${new Date(subscription.trialEndsAt).toLocaleDateString('en-NG', { dateStyle: 'medium' })}`
-                        : hasPremium
-                        ? isAspirant
-                          ? 'Full access to premium learning and mentor sessions.'
-                          : 'Full access to premium networking features.'
-                        : isAspirant
-                        ? 'Access free intro courses. Premium unlocks advanced learning.'
-                        : 'Browse opportunities freely. Premium is required when you are ready to submit pitches.'}
-                    </p>
-                </div>
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/20 p-2 rounded-full text-primary">
+              <Info size={20} />
             </div>
+            <div>
+              <h4 className="font-bold text-sm">
+                Your Current Plan:{" "}
+                <span className="text-primary tracking-widest uppercase">
+                  {hasPremium ? "Premium" : "Free Tier"}
+                </span>
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-white/60">
+                {trialActive
+                  ? `Trial active until ${new Date(subscription.trialEndsAt).toLocaleDateString("en-NG", { dateStyle: "medium" })}`
+                  : hasPremium
+                    ? isAspirant
+                      ? "Full access to premium learning and mentor sessions."
+                      : "Full access to premium networking features."
+                    : isAspirant
+                      ? "Access free intro courses. Premium unlocks advanced learning."
+                      : "Browse opportunities freely. Premium is required when you are ready to submit pitches."}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-8">
-            
-            {/* Free Tier */}
-            <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-[#1d1d20] sm:p-8">
-                <h3 className="text-2xl font-bold mb-2">Basic Access</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-4xl font-black sm:text-5xl">NGN 0</span>
-                    <span className="text-slate-400 dark:text-white/50">/ forever</span>
-                </div>
-                <p className="text-sm text-slate-600 dark:text-white/70 mb-8 flex-grow">
-                    {isAspirant
-                      ? 'Perfect for learners getting started with business fundamentals.'
-                      : 'For browsing opportunities and preparing your profile before you submit a pitch.'}
-                </p>
-                
-                <ul className="space-y-4 mb-8">
-                    {(isAspirant
-                      ? ['Free intro courses', 'Basic community access', 'Learning dashboard', 'Progress tracking']
-                      : ['Browse public opportunities', 'Prepare your founder profile', 'Review investor-facing examples', 'Upgrade before pitch submission']
-                    ).map((feature, i) => (
-                        <li key={i} className="flex items-center gap-3 text-sm text-slate-700 dark:text-white/80">
-                            <Check size={18} className="text-slate-400 dark:text-gray-500" /> {feature}
-                        </li>
-                    ))}
-                </ul>
-                
-                <button disabled className="w-full py-3 rounded-lg bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-white/50 font-bold border border-slate-200 dark:border-white/5 cursor-not-allowed">
-                    Current Plan
+          {/* Free Tier */}
+          <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-[#1d1d20] sm:p-8">
+            <h3 className="text-2xl font-bold mb-2">Basic Access</h3>
+            <div className="flex items-baseline gap-1 mb-6">
+              <span className="text-4xl font-black sm:text-5xl">NGN 0</span>
+              <span className="text-slate-400 dark:text-white/50">
+                / forever
+              </span>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-white/70 mb-8 flex-grow">
+              {isAspirant
+                ? "Perfect for learners getting started with business fundamentals."
+                : "For browsing opportunities and preparing your profile before you submit a pitch."}
+            </p>
+
+            <ul className="space-y-4 mb-8">
+              {(isAspirant
+                ? [
+                    "Free intro courses",
+                    "Basic community access",
+                    "Learning dashboard",
+                    "Progress tracking",
+                  ]
+                : [
+                    "Browse public opportunities",
+                    "Prepare your founder profile",
+                    "Review investor-facing examples",
+                    "Upgrade before pitch submission",
+                  ]
+              ).map((feature, i) => (
+                <li
+                  key={i}
+                  className="flex items-center gap-3 text-sm text-slate-700 dark:text-white/80"
+                >
+                  <Check
+                    size={18}
+                    className="text-slate-400 dark:text-gray-500"
+                  />{" "}
+                  {feature}
+                </li>
+              ))}
+            </ul>
+
+            <button
+              disabled
+              className="w-full py-3 rounded-lg bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-white/50 font-bold border border-slate-200 dark:border-white/5 cursor-not-allowed"
+            >
+              Current Plan
+            </button>
+          </div>
+
+          {/* Premium Tier */}
+          <div className="relative flex flex-col rounded-2xl border-2 border-primary bg-gradient-to-b from-white to-slate-100 p-5 shadow-2xl shadow-primary/10 dark:from-[#262626] dark:to-[#1a1a1a] sm:p-8 md:scale-[1.01]">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-black px-4 py-1 rounded-full text-xs font-black tracking-widest uppercase flex items-center gap-1">
+              <Zap size={14} /> Most founders choose this
+            </div>
+
+            <h3 className="text-2xl font-bold text-primary mb-2">
+              {isAspirant ? "Premium Learning" : "Premium Network"}
+            </h3>
+            <div className="flex items-baseline gap-1 mb-2">
+              <span className="text-4xl font-black sm:text-5xl">
+                NGN {subscriptionAmount.toLocaleString()}
+              </span>
+              <span className="text-slate-400 dark:text-white/50">/ month</span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-white/50 mb-4 font-bold uppercase tracking-widest">
+              Estimated annual value: NGN{" "}
+              {estimatedAnnualValue.toLocaleString()}
+            </p>
+            {isAspirant && (
+              <p className="text-xs text-primary mb-4 font-bold uppercase tracking-widest">
+                {trialDays}-day free trial
+              </p>
+            )}
+
+            <div className="mb-6 space-y-3">
+              <p className="text-xs font-bold text-slate-400 dark:text-white/50 uppercase tracking-widest">
+                Select Payment Method
+              </p>
+              <div className="flex gap-3 sm:gap-4">
+                <button
+                  onClick={() => setSelectedProvider("paystack")}
+                  className={`flex-1 py-2 rounded-lg border text-xs font-bold transition-all ${selectedProvider === "paystack" ? "bg-primary text-black border-primary" : "bg-slate-100 text-slate-600 border-slate-200 hover:border-slate-300 dark:bg-white/5 dark:text-white/60 dark:border-white/10 dark:hover:border-white/20"}`}
+                >
+                  Paystack
                 </button>
+                <button
+                  onClick={() => setSelectedProvider("opay")}
+                  className={`flex-1 py-2 rounded-lg border text-xs font-bold transition-all ${selectedProvider === "opay" ? "bg-primary text-black border-primary" : "bg-slate-100 text-slate-600 border-slate-200 hover:border-slate-300 dark:bg-white/5 dark:text-white/60 dark:border-white/10 dark:hover:border-white/20"}`}
+                >
+                  OPay
+                </button>
+              </div>
             </div>
 
-            {/* Premium Tier */}
-            <div className="relative flex flex-col rounded-2xl border-2 border-primary bg-gradient-to-b from-white to-slate-100 p-5 shadow-2xl shadow-primary/10 dark:from-[#262626] dark:to-[#1a1a1a] sm:p-8 md:scale-[1.01]">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-black px-4 py-1 rounded-full text-xs font-black tracking-widest uppercase flex items-center gap-1">
-                    <Zap size={14} /> Most founders choose this
-                </div>
+            <ul className="space-y-4 mb-8">
+              {(isAspirant
+                ? [
+                    "Advanced courses in Academy",
+                    "Mentor booking & office hours",
+                    "Certificates of completion",
+                    "Priority learning support",
+                  ]
+                : [
+                    "Submit pitches for review",
+                    "Investor discovery access",
+                    "Unlimited messaging & connections",
+                    "Priority placement in feeds",
+                    "Export network data",
+                  ]
+              ).map((feature, i) => (
+                <li
+                  key={i}
+                  className="flex items-center gap-3 text-sm text-slate-700 dark:text-white/90"
+                >
+                  <Check size={18} className="text-primary" /> {feature}
+                </li>
+              ))}
+            </ul>
 
-                <h3 className="text-2xl font-bold text-primary mb-2">
-                  {isAspirant ? 'Premium Learning' : 'Premium Network'}
-                </h3>
-                <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-4xl font-black sm:text-5xl">NGN {subscriptionAmount.toLocaleString()}</span>
-                    <span className="text-slate-400 dark:text-white/50">/ month</span>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-white/50 mb-4 font-bold uppercase tracking-widest">
-                  Estimated annual value: NGN {estimatedAnnualValue.toLocaleString()}
-                </p>
-                {isAspirant && (
-                  <p className="text-xs text-primary mb-4 font-bold uppercase tracking-widest">
-                    {trialDays}-day free trial
-                  </p>
+            {!isAspirant && (
+              <div className="mb-6 rounded-xl border border-primary/20 bg-primary/10 p-4 text-sm text-slate-700 dark:text-white/80">
+                Upgrade before submitting your pitch. Premium opens the review
+                workflow and gives founders a cleaner path to investor
+                discovery.
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {isAspirant && !subscription?.trialUsed && !hasPremium && (
+                <button
+                  onClick={handleStartTrial}
+                  disabled={loading}
+                  className="w-full py-3 rounded-lg bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-white font-bold hover:bg-slate-200 dark:hover:bg-white/20 transition-colors flex justify-center items-center gap-2"
+                >
+                  {loading
+                    ? "Processing..."
+                    : `Start ${trialDays}-Day Free Trial`}
+                </button>
+              )}
+              <button
+                onClick={handleUpgrade}
+                disabled={loading}
+                className="w-full py-3 rounded-lg bg-primary text-black font-bold hover:bg-primary/90 transition-colors flex justify-center items-center gap-2"
+              >
+                {loading ? (
+                  "Processing..."
+                ) : (
+                  <>
+                    <Wallet size={18} /> Upgrade to Premium
+                  </>
                 )}
-                
-                <div className="mb-6 space-y-3">
-                  <p className="text-xs font-bold text-slate-400 dark:text-white/50 uppercase tracking-widest">Select Payment Method</p>
-                  <div className="flex gap-3 sm:gap-4">
-                    <button 
-                      onClick={() => setSelectedProvider('paystack')}
-                      className={`flex-1 py-2 rounded-lg border text-xs font-bold transition-all ${selectedProvider === 'paystack' ? 'bg-primary text-black border-primary' : 'bg-slate-100 text-slate-600 border-slate-200 hover:border-slate-300 dark:bg-white/5 dark:text-white/60 dark:border-white/10 dark:hover:border-white/20'}`}
-                    >
-                      Paystack
-                    </button>
-                    <button 
-                      onClick={() => setSelectedProvider('opay')}
-                      className={`flex-1 py-2 rounded-lg border text-xs font-bold transition-all ${selectedProvider === 'opay' ? 'bg-primary text-black border-primary' : 'bg-slate-100 text-slate-600 border-slate-200 hover:border-slate-300 dark:bg-white/5 dark:text-white/60 dark:border-white/10 dark:hover:border-white/20'}`}
-                    >
-                      OPay
-                    </button>
-                  </div>
-                </div>
-
-                <ul className="space-y-4 mb-8">
-                    {(isAspirant
-                      ? ['Advanced courses in Academy', 'Mentor booking & office hours', 'Certificates of completion', 'Priority learning support']
-                      : ['Submit pitches for review', 'Investor discovery access', 'Unlimited messaging & connections', 'Priority placement in feeds', 'Export network data']
-                    ).map((feature, i) => (
-                        <li key={i} className="flex items-center gap-3 text-sm text-slate-700 dark:text-white/90">
-                            <Check size={18} className="text-primary" /> {feature}
-                        </li>
-                    ))}
-                </ul>
-
-                {!isAspirant && (
-                  <div className="mb-6 rounded-xl border border-primary/20 bg-primary/10 p-4 text-sm text-slate-700 dark:text-white/80">
-                    Upgrade before submitting your pitch. Premium opens the review workflow and gives founders a cleaner path to investor discovery.
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  {isAspirant && !subscription?.trialUsed && !hasPremium && (
-                    <button 
-                      onClick={handleStartTrial}
-                      disabled={loading}
-                      className="w-full py-3 rounded-lg bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-white font-bold hover:bg-slate-200 dark:hover:bg-white/20 transition-colors flex justify-center items-center gap-2"
-                    >
-                        {loading ? "Processing..." : `Start ${trialDays}-Day Free Trial`}
-                    </button>
-                  )}
-                  <button 
-                    onClick={handleUpgrade}
-                    disabled={loading}
-                    className="w-full py-3 rounded-lg bg-primary text-black font-bold hover:bg-primary/90 transition-colors flex justify-center items-center gap-2"
-                  >
-                      {loading ? "Processing..." : <><Wallet size={18}/> Upgrade to Premium</>}
-                  </button>
-                </div>
+              </button>
             </div>
-
+          </div>
         </div>
 
         {/* Trust Footer */}
         <div className="mt-10 flex items-center justify-center gap-2 text-center text-xs text-slate-400 dark:text-white/40 md:mt-16">
-            <Shield size={14} /> Payments are processed securely. Cancel anytime.
+          <Shield size={14} /> Payments are processed securely. Cancel anytime.
         </div>
 
         {!isAspirant && (
           <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-[#1d1d20] md:p-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-2xl font-black text-slate-900 dark:text-white">Free vs Premium</h2>
+                <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+                  Free vs Premium
+                </h2>
                 <p className="text-sm text-slate-500 dark:text-white/60">
-                  Compare the core limits and upgrade benefits before you choose a plan.
+                  Compare the core limits and upgrade benefits before you choose
+                  a plan.
                 </p>
               </div>
               <span className="text-xs font-bold uppercase tracking-widest text-primary">
@@ -358,7 +475,9 @@ export default function Subscription() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div className="rounded-xl border border-slate-200 dark:border-white/10 p-4">
-                <h3 className="font-bold text-slate-900 dark:text-white mb-3">Free Tier</h3>
+                <h3 className="font-bold text-slate-900 dark:text-white mb-3">
+                  Free Tier
+                </h3>
                 <ul className="space-y-3 text-slate-600 dark:text-white/70">
                   <li>No pitch submission</li>
                   <li>Browse public opportunities</li>
@@ -378,7 +497,6 @@ export default function Subscription() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

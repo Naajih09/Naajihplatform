@@ -1,4 +1,4 @@
-import type { SVGProps } from 'react';
+import type { SVGProps } from "react";
 
 export function NoDataIcon({
   width = 100,
@@ -217,7 +217,7 @@ export function ErrorIcon({
 export function ExportIcon({
   width = 21,
   height = 20,
-  color = '#272E35',
+  color = "#272E35",
   ...props
 }: SVGProps<SVGSVGElement>) {
   return (

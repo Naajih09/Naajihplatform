@@ -40,11 +40,16 @@ export class RolesGuard implements CanActivate {
       return false;
     }
 
-    if (user.role !== UserRole.ADMIN || !requiredRoles.includes(UserRole.ADMIN)) {
+    if (
+      user.role !== UserRole.ADMIN ||
+      !requiredRoles.includes(UserRole.ADMIN)
+    ) {
       return true;
     }
 
-    const permission = getAdminPermissionForRequest(request.path || request.url);
+    const permission = getAdminPermissionForRequest(
+      request.path || request.url,
+    );
     if (!permission) {
       return true;
     }

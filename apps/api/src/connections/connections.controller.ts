@@ -112,9 +112,7 @@ export class ConnectionsController {
   )
   async findSent(@Param('userId') userId: string, @Request() req) {
     if (req.user.role !== UserRole.ADMIN && req.user.id !== userId) {
-      throw new ForbiddenException(
-        'You can only view your own sent requests.',
-      );
+      throw new ForbiddenException('You can only view your own sent requests.');
     }
     return this.connectionsService.getSentRequests(userId);
   }

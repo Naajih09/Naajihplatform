@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, ArrowLeft } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import { ShieldAlert, ArrowLeft } from "lucide-react";
 
 const Unauthorized = () => {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const Unauthorized = () => {
           Your account does not have permission to access this area.
         </p>
         <button
-          onClick={() => navigate('/login', { replace: true })}
+          onClick={() => navigate("/login", { replace: true })}
           className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-black hover:brightness-110"
         >
           <ArrowLeft size={16} />

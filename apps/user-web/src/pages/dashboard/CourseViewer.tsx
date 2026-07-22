@@ -1,10 +1,16 @@
-import { CheckCircle, ChevronLeft, Clock, FileText, PlayCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import Button from '../../components/Button';
-import { getApiBaseUrl } from '../../lib/api-base';
-import { sanitizeHtml } from '../../lib/sanitizeHtml';
-import { showToast } from '../../lib/utils';
+import {
+  CheckCircle,
+  ChevronLeft,
+  Clock,
+  FileText,
+  PlayCircle,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import Button from "../../components/Button";
+import { getApiBaseUrl } from "../../lib/api-base";
+import { sanitizeHtml } from "../../lib/sanitizeHtml";
+import { showToast } from "../../lib/utils";
 
 const CourseViewer = () => {
   const { lessonId } = useParams();
@@ -15,12 +21,10 @@ const CourseViewer = () => {
 
   const API_BASE = getApiBaseUrl();
   const authToken =
-    localStorage.getItem('accessToken') ||
-    localStorage.getItem('access_token') ||
-    '';
-  const authHeaders = authToken
-    ? { Authorization: `Bearer ${authToken}` }
-    : {};
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("access_token") ||
+    "";
+  const authHeaders = authToken ? { Authorization: `Bearer ${authToken}` } : {};
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -28,13 +32,13 @@ const CourseViewer = () => {
       try {
         // We use the general academy endpoint but filtered for this lesson
         // Actually, let's assume a direct lesson endpoint exists or we fetch the program and find it
-        // To be safe, let's fetch the program data if we had the programId, 
+        // To be safe, let's fetch the program data if we had the programId,
         // but for now let's hope the backend can find lesson by ID directly if we add an endpoint.
-        
+
         // Let's check my AcademyController again. I only had findOne(id).
         // I'll need a way to get lesson details.
-        
-        // For now, I'll use a hack of fetching all and finding it, 
+
+        // For now, I'll use a hack of fetching all and finding it,
         // but better to add a getLesson endpoint in backend soon.
         const res = await fetch(`${API_BASE}/academy/lesson/${lessonId}`, {
           headers: authHeaders,
@@ -58,96 +62,119 @@ const CourseViewer = () => {
     setIsCompleting(true);
     try {
       await fetch(`${API_BASE}/academy/lesson/${lessonId}/complete`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...authHeaders,
         },
       });
-      showToast('Lesson marked as complete.', 'success');
+      showToast("Lesson marked as complete.", "success");
       navigate(-1); // Go back to dashboard
     } catch (err) {
       console.error(err);
-      showToast('Unable to save progress. Try again.', 'error');
+      showToast("Unable to save progress. Try again.", "error");
     } finally {
       setIsCompleting(false);
     }
   };
 
-  if (loading) return <div className="text-center py-20 text-slate-500 dark:text-gray-500">Loading lesson...</div>;
-  if (!lesson) return <div className="text-center py-20 text-red-500">Lesson not found</div>;
+  if (loading)
+    return (
+      <div className="text-center py-20 text-slate-500 dark:text-gray-500">
+        Loading lesson...
+      </div>
+    );
+  if (!lesson)
+    return (
+      <div className="text-center py-20 text-red-500">Lesson not found</div>
+    );
 
   const isLockedContent = !lesson.videoUrl && !lesson.content;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-20">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-primary transition-colors font-bold text-sm">
-            <ChevronLeft size={16}/> Back to Curriculum
-        </button>
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-2 text-slate-500 hover:text-primary transition-colors font-bold text-sm"
+      >
+        <ChevronLeft size={16} /> Back to Curriculum
+      </button>
 
-        <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-2xl">
-            {/* Media Area */}
-            {String(lesson.contentType || '').toUpperCase() === 'VIDEO' ? (
-                <div className="aspect-video bg-slate-950 relative flex items-center justify-center">
-                    {lesson.videoUrl ? (
-                         <iframe 
-                         src={lesson.videoUrl} 
-                         className="w-full h-full" 
-                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                         allowFullScreen
-                       ></iframe>
-                    ) : (
-                        <div className="text-center">
-                            <PlayCircle size={64} className="text-slate-700 dark:text-gray-800 mb-4 mx-auto"/>
-                            <p className="text-slate-500 dark:text-gray-500">Video content is restricted to enrollees.</p>
-                        </div>
-                    )}
-                </div>
+      <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-2xl">
+        {/* Media Area */}
+        {String(lesson.contentType || "").toUpperCase() === "VIDEO" ? (
+          <div className="aspect-video bg-slate-950 relative flex items-center justify-center">
+            {lesson.videoUrl ? (
+              <iframe
+                src={lesson.videoUrl}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
             ) : (
-                <div className="p-12 border-b border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-black/20 flex items-center justify-center">
-                    <FileText size={80} className="text-primary opacity-20"/>
-                </div>
+              <div className="text-center">
+                <PlayCircle
+                  size={64}
+                  className="text-slate-700 dark:text-gray-800 mb-4 mx-auto"
+                />
+                <p className="text-slate-500 dark:text-gray-500">
+                  Video content is restricted to enrollees.
+                </p>
+              </div>
             )}
+          </div>
+        ) : (
+          <div className="p-12 border-b border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-black/20 flex items-center justify-center">
+            <FileText size={80} className="text-primary opacity-20" />
+          </div>
+        )}
 
-            <div className="p-8 md:p-12">
-                <div className="flex flex-col md:flex-row justify-between items-start gap-6">
-                    <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-4">
-                            <span className="bg-primary/20 text-primary text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-widest">
-                                {String(lesson.contentType || 'Lesson').toUpperCase()}
-                            </span>
-                            <span className="text-slate-500 dark:text-gray-500 text-xs flex items-center gap-1 font-bold">
-                                <Clock size={12}/> {lesson.duration || 5} Mins
-                            </span>
-                        </div>
-                        <h1 className="text-3xl font-black text-slate-900 dark:text-white">{lesson.title}</h1>
-                        <div className="mt-8 prose dark:prose-invert max-w-none text-slate-600 dark:text-gray-400 leading-relaxed" 
-                             dangerouslySetInnerHTML={{
-                               __html: sanitizeHtml(
-                                 isLockedContent
-                                 ? 'This lesson is locked. Join the program to access the content.'
-                                 : lesson.content || 'No content provided.',
-                               ),
-                             }}>
-                        </div>
-                    </div>
-
-                    <div className="w-full md:w-auto mt-4">
-                        <Button 
-                            onClick={handleComplete}
-                            disabled={isCompleting || isLockedContent}
-                            className="w-full md:w-auto bg-primary text-black font-black px-8 py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
-                        >
-                            {isLockedContent
-                              ? 'Join program to unlock'
-                              : isCompleting
-                              ? 'Saving...'
-                              : <><CheckCircle size={20}/> Mark as Complete</>}
-                        </Button>
-                    </div>
-                </div>
+        <div className="p-8 md:p-12">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="bg-primary/20 text-primary text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-widest">
+                  {String(lesson.contentType || "Lesson").toUpperCase()}
+                </span>
+                <span className="text-slate-500 dark:text-gray-500 text-xs flex items-center gap-1 font-bold">
+                  <Clock size={12} /> {lesson.duration || 5} Mins
+                </span>
+              </div>
+              <h1 className="text-3xl font-black text-slate-900 dark:text-white">
+                {lesson.title}
+              </h1>
+              <div
+                className="mt-8 prose dark:prose-invert max-w-none text-slate-600 dark:text-gray-400 leading-relaxed"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(
+                    isLockedContent
+                      ? "This lesson is locked. Join the program to access the content."
+                      : lesson.content || "No content provided.",
+                  ),
+                }}
+              ></div>
             </div>
+
+            <div className="w-full md:w-auto mt-4">
+              <Button
+                onClick={handleComplete}
+                disabled={isCompleting || isLockedContent}
+                className="w-full md:w-auto bg-primary text-black font-black px-8 py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+              >
+                {isLockedContent ? (
+                  "Join program to unlock"
+                ) : isCompleting ? (
+                  "Saving..."
+                ) : (
+                  <>
+                    <CheckCircle size={20} /> Mark as Complete
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
   );
 };

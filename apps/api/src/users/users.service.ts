@@ -102,7 +102,9 @@ export class UsersService {
   private normalizeAdminPermissions(permissions?: unknown) {
     if (!Array.isArray(permissions)) return [];
     return permissions
-      .filter((permission): permission is string => typeof permission === 'string')
+      .filter(
+        (permission): permission is string => typeof permission === 'string',
+      )
       .map((permission) => permission.trim())
       .filter((permission) =>
         (ADMIN_PERMISSIONS as readonly string[]).includes(permission),

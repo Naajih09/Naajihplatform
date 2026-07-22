@@ -46,6 +46,7 @@ pnpm install
 ### Environment Variables
 
 Backend (apps/api/.env):
+
 - `DATABASE_URL`
 - `JWT_SECRET`
 - `ADMIN_EMAIL`
@@ -83,6 +84,7 @@ For deployed transactional email, prefer Resend over Gmail SMTP because some hos
 For temporary beta testing without a verified email domain, set both `BETA_TEST_MODE=true` and `PASSWORD_RESET_EXPOSE_LINK=true` to return the reset link in the forgot-password response. Turn both off before production use.
 
 Frontend (apps/user-web/.env, apps/admin-web/.env):
+
 - `VITE_API_BASE_URL`
 
 ### Prisma
@@ -128,12 +130,14 @@ pnpm check-types
 ## Webhooks
 
 Paystack and OPay webhook verification uses the raw request body. Ensure:
+
 - `PAYSTACK_WEBHOOK_SECRET` and `OPAY_WEBHOOK_SECRET` are set.
 - Reverse proxies do not modify the body before it reaches the API.
 
 ## Scripts
 
 See `package.json` for all scripts. Common ones:
+
 - `pnpm dev`
 - `pnpm build`
 - `pnpm lint`

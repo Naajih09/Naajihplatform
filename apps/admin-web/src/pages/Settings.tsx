@@ -1,7 +1,20 @@
-import { useEffect, useState } from 'react';
-import { CheckCircle, Eye, EyeOff, Loader2, Save, ShieldCheck, UserPlus, XCircle } from 'lucide-react';
-import api from '../utils/api';
-import { ADMIN_PERMISSIONS, AdminPermission, storeAdminPermissions } from '../utils/admin-access';
+import { useEffect, useState } from "react";
+import {
+  CheckCircle,
+  Eye,
+  EyeOff,
+  Loader2,
+  Save,
+  ShieldCheck,
+  UserPlus,
+  XCircle,
+} from "lucide-react";
+import api from "../utils/api";
+import {
+  ADMIN_PERMISSIONS,
+  AdminPermission,
+  storeAdminPermissions,
+} from "../utils/admin-access";
 
 interface AdminUser {
   id: string;
@@ -16,51 +29,63 @@ interface AdminUser {
 }
 
 const Settings = () => {
-  const token = localStorage.getItem('accessToken') || '';
+  const token = localStorage.getItem("accessToken") || "";
   const payload = parseJwt(token);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [adminTeam, setAdminTeam] = useState<AdminUser[]>([]);
-  const [permissionDrafts, setPermissionDrafts] = useState<Record<string, AdminPermission[]>>({});
+  const [permissionDrafts, setPermissionDrafts] = useState<
+    Record<string, AdminPermission[]>
+  >({});
   const [teamLoading, setTeamLoading] = useState(true);
-  const [savingAdminId, setSavingAdminId] = useState('');
+  const [savingAdminId, setSavingAdminId] = useState("");
   const [creatingAdmin, setCreatingAdmin] = useState(false);
   const [newAdmin, setNewAdmin] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    adminPermissions: ['dashboard', 'settings'] as AdminPermission[],
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    adminPermissions: ["dashboard", "settings"] as AdminPermission[],
   });
-  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
     show: false,
-    message: '',
-    type: 'success',
+    message: "",
+    type: "success",
   });
 
-  const showToast = (message: string, type: 'success' | 'error') => {
+  const showToast = (message: string, type: "success" | "error") => {
     setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+    setTimeout(
+      () => setToast({ show: false, message: "", type: "success" }),
+      3000,
+    );
   };
 
   const loadAdminTeam = async () => {
     setTeamLoading(true);
     try {
-      const response = await api.get('/users/admin/team');
+      const response = await api.get("/users/admin/team");
       const team = Array.isArray(response.data) ? response.data : [];
       setAdminTeam(team);
       setPermissionDrafts(
-        team.reduce((drafts: Record<string, AdminPermission[]>, admin: AdminUser) => {
-          drafts[admin.id] = Array.isArray(admin.adminPermissions)
-            ? admin.adminPermissions
-            : [];
-          return drafts;
-        }, {}),
+        team.reduce(
+          (drafts: Record<string, AdminPermission[]>, admin: AdminUser) => {
+            drafts[admin.id] = Array.isArray(admin.adminPermissions)
+              ? admin.adminPermissions
+              : [];
+            return drafts;
+          },
+          {},
+        ),
       );
     } catch {
-      showToast('Unable to load admin team.', 'error');
+      showToast("Unable to load admin team.", "error");
     } finally {
       setTeamLoading(false);
     }
@@ -73,25 +98,27 @@ const Settings = () => {
   const handlePasswordChange = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!payload?.sub) {
-      showToast('Unable to read admin profile from token.', 'error');
+      showToast("Unable to read admin profile from token.", "error");
       return;
     }
     if (!newPassword || newPassword.length < 6) {
-      showToast('Password must be at least 6 characters.', 'error');
+      showToast("Password must be at least 6 characters.", "error");
       return;
     }
     if (newPassword !== confirmPassword) {
-      showToast('Passwords do not match.', 'error');
+      showToast("Passwords do not match.", "error");
       return;
     }
 
     try {
-      await api.patch(`/users/password/${payload.sub}`, { password: newPassword });
-      setNewPassword('');
-      setConfirmPassword('');
-      showToast('Password updated successfully.', 'success');
+      await api.patch(`/users/password/${payload.sub}`, {
+        password: newPassword,
+      });
+      setNewPassword("");
+      setConfirmPassword("");
+      showToast("Password updated successfully.", "success");
     } catch (err) {
-      showToast('Network error occurred.', 'error');
+      showToast("Network error occurred.", "error");
     }
   };
 
@@ -119,58 +146,61 @@ const Settings = () => {
   const savePermissions = async (admin: AdminUser) => {
     const adminPermissions = permissionDrafts[admin.id] || [];
     if (adminPermissions.length === 0) {
-      showToast('Select at least one permission for this admin.', 'error');
+      showToast("Select at least one permission for this admin.", "error");
       return;
     }
 
     setSavingAdminId(admin.id);
     try {
-      const response = await api.patch(`/users/admin/team/${admin.id}/permissions`, {
-        adminPermissions,
-      });
+      const response = await api.patch(
+        `/users/admin/team/${admin.id}/permissions`,
+        {
+          adminPermissions,
+        },
+      );
       setAdminTeam((current) =>
         current.map((item) => (item.id === admin.id ? response.data : item)),
       );
       if (admin.id === payload?.sub) {
         storeAdminPermissions(response.data?.adminPermissions);
       }
-      showToast('Admin permissions updated.', 'success');
+      showToast("Admin permissions updated.", "success");
     } catch {
-      showToast('Unable to update permissions.', 'error');
+      showToast("Unable to update permissions.", "error");
     } finally {
-      setSavingAdminId('');
+      setSavingAdminId("");
     }
   };
 
   const createAdmin = async (event: React.FormEvent) => {
     event.preventDefault();
     if (newAdmin.adminPermissions.length === 0) {
-      showToast('Select at least one permission for this admin.', 'error');
+      showToast("Select at least one permission for this admin.", "error");
       return;
     }
     if (newAdmin.password.length < 6) {
-      showToast('Password must be at least 6 characters.', 'error');
+      showToast("Password must be at least 6 characters.", "error");
       return;
     }
 
     setCreatingAdmin(true);
     try {
-      await api.post('/users/admin/team', newAdmin);
+      await api.post("/users/admin/team", newAdmin);
       setNewAdmin({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        adminPermissions: ['dashboard', 'settings'],
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        adminPermissions: ["dashboard", "settings"],
       });
-      showToast('Admin team member created.', 'success');
+      showToast("Admin team member created.", "success");
       await loadAdminTeam();
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        'Unable to create admin team member.';
-      showToast(Array.isArray(message) ? message[0] : message, 'error');
+        "Unable to create admin team member.";
+      showToast(Array.isArray(message) ? message[0] : message, "error");
     } finally {
       setCreatingAdmin(false);
     }
@@ -179,13 +209,23 @@ const Settings = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-20 relative">
       <div>
-        <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Admin Settings</h1>
-        <p className="text-slate-500 mt-1 dark:text-gray-500">Manage your admin profile and security.</p>
+        <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+          Admin Settings
+        </h1>
+        <p className="text-slate-500 mt-1 dark:text-gray-500">
+          Manage your admin profile and security.
+        </p>
       </div>
 
       {toast.show && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
-          {toast.type === 'success' ? <CheckCircle size={18} /> : <XCircle size={18} />}
+        <div
+          className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}
+        >
+          {toast.type === "success" ? (
+            <CheckCircle size={18} />
+          ) : (
+            <XCircle size={18} />
+          )}
           {toast.message}
         </div>
       )}
@@ -196,21 +236,31 @@ const Settings = () => {
             <ShieldCheck size={20} />
           </div>
           <div>
-            <p className="text-sm text-slate-500 dark:text-gray-400">Signed in as</p>
-            <p className="text-lg font-bold text-slate-900 dark:text-white">{payload?.email || 'Admin'}</p>
-            <p className="text-xs text-slate-500 uppercase dark:text-gray-500">{payload?.role || 'ADMIN'}</p>
+            <p className="text-sm text-slate-500 dark:text-gray-400">
+              Signed in as
+            </p>
+            <p className="text-lg font-bold text-slate-900 dark:text-white">
+              {payload?.email || "Admin"}
+            </p>
+            <p className="text-xs text-slate-500 uppercase dark:text-gray-500">
+              {payload?.role || "ADMIN"}
+            </p>
           </div>
         </div>
       </div>
 
       <div className="admin-surface p-6">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Change Password</h2>
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
+          Change Password
+        </h2>
         <form onSubmit={handlePasswordChange} className="space-y-4">
           <div>
-            <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2">New Password</label>
+            <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2">
+              New Password
+            </label>
             <div className="relative">
               <input
-                type={showNewPassword ? 'text' : 'password'}
+                type={showNewPassword ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="admin-input w-full px-3 py-2 pr-10"
@@ -219,17 +269,21 @@ const Settings = () => {
                 type="button"
                 onClick={() => setShowNewPassword((current) => !current)}
                 className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-800 dark:text-gray-500 dark:hover:text-white"
-                aria-label={showNewPassword ? 'Hide new password' : 'Show new password'}
+                aria-label={
+                  showNewPassword ? "Hide new password" : "Show new password"
+                }
               >
                 {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
           <div>
-            <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2">Confirm Password</label>
+            <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2">
+              Confirm Password
+            </label>
             <div className="relative">
               <input
-                type={showConfirmPassword ? 'text' : 'password'}
+                type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="admin-input w-full px-3 py-2 pr-10"
@@ -238,7 +292,11 @@ const Settings = () => {
                 type="button"
                 onClick={() => setShowConfirmPassword((current) => !current)}
                 className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-800 dark:text-gray-500 dark:hover:text-white"
-                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                aria-label={
+                  showConfirmPassword
+                    ? "Hide confirm password"
+                    : "Show confirm password"
+                }
               >
                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -256,7 +314,9 @@ const Settings = () => {
       <div className="admin-surface p-6 space-y-6">
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Team Management</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+              Team Management
+            </h2>
             <p className="text-sm text-slate-500 dark:text-gray-400">
               Give trusted staff access to only the admin sections they need.
             </p>
@@ -266,22 +326,37 @@ const Settings = () => {
           </span>
         </div>
 
-        <form onSubmit={createAdmin} className="rounded-2xl border border-slate-200 p-4 dark:border-gray-800">
+        <form
+          onSubmit={createAdmin}
+          className="rounded-2xl border border-slate-200 p-4 dark:border-gray-800"
+        >
           <div className="mb-4 flex items-center gap-2">
             <UserPlus size={18} className="text-primary" />
-            <h3 className="font-bold text-slate-900 dark:text-white">Add Admin Staff</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white">
+              Add Admin Staff
+            </h3>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <input
               value={newAdmin.firstName}
-              onChange={(event) => setNewAdmin((current) => ({ ...current, firstName: event.target.value }))}
+              onChange={(event) =>
+                setNewAdmin((current) => ({
+                  ...current,
+                  firstName: event.target.value,
+                }))
+              }
               className="admin-input px-3 py-2"
               placeholder="First name"
               required
             />
             <input
               value={newAdmin.lastName}
-              onChange={(event) => setNewAdmin((current) => ({ ...current, lastName: event.target.value }))}
+              onChange={(event) =>
+                setNewAdmin((current) => ({
+                  ...current,
+                  lastName: event.target.value,
+                }))
+              }
               className="admin-input px-3 py-2"
               placeholder="Last name"
               required
@@ -289,7 +364,12 @@ const Settings = () => {
             <input
               type="email"
               value={newAdmin.email}
-              onChange={(event) => setNewAdmin((current) => ({ ...current, email: event.target.value }))}
+              onChange={(event) =>
+                setNewAdmin((current) => ({
+                  ...current,
+                  email: event.target.value,
+                }))
+              }
               className="admin-input px-3 py-2"
               placeholder="Email address"
               required
@@ -297,7 +377,12 @@ const Settings = () => {
             <input
               type="password"
               value={newAdmin.password}
-              onChange={(event) => setNewAdmin((current) => ({ ...current, password: event.target.value }))}
+              onChange={(event) =>
+                setNewAdmin((current) => ({
+                  ...current,
+                  password: event.target.value,
+                }))
+              }
               className="admin-input px-3 py-2"
               placeholder="Temporary password"
               required
@@ -316,8 +401,12 @@ const Settings = () => {
                   className="mt-1"
                 />
                 <span>
-                  <span className="block font-bold text-slate-900 dark:text-white">{permission.label}</span>
-                  <span className="text-xs text-slate-500 dark:text-gray-500">{permission.description}</span>
+                  <span className="block font-bold text-slate-900 dark:text-white">
+                    {permission.label}
+                  </span>
+                  <span className="text-xs text-slate-500 dark:text-gray-500">
+                    {permission.description}
+                  </span>
                 </span>
               </label>
             ))}
@@ -327,7 +416,11 @@ const Settings = () => {
             disabled={creatingAdmin}
             className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-black hover:brightness-110 disabled:opacity-60"
           >
-            {creatingAdmin ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
+            {creatingAdmin ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <UserPlus size={16} />
+            )}
             Create Admin
           </button>
         </form>
@@ -342,26 +435,34 @@ const Settings = () => {
             {adminTeam.map((admin) => {
               const permissions = permissionDrafts[admin.id] || [];
               const isCurrentAdmin = admin.id === payload?.sub;
-              const name = [
-                admin.entrepreneurProfile?.firstName,
-                admin.entrepreneurProfile?.lastName,
-              ]
-                .filter(Boolean)
-                .join(' ') || 'Admin';
+              const name =
+                [
+                  admin.entrepreneurProfile?.firstName,
+                  admin.entrepreneurProfile?.lastName,
+                ]
+                  .filter(Boolean)
+                  .join(" ") || "Admin";
 
               return (
-                <div key={admin.id} className="rounded-2xl border border-slate-200 p-4 dark:border-gray-800">
+                <div
+                  key={admin.id}
+                  className="rounded-2xl border border-slate-200 p-4 dark:border-gray-800"
+                >
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-slate-900 dark:text-white">{name}</h3>
+                        <h3 className="font-bold text-slate-900 dark:text-white">
+                          {name}
+                        </h3>
                         {isCurrentAdmin ? (
                           <span className="rounded-full bg-primary/15 px-2 py-1 text-[10px] font-bold uppercase text-primary">
                             You
                           </span>
                         ) : null}
                       </div>
-                      <p className="text-sm text-slate-500 dark:text-gray-400">{admin.email}</p>
+                      <p className="text-sm text-slate-500 dark:text-gray-400">
+                        {admin.email}
+                      </p>
                     </div>
                     <button
                       type="button"
@@ -369,7 +470,11 @@ const Settings = () => {
                       disabled={savingAdminId === admin.id}
                       className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 px-4 py-2 text-sm font-bold text-primary hover:bg-primary hover:text-black disabled:opacity-60"
                     >
-                      {savingAdminId === admin.id ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                      {savingAdminId === admin.id ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Save size={16} />
+                      )}
                       Save Access
                     </button>
                   </div>
@@ -382,12 +487,18 @@ const Settings = () => {
                         <input
                           type="checkbox"
                           checked={permissions.includes(permission.id)}
-                          onChange={() => togglePermission(admin.id, permission.id)}
+                          onChange={() =>
+                            togglePermission(admin.id, permission.id)
+                          }
                           className="mt-1"
                         />
                         <span>
-                          <span className="block font-bold text-slate-900 dark:text-white">{permission.label}</span>
-                          <span className="text-xs text-slate-500 dark:text-gray-500">{permission.description}</span>
+                          <span className="block font-bold text-slate-900 dark:text-white">
+                            {permission.label}
+                          </span>
+                          <span className="text-xs text-slate-500 dark:text-gray-500">
+                            {permission.description}
+                          </span>
                         </span>
                       </label>
                     ))}
@@ -404,9 +515,9 @@ const Settings = () => {
 
 const parseJwt = (token: string) => {
   try {
-    const payload = token.split('.')[1];
+    const payload = token.split(".")[1];
     if (!payload) return null;
-    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
   } catch {
     return null;
   }

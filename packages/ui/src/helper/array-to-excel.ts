@@ -25,14 +25,14 @@ const createXMLTable = (table: unknown, fileName: unknown) => {
 
 const createFileUrl = (xmlTable: any) => {
   const tableBlob = new Blob([xmlTable], {
-    type: 'application/vnd.ms-excel;base64,',
+    type: "application/vnd.ms-excel;base64,",
   });
   const downloadURL = URL.createObjectURL(tableBlob);
   return downloadURL;
 };
 
 const downloadFile = (downloadURL: any, fileName: any) => {
-  const downloadLink = document.createElement('a');
+  const downloadLink = document.createElement("a");
   document.body.appendChild(downloadLink);
   downloadLink.download = fileName;
   downloadLink.href = downloadURL;
@@ -43,7 +43,7 @@ export const arrayToExcel = (() => ({
   convertArrayToTable: async (apiArray: any, fileName: any) => {
     const tableHeaders = `<tr>${Object.keys(apiArray[0])
       .map((key) => `<td>${key}</td>`)
-      .join('')}</tr>`;
+      .join("")}</tr>`;
 
     const tableRows = apiArray
       .map((obj: any) => [
@@ -51,12 +51,12 @@ export const arrayToExcel = (() => ({
         ${Object.keys(obj)
           .map(
             (key) =>
-              `<td>${obj[key] === null || obj[key] === '' ? '' : obj[key]}</td>`
+              `<td>${obj[key] === null || obj[key] === "" ? "" : obj[key]}</td>`,
           )
-          .join('')}
+          .join("")}
       <tr/>`,
       ])
-      .join('');
+      .join("");
 
     const table = `<table>${tableHeaders}${tableRows}</table>`.trim();
     const xmlTable = createXMLTable(table, fileName);

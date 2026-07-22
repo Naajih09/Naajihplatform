@@ -1,25 +1,25 @@
-import { showToast } from '@/lib/utils';
-import { setAuth } from '@/store/slices/auth-slice';
+import { showToast } from "@/lib/utils";
+import { setAuth } from "@/store/slices/auth-slice";
 import {
   BaseQueryFn,
   FetchArgs,
   fetchBaseQuery,
   FetchBaseQueryError,
-} from '@reduxjs/toolkit/query';
-import { IRootState } from '../store/store';
+} from "@reduxjs/toolkit/query";
+import { IRootState } from "../store/store";
 
 const getBaseQueryWithLogout = (baseUrl: string) => {
   const baseQuery = fetchBaseQuery({
     baseUrl,
-    credentials: 'same-origin',
+    credentials: "same-origin",
 
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as IRootState;
 
-      headers.set('Accept', 'application/json');
+      headers.set("Accept", "application/json");
 
       if (state.auth && state.auth.token?.accessToken && state.auth.isAuth) {
-        headers.set('Authorization', `Bearer ${state.auth.token?.accessToken}`);
+        headers.set("Authorization", `Bearer ${state.auth.token?.accessToken}`);
       }
       return headers;
     },
@@ -36,7 +36,7 @@ const getBaseQueryWithLogout = (baseUrl: string) => {
     //console.log(result, '*******responsee*******');
 
     if (result.error && result.error.status === 401) {
-      showToast('Your session expired!', 'error');
+      showToast("Your session expired!", "error");
 
       api.dispatch(setAuth(false));
       // window.location = '/login';

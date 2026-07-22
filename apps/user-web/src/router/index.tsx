@@ -1,16 +1,16 @@
-import BlankLayout from '@/layouts/blank-layout';
-import DashboardLayout from '@/layouts/DashboardLayout';
-import { createBrowserRouter } from 'react-router-dom';
-import { ErrorBoundaryFallback } from '../../../../packages/ui/src';
-import { routes } from './routes';
+import BlankLayout from "@/layouts/blank-layout";
+import DashboardLayout from "@/layouts/DashboardLayout";
+import { createBrowserRouter } from "react-router-dom";
+import { ErrorBoundaryFallback } from "../../../../packages/ui/src";
+import { routes } from "./routes";
 
 const finalRoutes = routes?.map((route) => {
   return {
     ...route,
     element:
-      route?.layout === 'blank' ? (
+      route?.layout === "blank" ? (
         <BlankLayout>{route?.element}</BlankLayout>
-      ) : route?.layout === 'dashboard' ? (
+      ) : route?.layout === "dashboard" ? (
         <DashboardLayout>{route?.element}</DashboardLayout>
       ) : null,
 

@@ -1,15 +1,18 @@
-import React from 'react'; 
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { UserRole } from '../types/enums'; 
-import { AdminPermission, hasAdminPermission } from '../utils/admin-access';
+import React from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { UserRole } from "../types/enums";
+import { AdminPermission, hasAdminPermission } from "../utils/admin-access";
 
 interface ProtectedRouteProps {
   allowedRoles?: UserRole[];
   permission?: AdminPermission;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, permission }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  allowedRoles,
+  permission,
+}) => {
   const { isAuthenticated, userRole, isLoading } = useAuth();
 
   if (isLoading) {

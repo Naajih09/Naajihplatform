@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import * as React from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 const TreeContext = React.createContext<{
   selected: string[];
@@ -25,7 +25,7 @@ export function Tree({
   return (
     <TreeContext.Provider value={{ selected, onSelect }}>
       <div className={className}>
-        <ul role='tree' className='space-y-1'>
+        <ul role="tree" className="space-y-1">
           {children}
         </ul>
       </div>
@@ -45,7 +45,7 @@ export function TreeItem({ id, children, className }: TreeItemProps) {
 
   return (
     <li
-      role='treeitem'
+      role="treeitem"
       aria-selected={isSelected}
       className={className}
       onClick={() => onSelect(id)}
@@ -79,7 +79,7 @@ export function TreeItemToggle({
 }: TreeItemToggleProps) {
   return (
     <button
-      type='button'
+      type="button"
       onClick={(e) => {
         e.stopPropagation();
         onExpand();
@@ -87,9 +87,9 @@ export function TreeItemToggle({
       className={`flex items-center justify-center ${className}`}
     >
       {expanded ? (
-        <ChevronDown className='h-4 w-4' />
+        <ChevronDown className="h-4 w-4" />
       ) : (
-        <ChevronRight className='h-4 w-4' />
+        <ChevronRight className="h-4 w-4" />
       )}
     </button>
   );

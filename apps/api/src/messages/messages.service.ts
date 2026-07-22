@@ -193,7 +193,9 @@ export class MessagesService {
           message.receiverId === data.reporterId)
       )
     ) {
-      throw new ForbiddenException('You can only report your own conversation.');
+      throw new ForbiddenException(
+        'You can only report your own conversation.',
+      );
     }
 
     const existingConnection = await this.databaseService.connection.findFirst({
@@ -207,7 +209,9 @@ export class MessagesService {
     });
 
     if (!existingConnection && !message) {
-      throw new ForbiddenException('You can only report connected conversations.');
+      throw new ForbiddenException(
+        'You can only report connected conversations.',
+      );
     }
 
     return this.databaseService.messageReport.create({
@@ -215,7 +219,8 @@ export class MessagesService {
         reporterId: data.reporterId,
         reportedUserId: data.reportedUserId,
         messageId: data.messageId,
-        reason: sanitizePlainText(data.reason) || 'User reported this conversation.',
+        reason:
+          sanitizePlainText(data.reason) || 'User reported this conversation.',
         source: 'USER_REPORT',
       },
       include: {
@@ -228,9 +233,7 @@ export class MessagesService {
 
   async getAdminReports(status?: string) {
     const where =
-      status && status !== 'ALL'
-        ? { status: status.toUpperCase() }
-        : {};
+      status && status !== 'ALL' ? { status: status.toUpperCase() } : {};
 
     return this.databaseService.messageReport.findMany({
       where,

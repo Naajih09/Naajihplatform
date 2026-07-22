@@ -160,10 +160,7 @@ export class UsersController {
   @Roles(UserRole.ADMIN)
   @Patch('admin/team/:id/permissions')
   updateAdminPermissions(@Param('id') id: string, @Body() body: any) {
-    return this.usersService.updateAdminPermissions(
-      id,
-      body?.adminPermissions,
-    );
+    return this.usersService.updateAdminPermissions(id, body?.adminPermissions);
   }
 
   // 5b. REQUEST EMAIL VERIFICATION (Authenticated)

@@ -1,16 +1,16 @@
-'use client';
+"use client";
 import {
   createContext,
   PropsWithChildren,
   useCallback,
   useContext,
   useState,
-} from 'react';
+} from "react";
 
 type TDataExportContext = {
   data: unknown[] | null;
-  setData(data: unknown[] | null, exportType?: 'excel' | 'pdf'): void;
-  exportType?: 'excel' | 'pdf';
+  setData(data: unknown[] | null, exportType?: "excel" | "pdf"): void;
+  exportType?: "excel" | "pdf";
 };
 
 const DataExportContext = createContext<TDataExportContext>({
@@ -23,7 +23,7 @@ export const useDataExportContext = () => {
 
   if (!ctx)
     throw Error(
-      "'useDataExportContext' must be used within a DataExportContextProvider"
+      "'useDataExportContext' must be used within a DataExportContextProvider",
     );
 
   return ctx;
@@ -31,14 +31,14 @@ export const useDataExportContext = () => {
 
 export function DataExportProvider({ children }: PropsWithChildren) {
   const [internalData, setInternalData] = useState<unknown[] | null>(null);
-  const [exportType, setExportType] = useState<'excel' | 'pdf'>();
+  const [exportType, setExportType] = useState<"excel" | "pdf">();
 
   const setData = useCallback(
-    (d: unknown[] | null, _exportType?: 'excel' | 'pdf') => {
+    (d: unknown[] | null, _exportType?: "excel" | "pdf") => {
       setInternalData(d);
       setExportType(_exportType);
     },
-    []
+    [],
   );
 
   return (

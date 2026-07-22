@@ -25,7 +25,11 @@ export class ConnectionsService {
   }
 
   // 1. SEND CONNECTION REQUEST
-  async create(data: { senderId: string; receiverId: string; pitchId?: string }) {
+  async create(data: {
+    senderId: string;
+    receiverId: string;
+    pitchId?: string;
+  }) {
     const { senderId, receiverId, pitchId } = data;
 
     if (senderId === receiverId) {

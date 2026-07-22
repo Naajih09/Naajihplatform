@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from "react";
 import {
   Control,
   Controller,
@@ -7,11 +7,11 @@ import {
   FieldValues,
   Path,
   RegisterOptions,
-} from 'react-hook-form';
+} from "react-hook-form";
 
-import { cn } from '.';
+import { cn } from ".";
 
-import { Textarea } from './textarea';
+import { Textarea } from "./textarea";
 
 type InputProps = {
   name: string;
@@ -42,18 +42,18 @@ export const TextFieldArea = React.forwardRef<HTMLTextAreaElement, InputProps>(
     } = props;
 
     return (
-      <div className={cn('w-full mb-4', containerClass)}>
+      <div className={cn("w-full mb-4", containerClass)}>
         {label && (
-          <div className='flex items-center gap-1'>
+          <div className="flex items-center gap-1">
             {isRequired && (
-              <span className={cn('text-sm text-red-500 mb-2', labelClassName)}>
+              <span className={cn("text-sm text-red-500 mb-2", labelClassName)}>
                 *
               </span>
             )}
             <label
               className={cn(
-                'text-sm font-medium text-gray-700 capitalize',
-                labelClassName
+                "text-sm font-medium text-gray-700 capitalize",
+                labelClassName,
               )}
               htmlFor={inputProps.id}
             >
@@ -62,60 +62,61 @@ export const TextFieldArea = React.forwardRef<HTMLTextAreaElement, InputProps>(
           </div>
         )}
 
-        <div className='!relative'>
-          {icon && <div className='absolute left-3 top-3'>{icon}</div>}
+        <div className="!relative">
+          {icon && <div className="absolute left-3 top-3">{icon}</div>}
 
           <Textarea
             ref={ref}
             className={cn(
-              '  block w-full rounded-md border px-3 h-11 text-gray-700 shadow-sm focus:outline-none focus:ring-1',
-              icon && 'pl-10',
+              "  block w-full rounded-md border px-3 h-11 text-gray-700 shadow-sm focus:outline-none focus:ring-1",
+              icon && "pl-10",
               error
-                ? 'border-red-400 focus:ring-red-500'
-                : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500',
-              inputProps.className
+                ? "border-red-400 focus:ring-red-500"
+                : "border-gray-300 focus:border-primary-500 focus:ring-primary-500",
+              inputProps.className,
             )}
             {...inputProps}
             autoCapitalize={inputProps.autoCapitalize}
           />
         </div>
 
-        {error && <p className='mt-1 text-sm text-red-600'>{error.message}</p>}
-        {info && <p className='mt-1 text-sm text-red-600'>{infoMessage}</p>}
+        {error && <p className="mt-1 text-sm text-red-600">{error.message}</p>}
+        {info && <p className="mt-1 text-sm text-red-600">{infoMessage}</p>}
       </div>
     );
-  }
+  },
 );
 
-TextFieldArea.displayName = 'TextFieldArea';
+TextFieldArea.displayName = "TextFieldArea";
 
-type OmitTextField = Omit<InputProps, 'name' | 'error' | 'onChange'> & {
+type OmitTextField = Omit<InputProps, "name" | "error" | "onChange"> & {
   subText?: string;
   isNumber?: boolean;
   icon?: React.ReactNode;
 };
 
-interface IControllTextInput<TFieldValues extends FieldValues>
-  extends OmitTextField {
+interface IControllTextInput<
+  TFieldValues extends FieldValues,
+> extends OmitTextField {
   errors?: Partial<FieldErrorsImpl<TFieldValues>>;
   control: Control<TFieldValues>;
   name: Path<TFieldValues>;
   rules?: Omit<
     RegisterOptions<TFieldValues, Path<TFieldValues>>,
-    'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'
+    "valueAsNumber" | "valueAsDate" | "setValueAs" | "disabled"
   >;
 }
 
 export const ControllTextArea = <TFormValue extends FieldValues>(
-  props: IControllTextInput<TFormValue>
+  props: IControllTextInput<TFormValue>,
 ): React.ReactElement => {
   const { name, control, label, rules, isNumber, ...rest } = props;
 
   const onNumberValidator = (
     value: string,
-    onChange: (value: string) => void
+    onChange: (value: string) => void,
   ) => {
-    const numericValue = value.replace(/[^0-9]/g, ''); // Allow only numeric input
+    const numericValue = value.replace(/[^0-9]/g, ""); // Allow only numeric input
     onChange(numericValue);
   };
 
@@ -132,7 +133,7 @@ export const ControllTextArea = <TFormValue extends FieldValues>(
           ref={ref}
           label={label}
           error={error}
-          value={value || ''}
+          value={value || ""}
           icon={rest.icon}
           onChange={(e) =>
             isNumber

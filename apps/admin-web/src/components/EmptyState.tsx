@@ -1,5 +1,5 @@
-import { ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 type EmptyStateProps = {
   title: string;
@@ -18,8 +18,12 @@ export default function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center dark:border-white/10 dark:bg-white/[0.03]">
-      <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-gray-400">{description}</p>
+      <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+        {title}
+      </h3>
+      <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-gray-400">
+        {description}
+      </p>
       {actionLabel && (actionTo || onAction) && (
         <div className="mt-4">
           {actionTo ? (

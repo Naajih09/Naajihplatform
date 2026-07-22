@@ -1,46 +1,63 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, MapPin, Calendar, CheckCircle, UserPlus, Loader2, Edit3, Trash2, Save, X } from 'lucide-react';
-import Button from '../../components/Button';
-import { getApiBaseUrl } from '../../lib/api-base';
-import { formatNaira, formatPercent } from '../../lib/format-money';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  Download,
+  MapPin,
+  Calendar,
+  CheckCircle,
+  UserPlus,
+  Loader2,
+  Edit3,
+  Trash2,
+  Save,
+  X,
+} from "lucide-react";
+import Button from "../../components/Button";
+import { getApiBaseUrl } from "../../lib/api-base";
+import { formatNaira, formatPercent } from "../../lib/format-money";
 
 const PitchDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [pitch, setPitch] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [connectionState, setConnectionState] = useState<'PENDING' | 'ACCEPTED' | null>(null);
-  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error'}>({
+  const [connectionState, setConnectionState] = useState<
+    "PENDING" | "ACCEPTED" | null
+  >(null);
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
     show: false,
-    message: '',
-    type: 'success',
+    message: "",
+    type: "success",
   });
-  
+
   // Edit Mode State
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
 
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const API_BASE = getApiBaseUrl();
   const authToken =
-    localStorage.getItem('accessToken') ||
-    localStorage.getItem('access_token') ||
-    '';
-  const authHeaders = authToken
-    ? { Authorization: `Bearer ${authToken}` }
-    : {};
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("access_token") ||
+    "";
+  const authHeaders = authToken ? { Authorization: `Bearer ${authToken}` } : {};
   const isVerified = Boolean(user.isVerified);
-  const verificationMessage = 'Verify your account to unlock this feature';
+  const verificationMessage = "Verify your account to unlock this feature";
   const isPitchApproved = (status?: string) =>
-    ['APPROVED', 'ACTIVE'].includes((status || 'PENDING').toUpperCase());
+    ["APPROVED", "ACTIVE"].includes((status || "PENDING").toUpperCase());
 
   useEffect(() => {
     fetchPitch();
   }, [id]);
 
   useEffect(() => {
-    if (!user?.id || !authToken || !pitch?.userId || pitch.userId === user.id) return;
+    if (!user?.id || !authToken || !pitch?.userId || pitch.userId === user.id)
+      return;
 
     const fetchConnectionState = async () => {
       try {
@@ -50,7 +67,9 @@ const PitchDetails = () => {
         if (!res.ok) return;
         const data = await res.json();
         const connection = (Array.isArray(data) ? data : []).find(
-          (item: any) => item.receiverId === pitch.userId && ['PENDING', 'ACCEPTED'].includes(item.status),
+          (item: any) =>
+            item.receiverId === pitch.userId &&
+            ["PENDING", "ACCEPTED"].includes(item.status),
         );
         setConnectionState(connection?.status || null);
       } catch {
@@ -68,7 +87,7 @@ const PitchDetails = () => {
       setPitch(data);
       setEditForm(data); // Pre-fill edit form
     } catch (err) {
-      setToast({ show: true, message: 'Failed to load pitch.', type: 'error' });
+      setToast({ show: true, message: "Failed to load pitch.", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -77,31 +96,43 @@ const PitchDetails = () => {
   const handleConnect = async () => {
     if (pitch.userId === user.id) return;
     if (!isVerified) {
-      setToast({ show: true, message: verificationMessage, type: 'error' });
+      setToast({ show: true, message: verificationMessage, type: "error" });
       return;
     }
     if (!isPitchApproved(pitch.status)) {
-      setToast({ show: true, message: 'This pitch is pending review', type: 'error' });
+      setToast({
+        show: true,
+        message: "This pitch is pending review",
+        type: "error",
+      });
       return;
     }
     try {
       const res = await fetch(`${API_BASE}/connections`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
-        body: JSON.stringify({ receiverId: pitch.userId, pitchId: pitch.id })
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders },
+        body: JSON.stringify({ receiverId: pitch.userId, pitchId: pitch.id }),
       });
       const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.message || 'Failed to connect.');
-      setConnectionState('PENDING');
-      setToast({ show: true, message: 'Connection request sent!', type: 'success' });
+      if (!res.ok) throw new Error(data?.message || "Failed to connect.");
+      setConnectionState("PENDING");
+      setToast({
+        show: true,
+        message: "Connection request sent!",
+        type: "success",
+      });
     } catch (error: any) {
-      const message = String(error.message || '').toLowerCase();
-      if (message.includes('accepted')) {
-        setConnectionState('ACCEPTED');
-      } else if (message.includes('pending')) {
-        setConnectionState('PENDING');
+      const message = String(error.message || "").toLowerCase();
+      if (message.includes("accepted")) {
+        setConnectionState("ACCEPTED");
+      } else if (message.includes("pending")) {
+        setConnectionState("PENDING");
       }
-      setToast({ show: true, message: error.message || 'Failed to connect.', type: 'error' });
+      setToast({
+        show: true,
+        message: error.message || "Failed to connect.",
+        type: "error",
+      });
     }
   };
 
@@ -110,90 +141,138 @@ const PitchDetails = () => {
     if (!confirm("Are you sure? This cannot be undone.")) return;
     try {
       await fetch(`${API_BASE}/pitches/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
           ...authHeaders,
-        }
+        },
       });
-      setToast({ show: true, message: 'Pitch deleted.', type: 'success' });
-      navigate('/dashboard/opportunities');
-    } catch (err) { setToast({ show: true, message: 'Delete failed.', type: 'error' }); }
+      setToast({ show: true, message: "Pitch deleted.", type: "success" });
+      navigate("/dashboard/opportunities");
+    } catch (err) {
+      setToast({ show: true, message: "Delete failed.", type: "error" });
+    }
   };
 
   // --- UPDATE LOGIC ---
   const handleUpdate = async () => {
     try {
       await fetch(`${API_BASE}/pitches/${id}`, {
-        method: 'PATCH',
-        headers: { 
-            'Content-Type': 'application/json',
-            ...authHeaders
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
         },
-        body: JSON.stringify(editForm)
+        body: JSON.stringify(editForm),
       });
       setPitch(editForm);
       setIsEditing(false);
-      setToast({ show: true, message: 'Pitch updated.', type: 'success' });
-    } catch (err) { setToast({ show: true, message: 'Update failed.', type: 'error' }); }
+      setToast({ show: true, message: "Pitch updated.", type: "success" });
+    } catch (err) {
+      setToast({ show: true, message: "Update failed.", type: "error" });
+    }
   };
 
-  if (loading) return <div className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></div>;
-  if (!pitch) return <div className="text-center py-20 text-slate-500">Pitch not found</div>;
+  if (loading)
+    return (
+      <div className="text-center py-20">
+        <Loader2 className="animate-spin mx-auto text-primary" />
+      </div>
+    );
+  if (!pitch)
+    return (
+      <div className="text-center py-20 text-slate-500">Pitch not found</div>
+    );
 
   const isOwner = user.id === pitch.userId;
   const pitchApproved = isPitchApproved(pitch.status);
-  const isPending = connectionState === 'PENDING';
-  const isConnected = connectionState === 'ACCEPTED';
+  const isPending = connectionState === "PENDING";
+  const isConnected = connectionState === "ACCEPTED";
   const connectLocked = !isVerified || !pitchApproved || isPending;
   const connectTitle = !isVerified
     ? verificationMessage
     : !pitchApproved
-      ? 'This pitch is pending review'
+      ? "This pitch is pending review"
       : isPending
-        ? 'Connection request pending'
+        ? "Connection request pending"
         : isConnected
-          ? 'Message founder'
-        : 'Connect with founder';
-  const founderProfile = pitch.user?.entrepreneurProfile || pitch.user?.investorProfile || {};
-  const founderAvatar = founderProfile.avatarUrl || pitch.user?.avatarUrl || '';
-  const inputStyle = "w-full p-2 bg-slate-100 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded text-slate-900 dark:text-white mb-2 focus:outline-none focus:border-primary";
-  const fundingAskValue = Number(String(pitch.fundingAsk || '').replace(/,/g, ''));
-  const equityOfferValue = Number(String(pitch.equityOffer || '').replace(/,/g, ''));
+          ? "Message founder"
+          : "Connect with founder";
+  const founderProfile =
+    pitch.user?.entrepreneurProfile || pitch.user?.investorProfile || {};
+  const founderAvatar = founderProfile.avatarUrl || pitch.user?.avatarUrl || "";
+  const inputStyle =
+    "w-full p-2 bg-slate-100 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded text-slate-900 dark:text-white mb-2 focus:outline-none focus:border-primary";
+  const fundingAskValue = Number(
+    String(pitch.fundingAsk || "").replace(/,/g, ""),
+  );
+  const equityOfferValue = Number(
+    String(pitch.equityOffer || "").replace(/,/g, ""),
+  );
   const impliedValuation =
-    Number.isFinite(fundingAskValue) && fundingAskValue > 0 &&
-    Number.isFinite(equityOfferValue) && equityOfferValue > 0
+    Number.isFinite(fundingAskValue) &&
+    fundingAskValue > 0 &&
+    Number.isFinite(equityOfferValue) &&
+    equityOfferValue > 0
       ? (fundingAskValue / equityOfferValue) * 100
       : null;
 
   return (
     <div className="max-w-4xl mx-auto pb-20 font-sans text-slate-900 dark:text-white">
       {toast.show && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+        <div
+          className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}
+        >
           {toast.message}
         </div>
       )}
-      
+
       {/* Top Bar */}
       <div className="flex justify-between items-center mb-6">
-        <button onClick={() => navigate('/dashboard/opportunities')} className="flex items-center gap-2 text-slate-500 hover:text-primary transition-colors font-bold">
-            <ArrowLeft size={18} /> Back to Feed
+        <button
+          onClick={() => navigate("/dashboard/opportunities")}
+          className="flex items-center gap-2 text-slate-500 hover:text-primary transition-colors font-bold"
+        >
+          <ArrowLeft size={18} /> Back to Feed
         </button>
-        
+
         {/* OWNER ACTIONS */}
         {isOwner && (
-            <div className="flex gap-2">
-                {isEditing ? (
-                    <>
-                        <Button onClick={() => setIsEditing(false)} variant="ghost" className="text-slate-500 dark:text-gray-400"><X size={18}/> Cancel</Button>
-                        <Button onClick={handleUpdate} className="bg-green-600 text-white"><Save size={18}/> Save</Button>
-                    </>
-                ) : (
-                    <>
-                        <Button onClick={() => setIsEditing(true)} variant="outline" className="border-slate-300 dark:border-gray-600"><Edit3 size={18}/> Edit</Button>
-                        <Button onClick={handleDelete} variant="outline" className="border-red-900 text-red-500 hover:bg-red-900/20"><Trash2 size={18}/></Button>
-                    </>
-                )}
-            </div>
+          <div className="flex gap-2">
+            {isEditing ? (
+              <>
+                <Button
+                  onClick={() => setIsEditing(false)}
+                  variant="ghost"
+                  className="text-slate-500 dark:text-gray-400"
+                >
+                  <X size={18} /> Cancel
+                </Button>
+                <Button
+                  onClick={handleUpdate}
+                  className="bg-green-600 text-white"
+                >
+                  <Save size={18} /> Save
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  variant="outline"
+                  className="border-slate-300 dark:border-gray-600"
+                >
+                  <Edit3 size={18} /> Edit
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  variant="outline"
+                  className="border-red-900 text-red-500 hover:bg-red-900/20"
+                >
+                  <Trash2 size={18} />
+                </Button>
+              </>
+            )}
+          </div>
         )}
       </div>
 
@@ -202,31 +281,64 @@ const PitchDetails = () => {
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
           <div className="w-full">
             <div className="flex items-center gap-3 mb-2">
-              <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded font-bold uppercase tracking-wider">{pitch.category}</span>
-              <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded font-bold uppercase tracking-wider dark:bg-white/10 dark:text-white/70">
-                {pitch.investmentType === 'CONVENTIONAL' ? 'Conventional' : 'Sharia Compliant'}
+              <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded font-bold uppercase tracking-wider">
+                {pitch.category}
               </span>
-              <span className="text-slate-500 dark:text-gray-400 text-xs flex items-center gap-1"><Calendar size={12}/> {new Date(pitch.createdAt).toLocaleDateString()}</span>
+              <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded font-bold uppercase tracking-wider dark:bg-white/10 dark:text-white/70">
+                {pitch.investmentType === "CONVENTIONAL"
+                  ? "Conventional"
+                  : "Sharia Compliant"}
+              </span>
+              <span className="text-slate-500 dark:text-gray-400 text-xs flex items-center gap-1">
+                <Calendar size={12} />{" "}
+                {new Date(pitch.createdAt).toLocaleDateString()}
+              </span>
             </div>
-            
+
             {isEditing ? (
-                // FIX 1: Added aria-label
-                <input aria-label="Edit Title" className={`text-3xl font-black ${inputStyle}`} value={editForm.title} onChange={e => setEditForm({...editForm, title: e.target.value})} />
+              // FIX 1: Added aria-label
+              <input
+                aria-label="Edit Title"
+                className={`text-3xl font-black ${inputStyle}`}
+                value={editForm.title}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, title: e.target.value })
+                }
+              />
             ) : (
-                <h1 className="text-3xl md:text-4xl font-black mb-2 tracking-tight">{pitch.title}</h1>
+              <h1 className="text-3xl md:text-4xl font-black mb-2 tracking-tight">
+                {pitch.title}
+              </h1>
             )}
 
             {isEditing ? (
-                // FIX 2: Added aria-label
-                <input aria-label="Edit Tagline" className={inputStyle} value={editForm.tagline} onChange={e => setEditForm({...editForm, tagline: e.target.value})} />
+              // FIX 2: Added aria-label
+              <input
+                aria-label="Edit Tagline"
+                className={inputStyle}
+                value={editForm.tagline}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, tagline: e.target.value })
+                }
+              />
             ) : (
-                <p className="text-lg text-slate-600 dark:text-gray-400">{pitch.tagline}</p>
+              <p className="text-lg text-slate-600 dark:text-gray-400">
+                {pitch.tagline}
+              </p>
             )}
           </div>
-          
+
           {pitch.pitchDeckUrl && (
-            <a href={pitch.pitchDeckUrl} target="_blank" rel="noreferrer" className="w-full md:w-auto">
-              <Button variant="outline" className="border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-300 hover:border-primary hover:text-primary w-full md:w-auto">
+            <a
+              href={pitch.pitchDeckUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full md:w-auto"
+            >
+              <Button
+                variant="outline"
+                className="border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-300 hover:border-primary hover:text-primary w-full md:w-auto"
+              >
                 <Download size={18} className="mr-2" /> View Pitch Deck
               </Button>
             </a>
@@ -235,32 +347,38 @@ const PitchDetails = () => {
 
         {/* Founder Info */}
         <div className="flex items-center gap-3 mt-6 pt-6 border-t border-slate-100 dark:border-gray-800">
-           <div className="size-10 bg-slate-100 dark:bg-gray-700 rounded-full flex items-center justify-center font-bold text-slate-700 dark:text-white border border-slate-200 dark:border-gray-600 overflow-hidden">
-             {founderAvatar ? (
-               <img
-                 src={founderAvatar}
-                 alt={`${pitch.user?.entrepreneurProfile?.firstName || 'Founder'} profile`}
-                 className="h-full w-full object-cover"
-               />
-             ) : (
-               pitch.user?.entrepreneurProfile?.firstName?.[0] || 'U'
-             )}
-           </div>
-           <div>
-             <p className="text-sm font-bold">{pitch.user?.entrepreneurProfile?.firstName} {pitch.user?.entrepreneurProfile?.lastName}</p>
-             <p className="text-xs text-slate-500 dark:text-gray-500 flex items-center gap-1"><MapPin size={10}/> Nigeria</p>
-           </div>
+          <div className="size-10 bg-slate-100 dark:bg-gray-700 rounded-full flex items-center justify-center font-bold text-slate-700 dark:text-white border border-slate-200 dark:border-gray-600 overflow-hidden">
+            {founderAvatar ? (
+              <img
+                src={founderAvatar}
+                alt={`${pitch.user?.entrepreneurProfile?.firstName || "Founder"} profile`}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              pitch.user?.entrepreneurProfile?.firstName?.[0] || "U"
+            )}
+          </div>
+          <div>
+            <p className="text-sm font-bold">
+              {pitch.user?.entrepreneurProfile?.firstName}{" "}
+              {pitch.user?.entrepreneurProfile?.lastName}
+            </p>
+            <p className="text-xs text-slate-500 dark:text-gray-500 flex items-center gap-1">
+              <MapPin size={10} /> Nigeria
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Details Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        
         {/* Main Content */}
         <div className="md:col-span-2 space-y-8">
-          {pitch.status === 'REJECTED' && pitch.rejectionReason && (
+          {pitch.status === "REJECTED" && pitch.rejectionReason && (
             <section className="rounded-xl border border-red-200 bg-red-50 p-6 shadow-sm dark:border-red-500/20 dark:bg-red-500/10">
-              <h3 className="text-xl font-bold mb-2 text-red-600 dark:text-red-400">Admin Rejection Reason</h3>
+              <h3 className="text-xl font-bold mb-2 text-red-600 dark:text-red-400">
+                Admin Rejection Reason
+              </h3>
               <p className="text-sm leading-relaxed text-red-700 dark:text-red-200">
                 {pitch.rejectionReason}
               </p>
@@ -270,104 +388,167 @@ const PitchDetails = () => {
           <section>
             <h3 className="text-xl font-bold mb-3 text-primary">The Problem</h3>
             {isEditing ? (
-                // FIX 3: Added aria-label
-                <textarea aria-label="Edit Problem" rows={5} className={inputStyle} value={editForm.problemStatement} onChange={e => setEditForm({...editForm, problemStatement: e.target.value})} />
+              // FIX 3: Added aria-label
+              <textarea
+                aria-label="Edit Problem"
+                rows={5}
+                className={inputStyle}
+                value={editForm.problemStatement}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, problemStatement: e.target.value })
+                }
+              />
             ) : (
-                <p className="text-slate-600 dark:text-gray-300 leading-relaxed bg-white dark:bg-[#151518] p-6 rounded-xl border border-slate-200 dark:border-gray-800 shadow-sm">
+              <p className="text-slate-600 dark:text-gray-300 leading-relaxed bg-white dark:bg-[#151518] p-6 rounded-xl border border-slate-200 dark:border-gray-800 shadow-sm">
                 {pitch.problemStatement}
-                </p>
+              </p>
             )}
           </section>
-          
+
           <section>
-            <h3 className="text-xl font-bold mb-3 text-primary">The Solution</h3>
+            <h3 className="text-xl font-bold mb-3 text-primary">
+              The Solution
+            </h3>
             {isEditing ? (
-                // FIX 4: Added aria-label
-                <textarea aria-label="Edit Solution" rows={5} className={inputStyle} value={editForm.solution} onChange={e => setEditForm({...editForm, solution: e.target.value})} />
+              // FIX 4: Added aria-label
+              <textarea
+                aria-label="Edit Solution"
+                rows={5}
+                className={inputStyle}
+                value={editForm.solution}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, solution: e.target.value })
+                }
+              />
             ) : (
-                <p className="text-slate-600 dark:text-gray-300 leading-relaxed bg-white dark:bg-[#151518] p-6 rounded-xl border border-slate-200 dark:border-gray-800 shadow-sm">
+              <p className="text-slate-600 dark:text-gray-300 leading-relaxed bg-white dark:bg-[#151518] p-6 rounded-xl border border-slate-200 dark:border-gray-800 shadow-sm">
                 {pitch.solution}
-                </p>
+              </p>
             )}
           </section>
         </div>
 
         {/* Sidebar Stats */}
         <div className="space-y-6">
-           <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-              <p className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold mb-1">Funding Ask</p>
-              {isEditing ? (
-                  // FIX 5: Added aria-label
-                  <input aria-label="Edit Funding Ask" type="number" className={inputStyle} value={editForm.fundingAsk} onChange={e => setEditForm({...editForm, fundingAsk: e.target.value})} />
-              ) : (
-                  <p className="text-3xl font-black text-slate-900 dark:text-white">{formatNaira(pitch.fundingAsk)}</p>
-              )}
-           </div>
-
-           <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-              <p className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold mb-1">Equity Offered (%)</p>
-              {isEditing ? (
-                  // FIX 6: Added aria-label
-                  <input aria-label="Edit Equity" className={inputStyle} value={editForm.equityOffer} onChange={e => setEditForm({...editForm, equityOffer: e.target.value})} />
-              ) : (
-                  <p className="text-3xl font-black text-primary">{formatPercent(pitch.equityOffer)}</p>
-              )}
-           </div>
-
-           <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-              <p className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold mb-1">Implied Valuation</p>
+          <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+            <p className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold mb-1">
+              Funding Ask
+            </p>
+            {isEditing ? (
+              // FIX 5: Added aria-label
+              <input
+                aria-label="Edit Funding Ask"
+                type="number"
+                className={inputStyle}
+                value={editForm.fundingAsk}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, fundingAsk: e.target.value })
+                }
+              />
+            ) : (
               <p className="text-3xl font-black text-slate-900 dark:text-white">
-                {impliedValuation ? formatNaira(impliedValuation) : '--'}
+                {formatNaira(pitch.fundingAsk)}
               </p>
-              <p className="text-xs text-slate-500 dark:text-gray-500 mt-2">
-                Based on this pitch's funding ask and equity offer.
+            )}
+          </div>
+
+          <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+            <p className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold mb-1">
+              Equity Offered (%)
+            </p>
+            {isEditing ? (
+              // FIX 6: Added aria-label
+              <input
+                aria-label="Edit Equity"
+                className={inputStyle}
+                value={editForm.equityOffer}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, equityOffer: e.target.value })
+                }
+              />
+            ) : (
+              <p className="text-3xl font-black text-primary">
+                {formatPercent(pitch.equityOffer)}
               </p>
-           </div>
+            )}
+          </div>
 
-           <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6 space-y-4 shadow-sm">
-              <div>
-                <p className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold mb-1">Traction</p>
-                <p className="font-medium text-slate-900 dark:text-white">{pitch.traction}</p>
-              </div>
-              <div className="pt-4 border-t border-slate-100 dark:border-gray-800">
-                <p className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold mb-1">Market Size</p>
-                <p className="font-medium text-slate-900 dark:text-white">{pitch.marketSize}</p>
-              </div>
-           </div>
+          <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+            <p className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold mb-1">
+              Implied Valuation
+            </p>
+            <p className="text-3xl font-black text-slate-900 dark:text-white">
+              {impliedValuation ? formatNaira(impliedValuation) : "--"}
+            </p>
+            <p className="text-xs text-slate-500 dark:text-gray-500 mt-2">
+              Based on this pitch's funding ask and equity offer.
+            </p>
+          </div>
 
-           {/* CONNECT BUTTON (Only for Investors) */}
-           {!isOwner && user.role === 'INVESTOR' && (
-             <Button 
-               className={`w-full font-bold shadow-lg ${
-                 isConnected
-                   ? 'bg-green-600 hover:bg-green-700 text-white'
-                   : isPending
-                     ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
-                   : connectLocked
-                     ? 'bg-slate-200 text-slate-500 dark:bg-white/10 dark:text-slate-400'
-                     : 'bg-primary text-black hover:brightness-110'
-               }`}
-               onClick={() => {
-                 if (isConnected) {
-                   navigate('/dashboard/messages');
-                   return;
-                 }
-                 handleConnect();
-               }}
-               disabled={!pitchApproved || isPending}
-               title={connectTitle}
-             >
-               {isConnected
-                 ? <><CheckCircle size={18} className="mr-2" /> Message</>
-                 : isPending
-                   ? <><CheckCircle size={18} className="mr-2" /> Pending</>
-                 : !isVerified
-                   ? <><UserPlus size={18} className="mr-2" /> Verify First</>
-                   : !pitchApproved
-                     ? <><UserPlus size={18} className="mr-2" /> Connect</>
-                     : <><UserPlus size={18} className="mr-2" /> Connect with Founder</>}
-             </Button>
-           )}
+          <div className="bg-white dark:bg-[#1d1d20] border border-slate-200 dark:border-gray-800 rounded-xl p-6 space-y-4 shadow-sm">
+            <div>
+              <p className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold mb-1">
+                Traction
+              </p>
+              <p className="font-medium text-slate-900 dark:text-white">
+                {pitch.traction}
+              </p>
+            </div>
+            <div className="pt-4 border-t border-slate-100 dark:border-gray-800">
+              <p className="text-xs text-slate-500 dark:text-gray-500 uppercase font-bold mb-1">
+                Market Size
+              </p>
+              <p className="font-medium text-slate-900 dark:text-white">
+                {pitch.marketSize}
+              </p>
+            </div>
+          </div>
+
+          {/* CONNECT BUTTON (Only for Investors) */}
+          {!isOwner && user.role === "INVESTOR" && (
+            <Button
+              className={`w-full font-bold shadow-lg ${
+                isConnected
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : isPending
+                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-400"
+                    : connectLocked
+                      ? "bg-slate-200 text-slate-500 dark:bg-white/10 dark:text-slate-400"
+                      : "bg-primary text-black hover:brightness-110"
+              }`}
+              onClick={() => {
+                if (isConnected) {
+                  navigate("/dashboard/messages");
+                  return;
+                }
+                handleConnect();
+              }}
+              disabled={!pitchApproved || isPending}
+              title={connectTitle}
+            >
+              {isConnected ? (
+                <>
+                  <CheckCircle size={18} className="mr-2" /> Message
+                </>
+              ) : isPending ? (
+                <>
+                  <CheckCircle size={18} className="mr-2" /> Pending
+                </>
+              ) : !isVerified ? (
+                <>
+                  <UserPlus size={18} className="mr-2" /> Verify First
+                </>
+              ) : !pitchApproved ? (
+                <>
+                  <UserPlus size={18} className="mr-2" /> Connect
+                </>
+              ) : (
+                <>
+                  <UserPlus size={18} className="mr-2" /> Connect with Founder
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
     </div>

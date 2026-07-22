@@ -1,4 +1,4 @@
-import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 const initialState: AuthState = {
   user: null,
@@ -11,7 +11,7 @@ const initialState: AuthState = {
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     setAuth: (state, { payload }: PayloadAction<boolean>) => {
@@ -27,7 +27,7 @@ const authSlice = createSlice({
 
     setPermissions: (
       state,
-      { payload }: PayloadAction<Record<string, string>>
+      { payload }: PayloadAction<Record<string, string>>,
     ) => {
       state.permissions = payload;
     },

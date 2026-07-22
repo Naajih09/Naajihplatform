@@ -4,10 +4,6 @@ type AuthState = {
   isAuth: boolean;
 
   permissions: Record<string, string>;
-
-
-
 };
 
-
-type IUser = object
+type IUser = object;

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { getApiBaseUrl } from '@/lib/api-base';
+import { useEffect, useState } from "react";
+import { getApiBaseUrl } from "@/lib/api-base";
 
 type PitchAccessState = {
   loading: boolean;
@@ -23,11 +23,11 @@ export const usePitchAccess = () => {
   const [state, setState] = useState<PitchAccessState>(initialState);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
     const authToken =
-      localStorage.getItem('accessToken') ||
-      localStorage.getItem('access_token') ||
-      '';
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("access_token") ||
+      "";
     const apiBase = getApiBaseUrl();
 
     if (!user?.id || !authToken) {
@@ -39,15 +39,18 @@ export const usePitchAccess = () => {
 
     const load = async () => {
       try {
-        const res = await fetch(`${apiBase}/users/stats/${user.id}?_=${Date.now()}`, {
-          cache: 'no-store',
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            'Cache-Control': 'no-store',
+        const res = await fetch(
+          `${apiBase}/users/stats/${user.id}?_=${Date.now()}`,
+          {
+            cache: "no-store",
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "Cache-Control": "no-store",
+            },
           },
-        });
+        );
         if (!res.ok) {
-          throw new Error('Failed to load pitch access.');
+          throw new Error("Failed to load pitch access.");
         }
         const data = await res.json();
         if (cancelled) return;
@@ -60,7 +63,8 @@ export const usePitchAccess = () => {
               ? null
               : Number(data.pitchLimit),
           remainingPitchSlots:
-            data?.remainingPitchSlots === null || data?.remainingPitchSlots === undefined
+            data?.remainingPitchSlots === null ||
+            data?.remainingPitchSlots === undefined
               ? null
               : Number(data.remainingPitchSlots),
           hasPremium: Boolean(data?.hasPremium),

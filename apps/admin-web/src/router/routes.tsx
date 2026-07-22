@@ -1,24 +1,26 @@
 // apps/admin-web/src/router/index.tsx
-import { lazy, Suspense } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import AdminLayout from '../layouts/AdminLayout';
-import { ErrorBoundaryFallback } from '../../../../packages/ui/src';
-import ProtectedRoute from '../components/ProtectedRoute';
-import { UserRole } from '../types/enums';
-import RouteFallback from './RouteFallback';
-const Dashboard = lazy(() => import('../pages/Dashboard'));
-const Verification = lazy(() => import('../pages/Verification'));
-const PitchesList = lazy(() => import('../pages/PitchesLists'));
-const UsersList = lazy(() => import('../pages/UsersLists'));
-const AuditLogs = lazy(() => import('../pages/AuditLogs'));
-const Settings = lazy(() => import('../pages/Settings'));
-const AcademyPrograms = lazy(() => import('../pages/AcademyPrograms'));
-const AcademyProgramDetail = lazy(() => import('../pages/AcademyProgramDetail'));
-const AcademySubmissions = lazy(() => import('../pages/AcademySubmissions'));
-const AcademyEnrollments = lazy(() => import('../pages/AcademyEnrollments'));
-const MessageReports = lazy(() => import('../pages/MessageReports'));
-const Login = lazy(() => import('../pages/Login'));
-const Unauthorized = lazy(() => import('../pages/Unauthorized'));
+import { lazy, Suspense } from "react";
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import AdminLayout from "../layouts/AdminLayout";
+import { ErrorBoundaryFallback } from "../../../../packages/ui/src";
+import ProtectedRoute from "../components/ProtectedRoute";
+import { UserRole } from "../types/enums";
+import RouteFallback from "./RouteFallback";
+const Dashboard = lazy(() => import("../pages/Dashboard"));
+const Verification = lazy(() => import("../pages/Verification"));
+const PitchesList = lazy(() => import("../pages/PitchesLists"));
+const UsersList = lazy(() => import("../pages/UsersLists"));
+const AuditLogs = lazy(() => import("../pages/AuditLogs"));
+const Settings = lazy(() => import("../pages/Settings"));
+const AcademyPrograms = lazy(() => import("../pages/AcademyPrograms"));
+const AcademyProgramDetail = lazy(
+  () => import("../pages/AcademyProgramDetail"),
+);
+const AcademySubmissions = lazy(() => import("../pages/AcademySubmissions"));
+const AcademyEnrollments = lazy(() => import("../pages/AcademyEnrollments"));
+const MessageReports = lazy(() => import("../pages/MessageReports"));
+const Login = lazy(() => import("../pages/Login"));
+const Unauthorized = lazy(() => import("../pages/Unauthorized"));
 
 const withSuspense = (element: React.ReactNode) => (
   <Suspense fallback={<RouteFallback />}>{element}</Suspense>
@@ -26,7 +28,7 @@ const withSuspense = (element: React.ReactNode) => (
 
 export const routes = [
   {
-    path: '/',
+    path: "/",
     element: <AdminLayout />,
     errorElement: <ErrorBoundaryFallback />,
     children: [
@@ -41,7 +43,7 @@ export const routes = [
             element: <ProtectedRoute permission="dashboard" />,
             children: [
               {
-                path: 'admin/dashboard',
+                path: "admin/dashboard",
                 element: withSuspense(<Dashboard />),
               },
             ],
@@ -50,7 +52,7 @@ export const routes = [
             element: <ProtectedRoute permission="users" />,
             children: [
               {
-                path: 'admin/users',
+                path: "admin/users",
                 element: withSuspense(<UsersList />),
               },
             ],
@@ -59,7 +61,7 @@ export const routes = [
             element: <ProtectedRoute permission="pitches" />,
             children: [
               {
-                path: 'admin/pitches',
+                path: "admin/pitches",
                 element: withSuspense(<PitchesList />),
               },
             ],
@@ -68,7 +70,7 @@ export const routes = [
             element: <ProtectedRoute permission="audit" />,
             children: [
               {
-                path: 'admin/audit',
+                path: "admin/audit",
                 element: withSuspense(<AuditLogs />),
               },
             ],
@@ -77,7 +79,7 @@ export const routes = [
             element: <ProtectedRoute permission="messages" />,
             children: [
               {
-                path: 'admin/messages/reports',
+                path: "admin/messages/reports",
                 element: withSuspense(<MessageReports />),
               },
             ],
@@ -86,7 +88,7 @@ export const routes = [
             element: <ProtectedRoute permission="settings" />,
             children: [
               {
-                path: 'admin/settings',
+                path: "admin/settings",
                 element: withSuspense(<Settings />),
               },
             ],
@@ -95,19 +97,19 @@ export const routes = [
             element: <ProtectedRoute permission="academy" />,
             children: [
               {
-                path: 'admin/academy',
+                path: "admin/academy",
                 element: withSuspense(<AcademyPrograms />),
               },
               {
-                path: 'admin/academy/submissions',
+                path: "admin/academy/submissions",
                 element: withSuspense(<AcademySubmissions />),
               },
               {
-                path: 'admin/academy/enrollments',
+                path: "admin/academy/enrollments",
                 element: withSuspense(<AcademyEnrollments />),
               },
               {
-                path: 'admin/academy/:id',
+                path: "admin/academy/:id",
                 element: withSuspense(<AcademyProgramDetail />),
               },
             ],
@@ -116,11 +118,11 @@ export const routes = [
             element: <ProtectedRoute permission="verification" />,
             children: [
               {
-                path: 'admin/verification',
+                path: "admin/verification",
                 element: withSuspense(
                   <div className="p-10">
                     <Verification />
-                  </div>
+                  </div>,
                 ),
               },
             ],
@@ -130,11 +132,11 @@ export const routes = [
     ],
   },
   {
-    path: '/login',
+    path: "/login",
     element: withSuspense(<Login />),
   },
   {
-    path: '/unauthorized',
+    path: "/unauthorized",
     element: withSuspense(<Unauthorized />),
   },
 ];

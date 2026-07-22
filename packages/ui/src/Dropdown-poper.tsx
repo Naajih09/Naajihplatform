@@ -4,8 +4,8 @@ import {
   useImperativeHandle,
   useRef,
   useState,
-} from 'react';
-import { usePopper } from 'react-popper';
+} from "react";
+import { usePopper } from "react-popper";
 
 const Dropdown = (props: any, forwardedRef: any) => {
   const [visibility, setVisibility] = useState<any>(false);
@@ -17,16 +17,16 @@ const Dropdown = (props: any, forwardedRef: any) => {
     referenceRef.current,
     popperRef.current,
     {
-      placement: props.placement || 'bottom-end',
+      placement: props.placement || "bottom-end",
       modifiers: [
         {
-          name: 'offset',
+          name: "offset",
           options: {
             offset: props.offset || [0],
           },
         },
       ],
-    }
+    },
   );
 
   const handleDocumentClick = (event: any) => {
@@ -41,9 +41,9 @@ const Dropdown = (props: any, forwardedRef: any) => {
   };
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleDocumentClick);
+    document.addEventListener("mousedown", handleDocumentClick);
     return () => {
-      document.removeEventListener('mousedown', handleDocumentClick);
+      document.removeEventListener("mousedown", handleDocumentClick);
     };
   }, []);
 
@@ -57,7 +57,7 @@ const Dropdown = (props: any, forwardedRef: any) => {
     <>
       <button
         ref={referenceRef}
-        type='button'
+        type="button"
         className={props.btnClassName}
         onClick={() => setVisibility(!visibility)}
       >
@@ -68,7 +68,7 @@ const Dropdown = (props: any, forwardedRef: any) => {
         ref={popperRef}
         style={styles.popper}
         {...attributes.popper}
-        className='z-50'
+        className="z-50"
         onClick={() => setVisibility(!visibility)}
       >
         {visibility && props.children}

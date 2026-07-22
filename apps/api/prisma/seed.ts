@@ -1,4 +1,3 @@
-
 import 'dotenv/config';
 import { ConnectionStatus, PrismaClient, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
@@ -108,7 +107,8 @@ async function main() {
       userId: entrepreneur.id,
       title: 'Solar for All',
       tagline: 'Affordable clean energy for rural communities',
-      problemStatement: 'Lack of reliable power in rural areas hindering economic growth.',
+      problemStatement:
+        'Lack of reliable power in rural areas hindering economic growth.',
       solution: 'Portable solar kits with pay-as-you-go financing.',
       traction: '100 pilot households onboarded.',
       marketSize: '$10B TAM',

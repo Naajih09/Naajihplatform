@@ -1,6 +1,6 @@
-import { forwardRef, type ChangeEvent, useState } from 'react';
-import { Input, Label } from '.';
-import { UploadCloud } from 'lucide-react';
+import { forwardRef, type ChangeEvent, useState } from "react";
+import { Input, Label } from ".";
+import { UploadCloud } from "lucide-react";
 
 interface FileUploaderProps {
   id: string;
@@ -12,7 +12,7 @@ interface FileUploaderProps {
 
 const FileUploader = forwardRef<HTMLInputElement, FileUploaderProps>(
   ({ id, onChange, className, accept, helperText }, ref) => {
-    const [fileName, setFileName] = useState('No file chosen');
+    const [fileName, setFileName] = useState("No file chosen");
 
     // const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     //   const files = e.target.files;
@@ -29,10 +29,10 @@ const FileUploader = forwardRef<HTMLInputElement, FileUploaderProps>(
       if (files && files.length > 0) {
         const name = Array.from(files)
           .map((file) => file.name)
-          .join(', ');
+          .join(", ");
         setFileName(name);
       } else {
-        setFileName('No file chosen');
+        setFileName("No file chosen");
       }
 
       onChange?.(files);
@@ -41,43 +41,43 @@ const FileUploader = forwardRef<HTMLInputElement, FileUploaderProps>(
     return (
       <div className={className}>
         <Input
-          type='file'
+          type="file"
           id={id}
           ref={(node) => {
-            if (typeof ref === 'function') {
+            if (typeof ref === "function") {
               ref(node);
-            } else if (ref && 'current' in ref) {
+            } else if (ref && "current" in ref) {
               ref.current = node;
             }
           }}
           onChange={handleChange}
-          className='hidden'
+          className="hidden"
           accept={accept}
         />
         <Label
           htmlFor={id}
-          className='
+          className="
             flex items-center h-11 w-full border border-gray-300 rounded-md 
             bg-white text-sm text-gray-700 cursor-pointer 
             hover:border-gray-400 transition gap-2
-          '
+          "
         >
-          <div className='flex items-center px-3 gap-2 bg-gray-100 h-full border border-gray-200'>
-            <UploadCloud className='w-4 h-4 text-gray-500 shrink-0' />
-            <span className='text-[#4500FF] text-[14px] font-medium'>
+          <div className="flex items-center px-3 gap-2 bg-gray-100 h-full border border-gray-200">
+            <UploadCloud className="w-4 h-4 text-gray-500 shrink-0" />
+            <span className="text-[#4500FF] text-[14px] font-medium">
               Choose file
             </span>
           </div>
-          <span className='ml-1 text-gray-600 truncate'>{fileName}</span>
+          <span className="ml-1 text-gray-600 truncate">{fileName}</span>
         </Label>
-        {helperText && fileName === 'No file chosen' && (
-          <p className='mt-1 text-xs text-gray-500'>{helperText}</p>
+        {helperText && fileName === "No file chosen" && (
+          <p className="mt-1 text-xs text-gray-500">{helperText}</p>
         )}
       </div>
     );
-  }
+  },
 );
 
-FileUploader.displayName = 'FileUploader';
+FileUploader.displayName = "FileUploader";
 
 export default FileUploader;

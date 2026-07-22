@@ -1,5 +1,5 @@
-import { DataTable, DataTableSortStatus } from 'mantine-datatable';
-import { useEffect, useState } from 'react';
+import { DataTable, DataTableSortStatus } from "mantine-datatable";
+import { useEffect, useState } from "react";
 
 interface CustomTableProps<T> {
   data: T[];
@@ -12,7 +12,7 @@ interface CustomTableProps<T> {
   }[];
   pageSizeOptions?: number[];
   defaultPageSize?: number;
-  defaultSort?: { columnAccessor: string; direction: 'asc' | 'desc' };
+  defaultSort?: { columnAccessor: string; direction: "asc" | "desc" };
   loading?: boolean;
   noRecordsText?: string;
   className?: string;
@@ -30,10 +30,10 @@ const CustomTable = <T extends Record<string, unknown>>({
   columns,
   pageSizeOptions = [10, 20, 30, 50, 100],
   defaultPageSize = 10,
-  defaultSort = { columnAccessor: 'id', direction: 'asc' },
+  defaultSort = { columnAccessor: "id", direction: "asc" },
   loading = false,
-  noRecordsText = 'No records found',
-  className = '',
+  noRecordsText = "No records found",
+  className = "",
   totalRecords = 0,
   onPageChange,
   onPageSizeChange,
@@ -44,7 +44,7 @@ const CustomTable = <T extends Record<string, unknown>>({
 }: CustomTableProps<T>) => {
   const [internalPage, setInternalPage] = useState(currentPage || 1);
   const [internalPageSize, setInternalPageSize] = useState(
-    currentPageSize || defaultPageSize
+    currentPageSize || defaultPageSize,
   );
   const [internalSortStatus, setInternalSortStatus] =
     useState<DataTableSortStatus>(currentSort || defaultSort);
@@ -99,7 +99,7 @@ const CustomTable = <T extends Record<string, unknown>>({
       <DataTable
         noRecordsText={noRecordsText}
         highlightOnHover
-        className='table-hover whitespace-nowrap'
+        className="table-hover whitespace-nowrap"
         records={data}
         columns={columns.map((col) => ({
           accessor: col.accessor,

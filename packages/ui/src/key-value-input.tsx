@@ -1,4 +1,4 @@
-import { Input } from '.';
+import { Input } from ".";
 
 interface KeyValueInputProps {
   keyValue: string;
@@ -14,22 +14,22 @@ export const KeyValueInput = ({
   onKeyChange,
   value,
   onValueChange,
-  keyPlaceholder = 'Key',
-  valuePlaceholder = 'Value',
+  keyPlaceholder = "Key",
+  valuePlaceholder = "Value",
 }: KeyValueInputProps) => {
   return (
-    <div className='flex gap-2 w-full'>
+    <div className="flex gap-2 w-full">
       <Input
         value={keyValue}
         onChange={(e) => onKeyChange(e.target.value)}
         placeholder={keyPlaceholder}
-        className='flex-1'
+        className="flex-1"
       />
       <Input
         value={value}
         onChange={(e) => onValueChange(e.target.value)}
         placeholder={valuePlaceholder}
-        className='flex-1'
+        className="flex-1"
       />
     </div>
   );

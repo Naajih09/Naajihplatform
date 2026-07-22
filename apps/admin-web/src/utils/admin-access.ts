@@ -1,12 +1,12 @@
 export type AdminPermission =
-  | 'dashboard'
-  | 'users'
-  | 'pitches'
-  | 'verification'
-  | 'academy'
-  | 'messages'
-  | 'audit'
-  | 'settings';
+  | "dashboard"
+  | "users"
+  | "pitches"
+  | "verification"
+  | "academy"
+  | "messages"
+  | "audit"
+  | "settings";
 
 export const ADMIN_PERMISSIONS: Array<{
   id: AdminPermission;
@@ -14,50 +14,50 @@ export const ADMIN_PERMISSIONS: Array<{
   description: string;
 }> = [
   {
-    id: 'dashboard',
-    label: 'Overview',
-    description: 'View platform metrics and recent activity.',
+    id: "dashboard",
+    label: "Overview",
+    description: "View platform metrics and recent activity.",
   },
   {
-    id: 'users',
-    label: 'Users',
-    description: 'Manage user accounts, roles, and status.',
+    id: "users",
+    label: "Users",
+    description: "Manage user accounts, roles, and status.",
   },
   {
-    id: 'pitches',
-    label: 'Pitches',
-    description: 'Review, approve, and reject pitch submissions.',
+    id: "pitches",
+    label: "Pitches",
+    description: "Review, approve, and reject pitch submissions.",
   },
   {
-    id: 'verification',
-    label: 'Verification',
-    description: 'Review KYC and account verification requests.',
+    id: "verification",
+    label: "Verification",
+    description: "Review KYC and account verification requests.",
   },
   {
-    id: 'academy',
-    label: 'Academy',
-    description: 'Manage programs, enrollments, and submissions.',
+    id: "academy",
+    label: "Academy",
+    description: "Manage programs, enrollments, and submissions.",
   },
   {
-    id: 'messages',
-    label: 'Messages',
-    description: 'Review reported and safety-flagged conversations.',
+    id: "messages",
+    label: "Messages",
+    description: "Review reported and safety-flagged conversations.",
   },
   {
-    id: 'audit',
-    label: 'Audit Log',
-    description: 'View admin activity and system events.',
+    id: "audit",
+    label: "Audit Log",
+    description: "View admin activity and system events.",
   },
   {
-    id: 'settings',
-    label: 'Settings',
-    description: 'Manage admin team access and security settings.',
+    id: "settings",
+    label: "Settings",
+    description: "Manage admin team access and security settings.",
   },
 ];
 
 export const getStoredAdminPermissions = (): AdminPermission[] => {
   try {
-    const raw = localStorage.getItem('adminPermissions');
+    const raw = localStorage.getItem("adminPermissions");
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
@@ -71,11 +71,11 @@ export const getStoredAdminPermissions = (): AdminPermission[] => {
 
 export const storeAdminPermissions = (permissions?: unknown) => {
   if (!Array.isArray(permissions)) {
-    localStorage.removeItem('adminPermissions');
+    localStorage.removeItem("adminPermissions");
     return;
   }
 
-  localStorage.setItem('adminPermissions', JSON.stringify(permissions));
+  localStorage.setItem("adminPermissions", JSON.stringify(permissions));
 };
 
 export const hasAdminPermission = (permission: AdminPermission) => {

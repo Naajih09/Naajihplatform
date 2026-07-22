@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { ReactNode, useEffect } from 'react';
-import { Dialog, DialogContent } from './dialog';
-import { Button } from './button';
+import { ReactNode, useEffect } from "react";
+import { Dialog, DialogContent } from "./dialog";
+import { Button } from "./button";
 
 type Props = {
   isOpen: boolean;
@@ -48,7 +48,7 @@ export function ConfirmationDialog({
               onClick={onConfirm}
               isLoading={isLoading}
             >
-              {proceedLabel || 'Yes, Confirm'}
+              {proceedLabel || "Yes, Confirm"}
             </Button>
 
             <Button
@@ -57,7 +57,7 @@ export function ConfirmationDialog({
               onClick={onOpenChange}
               isDisabled={isLoading}
             >
-              {cancelLabel || 'Cancel'}
+              {cancelLabel || "Cancel"}
             </Button>
           </div>
         </div>

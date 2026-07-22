@@ -1,8 +1,8 @@
-import { CloudUpload, X } from 'lucide-react';
-import { useCallback } from 'react';
-import { Accept, FileRejection, useDropzone } from 'react-dropzone';
+import { CloudUpload, X } from "lucide-react";
+import { useCallback } from "react";
+import { Accept, FileRejection, useDropzone } from "react-dropzone";
 
-import { Button, cn } from '.';
+import { Button, cn } from ".";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
 export function formatMB(size: number) {
@@ -45,12 +45,12 @@ export function FilePicker({
 
       if (newLength > maxSelections)
         return onError(
-          `Only a maximum of ${maxSelections} selection(s) are allowed`
+          `Only a maximum of ${maxSelections} selection(s) are allowed`,
         );
 
       onChange([...files, ...acceptedFiles]);
     },
-    [files, isDisabled, maxFileSize, maxSelections, onChange, onError]
+    [files, isDisabled, maxFileSize, maxSelections, onChange, onError],
   );
 
   const onDropRejected = useCallback(
@@ -67,11 +67,11 @@ export function FilePicker({
 
       const { code } = error;
 
-      if (code && code === 'file-too-large') {
+      if (code && code === "file-too-large") {
         onError(`Files must be a maximum of ${maxFileSize}`);
       }
     },
-    [maxFileSize, onError]
+    [maxFileSize, onError],
   );
 
   const onFileRemove = (index: number) => {
@@ -90,9 +90,9 @@ export function FilePicker({
     <div
       {...getRootProps()}
       className={cn(
-        'w-full border-dashed border-[1px] border-[#E6E6E6] p-[18px]',
-        'rounded-[18px] flex flex-col justify-center items-center text-center cursor-pointer',
-        className
+        "w-full border-dashed border-[1px] border-[#E6E6E6] p-[18px]",
+        "rounded-[18px] flex flex-col justify-center items-center text-center cursor-pointer",
+        className,
       )}
     >
       <input {...getInputProps()} />
@@ -106,7 +106,7 @@ export function FilePicker({
       </p>
 
       <p className="text-[12px] text-[#A18D8E]">
-        {selectionDesc || 'JPEG, PDF or PNG'} ({formatMB(maxFileSize)} max)
+        {selectionDesc || "JPEG, PDF or PNG"} ({formatMB(maxFileSize)} max)
       </p>
 
       {showSelections && (

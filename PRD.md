@@ -1,4 +1,5 @@
 # Product Requirements Document
+
 # Naajih Platform
 
 **Document Version:** 2.0  
@@ -12,6 +13,7 @@
 Naajih Platform is a role-based web platform that combines founder networking, investor discovery, structured learning for aspiring business owners, subscription payments, verification, and admin operations in one product.
 
 The product serves three end-user groups:
+
 - Entrepreneurs looking to create pitches, build investor visibility, and form connections.
 - Investors looking to discover vetted opportunities and communicate with founders.
 - Aspiring business owners looking to learn through academy programs, community discussion, and mentor access.
@@ -23,12 +25,14 @@ The platform also includes an admin console for moderation, verification review,
 ## 2. Product Goals
 
 ### Business Goals
+
 - Launch a deployable MVP with working revenue paths.
 - Monetize aspirant learning through premium academy access.
 - Maintain investor and entrepreneur acquisition through networking features.
 - Keep admin control strong enough for moderation, verification, and academy quality.
 
 ### User Goals
+
 - Entrepreneurs can create and manage pitches, connect, and message.
 - Investors can review opportunities, connect with founders, and manage their pipeline.
 - Aspirants can learn through free and premium programs, join community discussions, and access mentor sessions.
@@ -39,6 +43,7 @@ The platform also includes an admin console for moderation, verification review,
 ## 3. User Roles
 
 ### Entrepreneur
+
 - Has entrepreneur profile data
 - Can create pitches
 - Can view opportunities
@@ -47,6 +52,7 @@ The platform also includes an admin console for moderation, verification review,
 - Uses networking-focused subscription flow
 
 ### Investor
+
 - Has investor profile data
 - Can browse opportunities
 - Can connect and message
@@ -54,6 +60,7 @@ The platform also includes an admin console for moderation, verification review,
 - Uses networking-focused subscription flow
 
 ### Aspiring Business Owner
+
 - Uses a learning-first dashboard
 - Can access academy programs
 - Can join free programs immediately
@@ -63,6 +70,7 @@ The platform also includes an admin console for moderation, verification review,
 - Uses premium learning subscription with a free trial
 
 ### Admin
+
 - Has access to admin web only
 - Can review users, pitches, verifications, audit logs, academy operations, and settings
 - Can manage program pricing state through free vs premium flags
@@ -72,6 +80,7 @@ The platform also includes an admin console for moderation, verification review,
 ## 4. Product Scope
 
 ### In Scope for MVP
+
 - Authentication and role-based dashboards
 - Entrepreneur and investor profile management
 - Pitch creation and opportunity browsing
@@ -88,6 +97,7 @@ The platform also includes an admin console for moderation, verification review,
 - Unified light/dark theme across core admin and dashboard flows
 
 ### Out of Scope for This MVP
+
 - Native mentor scheduling engine
 - In-app video calls
 - Multi-tenant organization management
@@ -100,18 +110,21 @@ The platform also includes an admin console for moderation, verification review,
 ## 5. Core Value by Role
 
 ### For Entrepreneurs
+
 - Present business opportunities clearly
 - Reach investors in a structured environment
 - Build verified trust signals
 - Maintain conversations inside the platform
 
 ### For Investors
+
 - Access organized deal flow
 - Review founder and pitch information quickly
 - Build a network of founders
 - Manage opportunity review more efficiently
 
 ### For Aspirants
+
 - Start with free introductory learning
 - Upgrade to premium for advanced programs
 - Access mentor office hours through premium
@@ -119,6 +132,7 @@ The platform also includes an admin console for moderation, verification review,
 - Earn certificates on completion
 
 ### For Admin
+
 - Operate the marketplace and academy centrally
 - Moderate quality and risk
 - Track user and learning activity
@@ -133,6 +147,7 @@ The platform also includes an admin console for moderation, verification review,
 The dashboard experience is role-aware.
 
 **Aspirant Sidebar**
+
 - Dashboard
 - Learning Center
 - Community
@@ -141,6 +156,7 @@ The dashboard experience is role-aware.
 - Upgrade Plan
 
 **Entrepreneur / Investor Sidebar**
+
 - Dashboard
 - Opportunities
 - Messages
@@ -160,6 +176,7 @@ The core admin experience and major user dashboard flows share the same light/da
 ## 7. Feature Requirements
 
 ### 7.1 Authentication and Access Control
+
 - Email and password signup/login
 - JWT authentication
 - Role-based route access
@@ -167,24 +184,28 @@ The core admin experience and major user dashboard flows share the same light/da
 - Admin seed flow protected by secret
 
 ### 7.2 Profiles
+
 - Entrepreneur profile
 - Investor profile
 - User account status fields such as `isActive`
 - Profile editing from dashboard
 
 ### 7.3 Pitches and Opportunities
+
 - Entrepreneurs can create, update, and delete pitches
 - Investors and founders can browse opportunity listings
 - Pitch detail pages support direct follow-up actions
 - Admin can moderate pitch approval status
 
 ### 7.4 Connections and Messaging
+
 - Users can send connection requests
 - Requests can be accepted or rejected
 - Connected users can exchange direct messages
 - Notifications support key activity
 
 ### 7.5 Verification
+
 - Only `ENTREPRENEUR` and `INVESTOR` can submit verification
 - Users can only read their own verification status unless they are admin
 - Admin can filter pending, approved, and rejected requests
@@ -192,6 +213,7 @@ The core admin experience and major user dashboard flows share the same light/da
 - Verification actions write audit records
 
 ### 7.6 Subscriptions and Payments
+
 - Subscription plans include `FREE` and `PREMIUM`
 - Payment providers:
   - Paystack
@@ -201,6 +223,7 @@ The core admin experience and major user dashboard flows share the same light/da
 - Subscription amount is configurable with env vars
 
 ### 7.7 Aspirant Premium Learning Model
+
 - Admin marks programs as free or premium with `isPremium`
 - Aspirants can access free programs without premium subscription
 - Premium access unlocks:
@@ -214,6 +237,7 @@ The core admin experience and major user dashboard flows share the same light/da
   - Default free trial: `14` days
 
 ### 7.8 Academy
+
 - Program list and detail pages
 - Programs contain modules
 - Modules contain lessons and tasks
@@ -225,6 +249,7 @@ The core admin experience and major user dashboard flows share the same light/da
 - CSV import support for admin academy operations
 
 ### 7.9 Community
+
 - Aspirants can create community posts
 - Posts support tags
 - Comments are supported
@@ -238,17 +263,20 @@ The core admin experience and major user dashboard flows share the same light/da
 - Trusted-user style auto-approval logic exists for selected users/conditions already implemented in code
 
 ### 7.10 Mentor Booking
+
 - Mentor booking is an embedded external scheduling experience
 - Uses a configurable booking URL from frontend env
 - Intended for premium aspirants only
 - Current integration can point to Calendly or Zoho Bookings because the UI only requires a shareable external booking link
 
 ### 7.11 Notifications
+
 - In-app notifications
 - Realtime support through Socket.io for active app use
 - Mail templates exist for verification and selected notification events
 
 ### 7.12 Admin Console
+
 - Overview dashboard
 - User management
 - Pitch moderation
@@ -267,12 +295,14 @@ The core admin experience and major user dashboard flows share the same light/da
 ### 8.1 User Web Routes
 
 **Public**
+
 - `/`
 - `/login`
 - `/signup`
 - `/certificate/verify/:programId/:userId`
 
 **Dashboard**
+
 - `/dashboard`
 - `/dashboard/learning-center`
 - `/dashboard/community`
@@ -295,10 +325,12 @@ The core admin experience and major user dashboard flows share the same light/da
 ### 8.2 Admin Web Routes
 
 **Public**
+
 - `/login`
 - `/unauthorized`
 
 **Protected**
+
 - `/admin/dashboard`
 - `/admin/users`
 - `/admin/pitches`
@@ -315,6 +347,7 @@ The core admin experience and major user dashboard flows share the same light/da
 ## 9. Backend Capability Map
 
 ### Users
+
 - Signup
 - Login
 - Admin seed
@@ -324,17 +357,20 @@ The core admin experience and major user dashboard flows share the same light/da
 - Subscription fetch and free-trial start
 
 ### Pitches
+
 - CRUD
 - Recommendations
 - Admin moderation and stats
 
 ### Connections
+
 - Create
 - Pending lists
 - Accept/reject
 - Remove
 
 ### Messages
+
 - Send
 - Fetch conversation
 - Fetch partners
@@ -342,22 +378,26 @@ The core admin experience and major user dashboard flows share the same light/da
 - Delete
 
 ### Verification
+
 - Submit verification
 - Check own verification status
 - Admin pending list with filters
 - Admin approve/reject
 
 ### Notifications
+
 - Fetch
 - Mark read
 
 ### Payments
+
 - Initialize subscription payment
 - Verify payment
 - Paystack webhook
 - OPay webhook
 
 ### Academy
+
 - List programs
 - View program
 - View lesson
@@ -371,6 +411,7 @@ The core admin experience and major user dashboard flows share the same light/da
 - Admin academy management endpoints
 
 ### Community
+
 - Create/list/read posts
 - Create comments
 - Report posts/comments
@@ -380,6 +421,7 @@ The core admin experience and major user dashboard flows share the same light/da
 - Admin approve/reject/delete/pin actions
 
 ### Audit
+
 - List audit logs
 - Fetch recent audit logs
 
@@ -388,6 +430,7 @@ The core admin experience and major user dashboard flows share the same light/da
 ## 10. Data Model Summary
 
 ### Main Entities
+
 - `User`
 - `EntrepreneurProfile`
 - `InvestorProfile`
@@ -401,6 +444,7 @@ The core admin experience and major user dashboard flows share the same light/da
 - `AuditLog`
 
 ### Academy Entities
+
 - `Program`
 - `Module`
 - `Lesson`
@@ -412,11 +456,13 @@ The core admin experience and major user dashboard flows share the same light/da
 - `UserMilestone`
 
 ### Community Entities
+
 - `CommunityPost`
 - `CommunityComment`
 - `CommunityReport`
 
 ### Key State Flags
+
 - `User.isVerified`
 - `User.isActive`
 - `User.emailVerified`
@@ -434,6 +480,7 @@ The core admin experience and major user dashboard flows share the same light/da
 ## 11. Environment Requirements
 
 ### Backend
+
 - `DATABASE_URL`
 - `JWT_SECRET`
 - `REQUIRE_EMAIL_VERIFICATION`
@@ -461,12 +508,14 @@ The core admin experience and major user dashboard flows share the same light/da
 - `SUBSCRIPTION_DURATION_DAYS`
 
 ### User Web
+
 - `VITE_API_BASE_URL`
 - `VITE_CALENDLY_URL`
 - `VITE_SUBSCRIPTION_AMOUNT_NGN`
 - `VITE_TRIAL_DAYS`
 
 ### Admin Web
+
 - `VITE_API_BASE_URL`
 
 ---
@@ -484,6 +533,7 @@ The core admin experience and major user dashboard flows share the same light/da
 ## 13. MVP Readiness Assessment
 
 ### Ready
+
 - Multi-role auth and dashboards
 - Pitch and opportunity flows
 - Messaging and connections
@@ -495,12 +545,14 @@ The core admin experience and major user dashboard flows share the same light/da
 - Admin operations
 
 ### Launch Dependencies
+
 - Production env vars must be set correctly
 - Production database must receive the latest Prisma schema
 - Real payment keys and webhook secrets must be configured
 - Real booking URL should replace the placeholder URL
 
 ### Known Product Boundaries
+
 - Mentor booking depends on an external scheduling provider
 - Some secondary pages may still need final visual QA despite the theme pass
 - Accessibility cleanup should continue where browser tooling still flags form labeling gaps
@@ -510,6 +562,7 @@ The core admin experience and major user dashboard flows share the same light/da
 ## 14. Manual QA Checklist
 
 ### Admin
+
 - Log in as admin
 - Open dashboard in light mode and dark mode
 - Review users list and account actions
@@ -521,6 +574,7 @@ The core admin experience and major user dashboard flows share the same light/da
 - Check audit log visibility
 
 ### Entrepreneur
+
 - Sign up or log in as entrepreneur
 - Update profile
 - Create a pitch
@@ -531,6 +585,7 @@ The core admin experience and major user dashboard flows share the same light/da
 - Open subscription page and confirm networking-focused copy
 
 ### Investor
+
 - Sign up or log in as investor
 - Update profile
 - Browse opportunities
@@ -541,6 +596,7 @@ The core admin experience and major user dashboard flows share the same light/da
 - Open subscription page and confirm networking-focused copy
 
 ### Aspirant
+
 - Sign up or log in as aspiring business owner
 - Confirm sidebar only shows learning-first items
 - Open learning center
@@ -554,18 +610,21 @@ The core admin experience and major user dashboard flows share the same light/da
 - Confirm verification route is not part of the aspirant workflow
 
 ### Payments
+
 - Initialize a Paystack subscription payment
 - Initialize an OPay subscription payment
 - Verify successful payment updates subscription state
 - Confirm webhook endpoints accept valid signatures only
 
 ### Certificates
+
 - Complete a program flow sufficient for certificate generation
 - Open certificate page as aspirant with premium access
 - Download PDF
 - Open public certificate verification route
 
 ### Theme QA
+
 - Check admin dashboard pages in light mode and dark mode
 - Check user dashboard pages in light mode and dark mode
 - Verify cards, tables, forms, empty states, and hover states are visually consistent

@@ -1,17 +1,17 @@
-import { lazy } from 'react';
-import type { ComponentType } from 'react';
+import { lazy } from "react";
+import type { ComponentType } from "react";
 
-const chunkReloadKey = 'naajihbiz:chunk-reload-attempted';
+const chunkReloadKey = "naajihbiz:chunk-reload-attempted";
 
 const isChunkLoadError = (error: unknown) => {
   if (!(error instanceof Error)) return false;
 
   return (
-    error.name === 'ChunkLoadError' ||
-    error.message.includes('Failed to fetch dynamically imported module') ||
-    error.message.includes('Importing a module script failed') ||
-    error.message.includes('Expected a JavaScript-or-Wasm module script') ||
-    error.message.includes('Loading chunk')
+    error.name === "ChunkLoadError" ||
+    error.message.includes("Failed to fetch dynamically imported module") ||
+    error.message.includes("Importing a module script failed") ||
+    error.message.includes("Expected a JavaScript-or-Wasm module script") ||
+    error.message.includes("Loading chunk")
   );
 };
 
@@ -21,19 +21,19 @@ const lazyWithReload = <T extends { default: ComponentType<any> }>(
   lazy(() =>
     loader()
       .then((module) => {
-        if (typeof sessionStorage !== 'undefined') {
+        if (typeof sessionStorage !== "undefined") {
           sessionStorage.removeItem(chunkReloadKey);
         }
         return module;
       })
       .catch((error) => {
         if (
-          typeof window !== 'undefined' &&
-          typeof sessionStorage !== 'undefined' &&
+          typeof window !== "undefined" &&
+          typeof sessionStorage !== "undefined" &&
           isChunkLoadError(error) &&
-          sessionStorage.getItem(chunkReloadKey) !== 'true'
+          sessionStorage.getItem(chunkReloadKey) !== "true"
         ) {
-          sessionStorage.setItem(chunkReloadKey, 'true');
+          sessionStorage.setItem(chunkReloadKey, "true");
           window.location.reload();
           return new Promise<T>(() => {});
         }
@@ -43,179 +43,215 @@ const lazyWithReload = <T extends { default: ComponentType<any> }>(
   );
 
 // --- Public Pages ---
-const HomePage = lazyWithReload(() => import('../pages/landing'));
-const Login = lazyWithReload(() => import('../pages/auth/Login'));
-const Signup = lazyWithReload(() => import('../pages/auth/Signup'));
-const ForgotPassword = lazyWithReload(() => import('../pages/auth/ForgotPassword'));
-const ResetPassword = lazyWithReload(() => import('../pages/auth/ResetPassword'));
-const CertificateVerify = lazyWithReload(() => import('../pages/certificate/CertificateVerify'));
-const Terms = lazyWithReload(() => import('../pages/legal/Terms'));
-const Privacy = lazyWithReload(() => import('../pages/legal/Privacy'));
+const HomePage = lazyWithReload(() => import("../pages/landing"));
+const Login = lazyWithReload(() => import("../pages/auth/Login"));
+const Signup = lazyWithReload(() => import("../pages/auth/Signup"));
+const ForgotPassword = lazyWithReload(
+  () => import("../pages/auth/ForgotPassword"),
+);
+const ResetPassword = lazyWithReload(
+  () => import("../pages/auth/ResetPassword"),
+);
+const CertificateVerify = lazyWithReload(
+  () => import("../pages/certificate/CertificateVerify"),
+);
+const Terms = lazyWithReload(() => import("../pages/legal/Terms"));
+const Privacy = lazyWithReload(() => import("../pages/legal/Privacy"));
 
 // --- Dashboard Pages ---
-const DashboardHome = lazyWithReload(() => import('../pages/dashboard/DashboardHome'));
-const Opportunities = lazyWithReload(() => import('../pages/dashboard/Opportunities'));
-const PitchDetails = lazyWithReload(() => import('../pages/dashboard/PitchDetails'));
-const Profile = lazyWithReload(() => import('../pages/dashboard/Profile'));
-const InvestorDashboard = lazyWithReload(() => import('../pages/dashboard/InvestorDashboard'));
-const Subscription = lazyWithReload(() => import('../pages/dashboard/Subscription'));
-const CreatePitch = lazyWithReload(() => import('../pages/dashboard/CreatePitch'));
-const Connections = lazyWithReload(() => import('../pages/dashboard/Connections'));
-const Messages = lazyWithReload(() => import('../pages/dashboard/Messages').then(module => ({ default: module.default })));
-const Settings = lazyWithReload(() => import('../pages/dashboard/Settings'));
-const Verification = lazyWithReload(() => import('../pages/dashboard/Verification'));
-const Knowledge = lazyWithReload(() => import('../pages/dashboard/Knowledge'));
-const LearningCenter = lazyWithReload(() => import('../pages/dashboard/LearningCenter'));
-const CourseViewer = lazyWithReload(() => import('../pages/dashboard/CourseViewer'));
-const AcademyDashboard = lazyWithReload(() => import('../pages/dashboard/AcademyDashboard'));
-const Certificate = lazyWithReload(() => import('../pages/dashboard/Certificate'));
-const Community = lazyWithReload(() => import('../pages/dashboard/Community'));
-const MentorBooking = lazyWithReload(() => import('../pages/dashboard/MentorBooking'));
+const DashboardHome = lazyWithReload(
+  () => import("../pages/dashboard/DashboardHome"),
+);
+const Opportunities = lazyWithReload(
+  () => import("../pages/dashboard/Opportunities"),
+);
+const PitchDetails = lazyWithReload(
+  () => import("../pages/dashboard/PitchDetails"),
+);
+const Profile = lazyWithReload(() => import("../pages/dashboard/Profile"));
+const InvestorDashboard = lazyWithReload(
+  () => import("../pages/dashboard/InvestorDashboard"),
+);
+const Subscription = lazyWithReload(
+  () => import("../pages/dashboard/Subscription"),
+);
+const CreatePitch = lazyWithReload(
+  () => import("../pages/dashboard/CreatePitch"),
+);
+const Connections = lazyWithReload(
+  () => import("../pages/dashboard/Connections"),
+);
+const Messages = lazyWithReload(() =>
+  import("../pages/dashboard/Messages").then((module) => ({
+    default: module.default,
+  })),
+);
+const Settings = lazyWithReload(() => import("../pages/dashboard/Settings"));
+const Verification = lazyWithReload(
+  () => import("../pages/dashboard/Verification"),
+);
+const Knowledge = lazyWithReload(() => import("../pages/dashboard/Knowledge"));
+const LearningCenter = lazyWithReload(
+  () => import("../pages/dashboard/LearningCenter"),
+);
+const CourseViewer = lazyWithReload(
+  () => import("../pages/dashboard/CourseViewer"),
+);
+const AcademyDashboard = lazyWithReload(
+  () => import("../pages/dashboard/AcademyDashboard"),
+);
+const Certificate = lazyWithReload(
+  () => import("../pages/dashboard/Certificate"),
+);
+const Community = lazyWithReload(() => import("../pages/dashboard/Community"));
+const MentorBooking = lazyWithReload(
+  () => import("../pages/dashboard/MentorBooking"),
+);
 
 const routes = [
   // --- Public Routes ---
   {
-    path: '/',
+    path: "/",
     element: <HomePage />,
-    layout: 'blank',
+    layout: "blank",
   },
   {
-    path: 'login',
+    path: "login",
     element: <Login />,
-    layout: 'blank',
+    layout: "blank",
   },
   {
-    path: 'signup',
+    path: "signup",
     element: <Signup />,
-    layout: 'blank',
+    layout: "blank",
   },
   {
-    path: 'forgot-password',
+    path: "forgot-password",
     element: <ForgotPassword />,
-    layout: 'blank',
+    layout: "blank",
   },
   {
-    path: 'reset-password',
+    path: "reset-password",
     element: <ResetPassword />,
-    layout: 'blank',
+    layout: "blank",
   },
   {
-    path: 'certificate/verify/:token',
+    path: "certificate/verify/:token",
     element: <CertificateVerify />,
-    layout: 'blank',
+    layout: "blank",
   },
   {
-    path: 'certificate/verify/:programId/:userId',
+    path: "certificate/verify/:programId/:userId",
     element: <CertificateVerify />,
-    layout: 'blank',
+    layout: "blank",
   },
   {
-    path: 'terms',
+    path: "terms",
     element: <Terms />,
-    layout: 'blank',
+    layout: "blank",
   },
   {
-    path: 'privacy',
+    path: "privacy",
     element: <Privacy />,
-    layout: 'blank',
+    layout: "blank",
   },
 
   // --- Authenticated Dashboard Routes ---
   {
-    path: 'dashboard',
+    path: "dashboard",
     element: <DashboardHome />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/knowledge',
+    path: "dashboard/knowledge",
     element: <Knowledge />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/learning-center',
+    path: "dashboard/learning-center",
     element: <LearningCenter />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/community',
+    path: "dashboard/community",
     element: <Community />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/mentors',
+    path: "dashboard/mentors",
     element: <MentorBooking />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/learning-center/:id',
+    path: "dashboard/learning-center/:id",
     element: <CourseViewer />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/academy/:id',
+    path: "dashboard/academy/:id",
     element: <AcademyDashboard />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/academy/course/:lessonId',
+    path: "dashboard/academy/course/:lessonId",
     element: <CourseViewer />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/academy/certificate/:programId',
+    path: "dashboard/academy/certificate/:programId",
     element: <Certificate />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-  path: 'dashboard/verification',
-  element: <Verification />,
-  layout: 'dashboard',
-},
+    path: "dashboard/verification",
+    element: <Verification />,
+    layout: "dashboard",
+  },
   {
-    path: 'dashboard/opportunities',
+    path: "dashboard/opportunities",
     element: <Opportunities />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/investor',
+    path: "dashboard/investor",
     element: <InvestorDashboard />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   // --- NEW: DYNAMIC PITCH DETAILS ROUTE ---
   {
-    path: 'dashboard/opportunities/:id', 
+    path: "dashboard/opportunities/:id",
     element: <PitchDetails />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/profile',
+    path: "dashboard/profile",
     element: <Profile />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/subscription',
+    path: "dashboard/subscription",
     element: <Subscription />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/create-pitch',
+    path: "dashboard/create-pitch",
     element: <CreatePitch />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/connections',
+    path: "dashboard/connections",
     element: <Connections />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/messages',
+    path: "dashboard/messages",
     element: <Messages />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
   {
-    path: 'dashboard/settings',
+    path: "dashboard/settings",
     element: <Settings />,
-    layout: 'dashboard',
+    layout: "dashboard",
   },
 ];
 

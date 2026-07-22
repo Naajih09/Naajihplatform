@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { CheckCircle, XCircle, ShieldCheck } from 'lucide-react';
-import { getApiBaseUrl } from '../../lib/api-base';
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { CheckCircle, XCircle, ShieldCheck } from "lucide-react";
+import { getApiBaseUrl } from "../../lib/api-base";
 
 const CertificateVerify = () => {
   const { token, programId, userId } = useParams();
@@ -17,7 +17,7 @@ const CertificateVerify = () => {
       try {
         const query = token
           ? `token=${encodeURIComponent(token)}`
-          : `programId=${encodeURIComponent(programId || '')}&userId=${encodeURIComponent(userId || '')}`;
+          : `programId=${encodeURIComponent(programId || "")}&userId=${encodeURIComponent(userId || "")}`;
         const res = await fetch(`${API_BASE}/academy/public/verify?${query}`);
         if (!res.ok) {
           throw new Error(`Verification failed (${res.status})`);
@@ -35,7 +35,11 @@ const CertificateVerify = () => {
   }, [API_BASE, token, programId, userId]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-gray-500">Verifying certificate...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Verifying certificate...
+      </div>
+    );
   }
 
   if (!data || !data.valid) {
@@ -45,7 +49,8 @@ const CertificateVerify = () => {
           <XCircle size={32} className="text-red-500 mx-auto" />
           <h1 className="text-xl font-bold">Certificate Not Valid</h1>
           <p className="text-sm text-gray-400">
-            We could not verify this certificate. Please contact support if you believe this is an error.
+            We could not verify this certificate. Please contact support if you
+            believe this is an error.
           </p>
         </div>
       </div>
@@ -64,8 +69,10 @@ const CertificateVerify = () => {
           <p className="text-white font-semibold">{data.recipient}</p>
           <p className="text-gray-400">{data.program?.title}</p>
           <p className="text-gray-500 text-xs">
-            Awarded on{' '}
-            {new Date(data.achievedAt).toLocaleDateString('en-NG', { dateStyle: 'long' })}
+            Awarded on{" "}
+            {new Date(data.achievedAt).toLocaleDateString("en-NG", {
+              dateStyle: "long",
+            })}
           </p>
         </div>
         <CheckCircle size={20} className="text-green-400 mx-auto" />

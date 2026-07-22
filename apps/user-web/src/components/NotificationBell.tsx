@@ -1,8 +1,8 @@
-import { Bell, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useSocket } from '../hooks/useSocket';
-import { getApiBaseUrl } from '../lib/api-base';
+import { Bell, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useSocket } from "../hooks/useSocket";
+import { getApiBaseUrl } from "../lib/api-base";
 
 type Notification = {
   id: string;
@@ -14,16 +14,14 @@ type Notification = {
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const socket = useSocket(user.id);
   const API_BASE = getApiBaseUrl();
   const authToken =
-    localStorage.getItem('accessToken') ||
-    localStorage.getItem('access_token') ||
-    '';
-  const authHeaders = authToken
-    ? { Authorization: `Bearer ${authToken}` }
-    : {};
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("access_token") ||
+    "";
+  const authHeaders = authToken ? { Authorization: `Bearer ${authToken}` } : {};
 
   useEffect(() => {
     if (!user.id) return;
@@ -54,13 +52,13 @@ const NotificationBell = () => {
   // 2. Listen for real-time notifications
   useEffect(() => {
     if (socket) {
-      socket.on('notification_received', (newNotif: Notification) => {
+      socket.on("notification_received", (newNotif: Notification) => {
         setNotifications((prev) => [newNotif, ...prev]);
         // Optional: Play sound or show toast
       });
 
       return () => {
-        socket.off('notification_received');
+        socket.off("notification_received");
       };
     }
   }, [socket]);
@@ -70,11 +68,11 @@ const NotificationBell = () => {
   const markAsRead = async (id: string) => {
     try {
       await fetch(`${API_BASE}/notifications/${id}/read`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: authHeaders,
       });
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
       );
     } catch (err) {
       console.error(err);
@@ -86,7 +84,11 @@ const NotificationBell = () => {
       <button
         onClick={() => setShowDropdown(!showDropdown)}
         className="relative rounded-lg p-2 text-slate-500 transition-colors hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
-        aria-label={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'}
+        aria-label={
+          unreadCount > 0
+            ? `${unreadCount} unread notifications`
+            : "Notifications"
+        }
       >
         <Bell size={20} />
         {unreadCount > 0 && (
@@ -99,8 +101,13 @@ const NotificationBell = () => {
       {showDropdown && (
         <div className="fixed left-3 right-3 top-16 z-50 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-white/5 dark:bg-[#1d1d20] sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-80">
           <div className="p-4 border-b border-slate-200 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-white/[0.02]">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Notifications</h3>
-            <button onClick={() => setShowDropdown(false)} className="text-slate-500 hover:text-slate-900 dark:text-gray-500 dark:hover:text-white">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              Notifications
+            </h3>
+            <button
+              onClick={() => setShowDropdown(false)}
+              className="text-slate-500 hover:text-slate-900 dark:text-gray-500 dark:hover:text-white"
+            >
               <X size={16} />
             </button>
           </div>
@@ -122,10 +129,12 @@ const NotificationBell = () => {
                   key={notif.id}
                   onClick={() => markAsRead(notif.id)}
                   className={`p-4 border-b border-slate-200 dark:border-white/5 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors ${
-                    !notif.isRead ? 'bg-primary/5' : ''
+                    !notif.isRead ? "bg-primary/5" : ""
                   }`}
                 >
-                  <p className={`text-sm ${!notif.isRead ? 'text-slate-900 dark:text-white font-medium' : 'text-slate-500 dark:text-gray-400'}`}>
+                  <p
+                    className={`text-sm ${!notif.isRead ? "text-slate-900 dark:text-white font-medium" : "text-slate-500 dark:text-gray-400"}`}
+                  >
                     {notif.message}
                   </p>
                   <span className="text-[10px] text-slate-400 dark:text-gray-600 mt-1 block">

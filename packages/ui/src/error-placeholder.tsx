@@ -1,7 +1,7 @@
-import { RotateCw } from 'lucide-react';
-import { If, Then } from 'react-if';
+import { RotateCw } from "lucide-react";
+import { If, Then } from "react-if";
 
-import { Button, ButtonProps, cn, ErrorIcon } from '.';
+import { Button, ButtonProps, cn, ErrorIcon } from ".";
 
 type Props = {
   className?: string;
@@ -32,8 +32,8 @@ export function ErrorPlaceholder({
     <div
       {...rest}
       className={cn(
-        'flex justify-center items-center mt-20 min-h-60 text-[#475467] text-[16px]',
-        className
+        "flex justify-center items-center mt-20 min-h-60 text-[#475467] text-[16px]",
+        className,
       )}
     >
       <div className="flex flex-col w-full h-full justify-center items-center gap-4">
@@ -44,7 +44,7 @@ export function ErrorPlaceholder({
         </If>
 
         <h1 className="font-bold text-lg text-center">
-          {label ?? 'An unexpected error occurred'}
+          {label ?? "An unexpected error occurred"}
         </h1>
 
         <If condition={!!retryHandler}>
@@ -57,7 +57,7 @@ export function ErrorPlaceholder({
               disabled={isLoading}
             >
               {isLoading && <RotateCw className="mr-2 h-4 w-4 animate-spin" />}
-              {buttonLabel ?? 'Retry'}
+              {buttonLabel ?? "Retry"}
             </Button>
           </Then>
         </If>

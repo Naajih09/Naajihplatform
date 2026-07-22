@@ -1,10 +1,28 @@
-import { useEffect, useState } from 'react';
-import { Users, FileText, CheckCircle, LogOut, LayoutDashboard, Menu, X, Activity, Settings, BookOpen, ClipboardCheck, UserCheck, MessageSquareWarning } from 'lucide-react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import ThemeToggle from '../components/ThemeToggle';
-import { useTheme } from '../hooks/useTheme';
-import api from '../utils/api';
-import { AdminPermission, hasAdminPermission, storeAdminPermissions } from '../utils/admin-access';
+import { useEffect, useState } from "react";
+import {
+  Users,
+  FileText,
+  CheckCircle,
+  LogOut,
+  LayoutDashboard,
+  Menu,
+  X,
+  Activity,
+  Settings,
+  BookOpen,
+  ClipboardCheck,
+  UserCheck,
+  MessageSquareWarning,
+} from "lucide-react";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import ThemeToggle from "../components/ThemeToggle";
+import { useTheme } from "../hooks/useTheme";
+import api from "../utils/api";
+import {
+  AdminPermission,
+  hasAdminPermission,
+  storeAdminPermissions,
+} from "../utils/admin-access";
 
 const AdminLayout = () => {
   const location = useLocation();
@@ -13,8 +31,8 @@ const AdminLayout = () => {
   useTheme();
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const payload = parseJwt(token || '');
+    const token = localStorage.getItem("accessToken");
+    const payload = parseJwt(token || "");
     if (!payload?.email) return;
 
     api
@@ -26,10 +44,10 @@ const AdminLayout = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('adminPermissions');
-    navigate('/login');
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("adminPermissions");
+    navigate("/login");
   };
 
   const navItems: Array<{
@@ -38,22 +56,73 @@ const AdminLayout = () => {
     icon: typeof LayoutDashboard;
     permission: AdminPermission;
   }> = [
-    { label: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard, permission: 'dashboard' },
-    { label: 'User Management', path: '/admin/users', icon: Users, permission: 'users' },
-    { label: 'Pitch Moderation', path: '/admin/pitches', icon: FileText, permission: 'pitches' },
-    { label: 'KYC Verification', path: '/admin/verification', icon: CheckCircle, permission: 'verification' },
-    { label: 'Academy Programs', path: '/admin/academy', icon: BookOpen, permission: 'academy' },
-    { label: 'Enrollments', path: '/admin/academy/enrollments', icon: UserCheck, permission: 'academy' },
-    { label: 'Assignments', path: '/admin/academy/submissions', icon: ClipboardCheck, permission: 'academy' },
-    { label: 'Message Reports', path: '/admin/messages/reports', icon: MessageSquareWarning, permission: 'messages' },
-    { label: 'Audit Log', path: '/admin/audit', icon: Activity, permission: 'audit' },
-    { label: 'Settings', path: '/admin/settings', icon: Settings, permission: 'settings' },
+    {
+      label: "Overview",
+      path: "/admin/dashboard",
+      icon: LayoutDashboard,
+      permission: "dashboard",
+    },
+    {
+      label: "User Management",
+      path: "/admin/users",
+      icon: Users,
+      permission: "users",
+    },
+    {
+      label: "Pitch Moderation",
+      path: "/admin/pitches",
+      icon: FileText,
+      permission: "pitches",
+    },
+    {
+      label: "KYC Verification",
+      path: "/admin/verification",
+      icon: CheckCircle,
+      permission: "verification",
+    },
+    {
+      label: "Academy Programs",
+      path: "/admin/academy",
+      icon: BookOpen,
+      permission: "academy",
+    },
+    {
+      label: "Enrollments",
+      path: "/admin/academy/enrollments",
+      icon: UserCheck,
+      permission: "academy",
+    },
+    {
+      label: "Assignments",
+      path: "/admin/academy/submissions",
+      icon: ClipboardCheck,
+      permission: "academy",
+    },
+    {
+      label: "Message Reports",
+      path: "/admin/messages/reports",
+      icon: MessageSquareWarning,
+      permission: "messages",
+    },
+    {
+      label: "Audit Log",
+      path: "/admin/audit",
+      icon: Activity,
+      permission: "audit",
+    },
+    {
+      label: "Settings",
+      path: "/admin/settings",
+      icon: Settings,
+      permission: "settings",
+    },
   ];
-  const visibleNavItems = navItems.filter((item) => hasAdminPermission(item.permission));
+  const visibleNavItems = navItems.filter((item) =>
+    hasAdminPermission(item.permission),
+  );
 
   return (
     <div className="relative flex flex-col lg:flex-row min-h-screen bg-[#f8fafc] text-slate-900 font-sans overflow-hidden dark:bg-[#111113] dark:text-white">
-      
       {/* SIDEBAR */}
       {isSidebarOpen ? (
         <div
@@ -64,7 +133,7 @@ const AdminLayout = () => {
 
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 flex flex-col transform transition-transform duration-200 dark:bg-[#1d1d20] dark:border-gray-800 lg:static lg:translate-x-0 ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="p-6 flex items-center gap-3 justify-between">
@@ -73,8 +142,12 @@ const AdminLayout = () => {
               N
             </div>
             <div>
-              <h1 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">NaajihBiz <span className="text-primary">Admin</span></h1>
-              <p className="text-xs text-slate-500 uppercase tracking-widest font-bold dark:text-gray-500">Control Center</p>
+              <h1 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
+                NaajihBiz <span className="text-primary">Admin</span>
+              </h1>
+              <p className="text-xs text-slate-500 uppercase tracking-widest font-bold dark:text-gray-500">
+                Control Center
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -91,13 +164,14 @@ const AdminLayout = () => {
 
         <nav className="flex-1 px-4 py-4 grid grid-cols-2 gap-2 lg:flex lg:flex-col lg:space-y-2">
           {visibleNavItems.map((item) => (
-            <Link 
-              key={item.path} 
+            <Link
+              key={item.path}
               to={item.path}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                location.pathname === item.path || location.pathname.startsWith(item.path)
-                ? 'bg-primary text-black font-bold shadow-md'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white'
+                location.pathname === item.path ||
+                location.pathname.startsWith(item.path)
+                  ? "bg-primary text-black font-bold shadow-md"
+                  : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
               }`}
               onClick={() => setIsSidebarOpen(false)}
             >
@@ -112,8 +186,8 @@ const AdminLayout = () => {
             className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-colors dark:text-gray-300"
             onClick={handleLogout}
           >
-             <LogOut size={20} /> Exit Admin
-           </button>
+            <LogOut size={20} /> Exit Admin
+          </button>
         </div>
       </aside>
 
@@ -138,9 +212,9 @@ const AdminLayout = () => {
 
 const parseJwt = (token: string) => {
   try {
-    const payload = token.split('.')[1];
+    const payload = token.split(".")[1];
     if (!payload) return null;
-    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
   } catch {
     return null;
   }

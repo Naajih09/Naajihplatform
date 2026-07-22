@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle, Flag, Loader2, MessageSquareWarning, RefreshCw, ShieldAlert } from 'lucide-react';
+import { CheckCircle, Flag, Loader2, RefreshCw, ShieldAlert } from 'lucide-react';
 import api from '../utils/api';
 import EmptyState from '../components/EmptyState';
 

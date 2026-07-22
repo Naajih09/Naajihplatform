@@ -19,14 +19,14 @@ export class PitchesService {
   ) {}
 
   private clearPitchCache(userId?: string) {
-    this.cache.deleteByPrefix('pitches:');
-    this.cache.deleteByPrefix('admin-pitches:');
-    this.cache.deleteByPrefix('admin-users:');
+    void this.cache.deleteByPrefix('pitches:');
+    void this.cache.deleteByPrefix('admin-pitches:');
+    void this.cache.deleteByPrefix('admin-users:');
     if (userId) {
-      this.cache.deleteByPrefix(`user:${userId}:`);
-      this.cache.deleteByPrefix(`pitches-recommended:${userId}:`);
+      void this.cache.deleteByPrefix(`user:${userId}:`);
+      void this.cache.deleteByPrefix(`pitches-recommended:${userId}:`);
     } else {
-      this.cache.deleteByPrefix('pitches-recommended:');
+      void this.cache.deleteByPrefix('pitches-recommended:');
     }
   }
 
@@ -388,7 +388,7 @@ export class PitchesService {
   }
 
   // 5. DELETE PITCH
-  async remove(id: string) {
+  async remove(_id: string) {
     throw new ForbiddenException(
       'Pitches should be rejected with a reason instead of deleted.',
     );

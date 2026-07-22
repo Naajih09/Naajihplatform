@@ -33,15 +33,12 @@ export class CloudinaryService {
         },
         (error, result) => {
           if (error) {
-            console.error(
-              'Cloudinary upload failed:',
-              error instanceof Error ? error.message : 'Unknown error',
-            );
-            return reject(
+            const err =
               error instanceof Error
                 ? error
-                : new Error('Cloudinary upload failed'),
-            );
+                : new Error('Cloudinary upload failed');
+            console.error('Cloudinary upload failed:', err.message);
+            return reject(err);
           }
 
           if (process.env.NODE_ENV !== 'production') {

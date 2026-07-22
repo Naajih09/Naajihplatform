@@ -227,7 +227,7 @@ export class PaymentsService {
           headers: {
             Authorization: `Bearer ${this.opayPublicKey}`,
             'Content-Type': 'application/json',
-            'Merchant-Id': this.opayMerchantId,
+            MerchantId: this.opayMerchantId,
           },
         },
       );
@@ -288,7 +288,7 @@ export class PaymentsService {
         {
           headers: {
             Authorization: `Bearer ${this.opayPublicKey}`,
-            'Merchant-Id': this.opayMerchantId,
+            MerchantId: this.opayMerchantId,
           },
         },
       );

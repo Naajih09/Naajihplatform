@@ -209,6 +209,7 @@ export class PaymentsService {
       'https://api.opaycheckout.com/api/v1/international/cashier/create';
 
     try {
+      const merchantIdNum = Number(this.opayMerchantId);
       const response = await axios.post(
         url,
         {
@@ -219,7 +220,7 @@ export class PaymentsService {
           reference,
           returnUrl: `${this.frontendUrl}/dashboard/subscription?provider=opay`,
           callbackUrl: `${this.backendUrl}/api/payments/webhook/opay`,
-          merchantId: this.opayMerchantId,
+          merchantId: Number.isFinite(merchantIdNum) ? merchantIdNum : this.opayMerchantId,
           productName: 'Najih Premium Subscription',
           productDescription:
             'Subscription for Premium access on Naajihplatform',
@@ -227,7 +228,7 @@ export class PaymentsService {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.opayPublicKey}`,
+            Authorization: `Bearer ${this.opaySecretKey}`,
             'Content-Type': 'application/json',
             MerchantId: this.opayMerchantId,
           },
@@ -289,7 +290,7 @@ export class PaymentsService {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.opayPublicKey}`,
+            Authorization: `Bearer ${this.opaySecretKey}`,
             MerchantId: this.opayMerchantId,
           },
         },

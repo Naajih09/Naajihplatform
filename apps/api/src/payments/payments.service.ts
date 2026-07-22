@@ -120,6 +120,7 @@ export class PaymentsService {
     userId?: string,
     userRole?: UserRole,
     reason?: string,
+    clientIp?: string,
   ) {
     if (!email || !userId) {
       throw new BadRequestException('Authenticated user is required');
@@ -160,7 +161,7 @@ export class PaymentsService {
     if (provider === 'paystack') {
       return this.initializePaystack(email, amountKobo, reference, reason);
     }
-    return this.initializeOPay(email, amountKobo, reference);
+    return this.initializeOPay(email, amountKobo, reference, clientIp);
   }
 
   private async initializePaystack(
@@ -202,6 +203,7 @@ export class PaymentsService {
     email: string,
     amountKobo: number,
     reference: string,
+    clientIp?: string,
   ) {
     const url =
       'https://api.opaycheckout.com/api/v1/international/cashier/create';
@@ -221,7 +223,7 @@ export class PaymentsService {
           productName: 'Najih Premium Subscription',
           productDescription:
             'Subscription for Premium access on Naajihplatform',
-          userClientIp: '127.0.0.1', // Should be dynamic in production
+          userClientIp: clientIp || '127.0.0.1',
         },
         {
           headers: {

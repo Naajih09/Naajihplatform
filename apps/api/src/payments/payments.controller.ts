@@ -26,6 +26,11 @@ export class PaymentsController {
     },
     @Req() req: any,
   ) {
+    const clientIp =
+      req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+      req.ip ||
+      req.connection?.remoteAddress ||
+      '127.0.0.1';
     return this.paymentsService.initializeTransaction(
       data.provider,
       req.user.email,
@@ -33,6 +38,7 @@ export class PaymentsController {
       req.user.id,
       req.user.role,
       data.reason,
+      clientIp,
     );
   }
 

@@ -5,9 +5,10 @@ import { PrismaService } from '../prisma.service';
 import { AuthModule } from '../auth/auth.module';
 import { AuditModule } from '../audit/audit.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { AccessPolicyModule } from '../policies/access-policy.module';
 
 @Module({
-  imports: [AuthModule, AuditModule, NotificationsModule],
+  imports: [AuthModule, AuditModule, NotificationsModule, AccessPolicyModule],
   controllers: [PitchesController],
   providers: [PitchesService, PrismaService],
 })

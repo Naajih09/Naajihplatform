@@ -4,13 +4,14 @@ import { CheckCircle, ChevronLeft, Download } from "lucide-react";
 import Button from "../../components/Button";
 import { getApiBaseUrl } from "../../lib/api-base";
 import { showToast } from "../../lib/utils";
+import { useEntitlements } from "../../hooks/useEntitlements";
 
 const Certificate = () => {
   const { programId } = useParams();
   const navigate = useNavigate();
   const [certificate, setCertificate] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [subscription, setSubscription] = useState<any>(null);
+  const { entitlements } = useEntitlements();
 
   const API_BASE = getApiBaseUrl();
   const authToken =
@@ -56,7 +57,6 @@ const Certificate = () => {
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data) {
-          setSubscription(data.subscription || null);
           localStorage.setItem("user", JSON.stringify(data));
         }
       })
@@ -71,16 +71,11 @@ const Certificate = () => {
     );
   }
 
-  const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
-  const hasPremium =
-    subscription?.plan === "PREMIUM" &&
-    (!activeUntil || new Date(activeUntil) > new Date());
-
   if (!certificate) {
     return (
       <div className="max-w-3xl mx-auto py-20 text-center space-y-4">
         <p className="text-red-500">Certificate not available.</p>
-        {!hasPremium && (
+        {!entitlements.certificates && (
           <div className="space-y-3">
             <p className="text-slate-500">
               Certificates are a Premium benefit.

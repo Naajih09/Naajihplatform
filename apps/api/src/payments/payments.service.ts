@@ -121,6 +121,7 @@ export class PaymentsService {
     userRole?: UserRole,
     reason?: string,
     clientIp?: string,
+    product?: 'ACADEMY_PREMIUM' | 'NETWORKING_PREMIUM',
   ) {
     if (!email || !userId) {
       throw new BadRequestException('Authenticated user is required');
@@ -130,6 +131,7 @@ export class PaymentsService {
     }
 
     const expectedAmount =
+      product === 'ACADEMY_PREMIUM' ||
       userRole === UserRole.ASPIRING_BUSINESS_OWNER
         ? this.aspiringOwnerSubscriptionAmountNgn
         : this.subscriptionAmountNgn;
@@ -155,6 +157,14 @@ export class PaymentsService {
         email,
         userId,
         status: PaymentStatus.INITIALIZED,
+        metadata: {
+          product:
+            product ||
+            (userRole === UserRole.ASPIRING_BUSINESS_OWNER
+              ? 'ACADEMY_PREMIUM'
+              : 'NETWORKING_PREMIUM'),
+          reason,
+        },
       },
     });
 

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { AuditService } from '../audit/audit.service';
+import { AccessPolicyService } from '../policies/access-policy.service';
 
 @Injectable()
 export class VerificationService {
@@ -9,10 +10,17 @@ export class VerificationService {
     private readonly databaseService: DatabaseService,
     private readonly notificationsService: NotificationsService,
     private readonly auditService: AuditService,
+    private readonly accessPolicy: AccessPolicyService,
   ) {}
 
   // 1. SUBMIT REQUEST (User)
   async create(data: { userId: string; documentUrl: string }) {
+    const user = await this.databaseService.user.findUnique({
+      where: { id: data.userId },
+      include: { subscription: true },
+    });
+    this.accessPolicy.assertCanSubmitVerification(user);
+
     const existing = await this.databaseService.verificationRequest.findUnique({
       where: { userId: data.userId },
     });

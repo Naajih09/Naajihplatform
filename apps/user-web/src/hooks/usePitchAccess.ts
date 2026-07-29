@@ -68,7 +68,9 @@ export const usePitchAccess = () => {
               ? null
               : Number(data.remainingPitchSlots),
           hasPremium: Boolean(data?.hasPremium),
-          canCreatePitch: Boolean(data?.canCreatePitch),
+          canCreatePitch: Boolean(
+            data?.entitlements?.canCreatePitch ?? data?.canCreatePitch,
+          ),
         });
       } catch {
         if (cancelled) return;

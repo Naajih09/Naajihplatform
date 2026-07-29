@@ -9,12 +9,14 @@ import {
 import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConnectionStatus, PitchStatus, UserRole } from '@prisma/client'; // NEW: Import ConnectionStatus enum
+import { AccessPolicyService } from '../policies/access-policy.service';
 
 @Injectable()
 export class ConnectionsService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly notificationsService: NotificationsService,
+    private readonly accessPolicy: AccessPolicyService,
   ) {}
 
   // NEW: findOne method for the controller's authorization checks
@@ -38,18 +40,18 @@ export class ConnectionsService {
 
     const sender = await this.databaseService.user.findUnique({
       where: { id: senderId },
-      include: { entrepreneurProfile: true, investorProfile: true },
+      include: {
+        entrepreneurProfile: true,
+        investorProfile: true,
+        subscription: true,
+      },
     });
 
     if (!sender) {
       throw new NotFoundException('User not found');
     }
 
-    if (!sender.isVerified) {
-      throw new ForbiddenException(
-        'Verify your account to unlock this feature',
-      );
-    }
+    this.accessPolicy.assertCanConnect(sender);
 
     const receiver = await this.databaseService.user.findUnique({
       where: { id: receiverId },
@@ -194,7 +196,7 @@ export class ConnectionsService {
   }
 
   // 5. REMOVE / CANCEL CONNECTION (NEW)
-  async removeConnection(id: string, userId: string) {
+  async removeConnection(id: string, userId: string, isAdmin = false) {
     const connection = await this.databaseService.connection.findUnique({
       where: { id },
     });
@@ -204,7 +206,11 @@ export class ConnectionsService {
     }
 
     // Authorization: Only people involved in the connection can delete it
-    if (connection.senderId !== userId && connection.receiverId !== userId) {
+    if (
+      !isAdmin &&
+      connection.senderId !== userId &&
+      connection.receiverId !== userId
+    ) {
       throw new UnauthorizedException(
         'Not authorized to modify this connection',
       );

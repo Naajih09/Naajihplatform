@@ -4,10 +4,11 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { Prisma, UserRole } from '@prisma/client';
+import { PitchStatus, Prisma } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { AppCacheService } from '../cache/app-cache.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { AccessPolicyService } from '../policies/access-policy.service';
 
 @Injectable()
 export class PitchesService {
@@ -16,6 +17,7 @@ export class PitchesService {
     private readonly auditService: AuditService,
     private readonly cache: AppCacheService,
     private readonly notificationsService: NotificationsService,
+    private readonly accessPolicy: AccessPolicyService,
   ) {}
 
   private clearPitchCache(userId?: string) {
@@ -87,30 +89,7 @@ export class PitchesService {
       throw new BadRequestException('User not found');
     }
 
-    if (user.role !== UserRole.ENTREPRENEUR) {
-      throw new ForbiddenException(
-        'Only entrepreneur accounts can submit pitches.',
-      );
-    }
-
-    if (!user.isVerified) {
-      throw new ForbiddenException(
-        'Verify your account to unlock this feature',
-      );
-    }
-
-    const now = new Date();
-    const activeUntil =
-      user.subscription?.endDate || user.subscription?.trialEndsAt;
-    const hasPremium =
-      user.subscription?.plan === 'PREMIUM' &&
-      (!activeUntil || activeUntil > now);
-
-    if (!hasPremium) {
-      throw new ForbiddenException(
-        'Premium subscription is required to submit pitches.',
-      );
-    }
+    this.accessPolicy.assertCanCreatePitch(user);
 
     const pitch = await this.prisma.pitch.create({
       data: {
@@ -139,6 +118,7 @@ export class PitchesService {
     maxTicket?: string;
     page?: string;
     pageSize?: string;
+    includeNonApproved?: boolean;
   }) {
     const {
       search,
@@ -162,7 +142,11 @@ export class PitchesService {
           : {},
 
         // Filter by Status if provided
-        status && status !== 'All' && status !== 'ALL' ? { status } : {},
+        query.includeNonApproved
+          ? status && status !== 'All' && status !== 'ALL'
+            ? { status }
+            : {}
+          : { status: PitchStatus.APPROVED },
 
         // Filter by Stage (via EntrepreneurProfile)
         stage && stage !== 'All'
@@ -230,6 +214,7 @@ export class PitchesService {
         maxTicket,
         page,
         pageSize,
+        includeNonApproved: Boolean(query.includeNonApproved),
       }),
       30,
       async () => {
@@ -267,7 +252,7 @@ export class PitchesService {
     );
   }
   // 3. GET ONE PITCH (For Details View)
-  async findOne(id: string) {
+  async findOne(id: string, options?: { includeNonApproved?: boolean }) {
     const uuidPattern =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidPattern.test(id)) {
@@ -275,8 +260,13 @@ export class PitchesService {
     }
 
     return this.cache.getOrSet(`pitches:detail:${id}`, 30, () =>
-      this.prisma.pitch.findUnique({
-        where: { id },
+      this.prisma.pitch.findFirst({
+        where: {
+          id,
+          ...(options?.includeNonApproved
+            ? {}
+            : { status: PitchStatus.APPROVED }),
+        },
         include: {
           user: {
             select: {

@@ -189,6 +189,18 @@ export class UsersController {
     return this.usersService.startTrial(req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.ENTREPRENEUR,
+    UserRole.INVESTOR,
+    UserRole.ASPIRING_BUSINESS_OWNER,
+  )
+  @Get('me/entitlements')
+  getEntitlements(@Request() req) {
+    return this.usersService.getEntitlements(req.user.id);
+  }
+
   // 5c. VERIFY EMAIL TOKEN (Public)
   @Throttle({ short: { limit: 10, ttl: 60000 } })
   @Get('verify-email')

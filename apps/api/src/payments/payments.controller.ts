@@ -23,6 +23,7 @@ export class PaymentsController {
       provider: 'paystack' | 'opay';
       amount: number;
       reason?: string;
+      product?: 'ACADEMY_PREMIUM' | 'NETWORKING_PREMIUM';
     },
     @Req() req: any,
   ) {
@@ -39,6 +40,7 @@ export class PaymentsController {
       req.user.role,
       data.reason,
       clientIp,
+      data.product,
     );
   }
 

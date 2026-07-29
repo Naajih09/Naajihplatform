@@ -175,6 +175,10 @@ export class ConnectionsController {
       );
     }
 
-    return this.connectionsService.removeConnection(id, userId);
+    return this.connectionsService.removeConnection(
+      id,
+      userId,
+      req.user.role === UserRole.ADMIN,
+    );
   }
 }

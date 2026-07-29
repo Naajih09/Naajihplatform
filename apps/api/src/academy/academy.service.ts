@@ -8,6 +8,7 @@ import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MailerService } from '../mailer/mailer.service';
 import { AppCacheService } from '../cache/app-cache.service';
+import { AccessPolicyService } from '../policies/access-policy.service';
 
 @Injectable()
 export class AcademyService {
@@ -106,6 +107,7 @@ export class AcademyService {
     private readonly notificationsService: NotificationsService,
     private readonly mailerService: MailerService,
     private readonly cache: AppCacheService,
+    private readonly accessPolicy: AccessPolicyService,
   ) {}
 
   private clearAcademyCache(userId?: string) {
@@ -149,6 +151,8 @@ export class AcademyService {
 
   // 2️⃣ GET ONE PROGRAM (With lessons + progress)
   async findOne(programId: string, userId: string) {
+    await this.accessPolicy.assertCanAccessProgram(userId, programId);
+
     return this.cache.getOrSet(
       `academy-user:${userId}:program:${programId}`,
       30,
@@ -206,6 +210,13 @@ export class AcademyService {
 
     if (!lesson) return null;
 
+    if (userId && lesson.module?.programId) {
+      await this.accessPolicy.assertCanAccessProgram(
+        userId,
+        lesson.module.programId,
+      );
+    }
+
     const isUnlocked =
       !lesson.module?.unlockDate ||
       new Date(lesson.module.unlockDate) <= new Date();
@@ -254,6 +265,11 @@ export class AcademyService {
       throw new NotFoundException('Lesson not found.');
     }
 
+    await this.accessPolicy.assertCanAccessProgram(
+      userId,
+      lesson.module.programId,
+    );
+
     const isUnlocked =
       !lesson.module.unlockDate ||
       new Date(lesson.module.unlockDate) <= new Date();
@@ -287,26 +303,13 @@ export class AcademyService {
 
   // 5️⃣ JOIN PROGRAM (ProgramEnrollment)
   async joinProgram(userId: string, programId: string) {
-    const program = await this.databaseService.program.findUnique({
-      where: { id: programId },
-      select: { id: true, isPremium: true },
-    });
+    const { program } = await this.accessPolicy.assertCanAccessProgram(
+      userId,
+      programId,
+    );
 
     if (!program) {
       throw new ForbiddenException('Program not found.');
-    }
-
-    if (program.isPremium) {
-      const subscription = await this.databaseService.subscription.findUnique({
-        where: { userId },
-      });
-      const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
-      const hasAccess =
-        subscription?.plan === 'PREMIUM' &&
-        (!activeUntil || activeUntil > new Date());
-      if (!hasAccess) {
-        throw new ForbiddenException('Premium subscription required.');
-      }
     }
 
     const existing = await this.databaseService.programEnrollment.findUnique({
@@ -349,6 +352,11 @@ export class AcademyService {
     if (!task?.module?.programId) {
       throw new ForbiddenException('Task not found.');
     }
+
+    await this.accessPolicy.assertCanAccessProgram(
+      userId,
+      task.module.programId,
+    );
 
     const isUnlocked =
       !task.module.unlockDate || new Date(task.module.unlockDate) <= new Date();
@@ -1041,16 +1049,7 @@ export class AcademyService {
   }
 
   async getCertificate(userId: string, programId: string) {
-    const subscription = await this.databaseService.subscription.findUnique({
-      where: { userId },
-    });
-    const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
-    const hasPremium =
-      subscription?.plan === 'PREMIUM' &&
-      (!activeUntil || activeUntil > new Date());
-    if (!hasPremium) {
-      throw new ForbiddenException('Premium subscription required.');
-    }
+    await this.accessPolicy.assertCanUseCertificate(userId);
 
     const program = await this.databaseService.program.findUnique({
       where: { id: programId },

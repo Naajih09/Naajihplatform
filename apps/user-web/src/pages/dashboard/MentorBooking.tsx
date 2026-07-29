@@ -1,17 +1,18 @@
 import { Calendar, ExternalLink, Video } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import Button from "../../components/Button";
 import { getApiBaseUrl } from "../../lib/api-base";
 import { showToast } from "../../lib/utils";
+import { useEntitlements } from "../../hooks/useEntitlements";
 
 const MentorBooking = () => {
   const calendlyUrl =
     import.meta.env.VITE_CALENDLY_URL ||
     "https://calendly.com/naajihbiz/office-hours";
-  const [subscription, setSubscription] = useState<any>(null);
   const navigate = useNavigate();
   const API_BASE = getApiBaseUrl();
+  const { entitlements } = useEntitlements();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isAspirant = user?.role === "ASPIRING_BUSINESS_OWNER";
   const authToken =
@@ -27,17 +28,13 @@ const MentorBooking = () => {
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data) {
-          setSubscription(data.subscription || null);
           localStorage.setItem("user", JSON.stringify(data));
         }
       })
       .catch(() => null);
   }, []);
 
-  const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
-  const hasPremium =
-    subscription?.plan === "PREMIUM" &&
-    (!activeUntil || new Date(activeUntil) > new Date());
+  const hasMentorAccess = entitlements.mentorBooking;
 
   if (!isAspirant) {
     return <Navigate to="/dashboard" replace />;
@@ -87,7 +84,7 @@ const MentorBooking = () => {
         </div>
       </div>
 
-      {hasPremium ? (
+      {hasMentorAccess ? (
         <div className="bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 rounded-3xl p-4 md:p-6 shadow-sm">
           <div className="flex items-center justify-between gap-3 px-2 pb-4">
             <div className="flex items-center gap-3">

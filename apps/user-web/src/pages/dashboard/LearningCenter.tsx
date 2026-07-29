@@ -4,11 +4,12 @@ import { useNavigate } from "react-router-dom";
 import Button from "../../components/Button";
 import { getApiBaseUrl } from "../../lib/api-base";
 import { showToast } from "../../lib/utils";
+import { useEntitlements } from "../../hooks/useEntitlements";
 
 const LearningCenter = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [joiningId, setJoiningId] = useState<string | null>(null);
-  const [subscription, setSubscription] = useState<any>(null);
+  const { entitlements } = useEntitlements();
   const navigate = useNavigate();
   const API_BASE = getApiBaseUrl();
   const authToken =
@@ -48,7 +49,6 @@ const LearningCenter = () => {
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data) {
-          setSubscription(data.subscription || null);
           localStorage.setItem("user", JSON.stringify(data));
         }
       })
@@ -65,11 +65,7 @@ const LearningCenter = () => {
       showToast("Please log in to join this program.", "error");
       return;
     }
-    const activeUntil = subscription?.endDate || subscription?.trialEndsAt;
-    const hasPremium =
-      subscription?.plan === "PREMIUM" &&
-      (!activeUntil || new Date(activeUntil) > new Date());
-    if (isPremium && !hasPremium) {
+    if (isPremium && !entitlements.academyPremium) {
       showToast("Upgrade to Premium to join this program.", "error");
       navigate("/dashboard/subscription");
       return;

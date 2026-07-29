@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { sanitizePlainText } from '../utils/sanitize';
+import { AccessPolicyService } from '../policies/access-policy.service';
 
 const riskyMessagePattern =
   /(whats\s?app|wa\.me|telegram|t\.me|outside\s+(the\s+)?platform|off[-\s]?platform|bank\s+transfer|send\s+money|pay\s+me|gmail\.com|yahoo\.com|outlook\.com|hotmail\.com|\+?\d[\d\s().-]{7,}\d)/i;
@@ -17,7 +18,10 @@ const messageUserInclude = {
 
 @Injectable()
 export class MessagesService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly accessPolicy: AccessPolicyService,
+  ) {}
 
   // 1. SEND MESSAGE
   async create(data: {
@@ -27,16 +31,7 @@ export class MessagesService {
     attachmentUrl?: string;
     type?: string;
   }) {
-    const sender = await this.databaseService.user.findUnique({
-      where: { id: data.senderId },
-      select: { id: true, isVerified: true },
-    });
-
-    if (!sender?.isVerified) {
-      throw new ForbiddenException(
-        'Verify your account to unlock this feature',
-      );
-    }
+    await this.accessPolicy.assertCanMessage(data.senderId, data.receiverId);
 
     const content = sanitizePlainText(data.content);
 

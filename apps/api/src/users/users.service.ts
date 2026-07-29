@@ -9,6 +9,7 @@ import * as crypto from 'crypto';
 import { DatabaseService } from '../database/database.service';
 import { MailerService } from '../mailer/mailer.service';
 import { AppCacheService } from '../cache/app-cache.service';
+import { AccessPolicyService } from '../policies/access-policy.service';
 import {
   passwordResetEmail,
   verificationEmail,
@@ -40,6 +41,7 @@ export class UsersService {
     private readonly databaseService: DatabaseService,
     private readonly mailerService: MailerService,
     private readonly cache: AppCacheService,
+    private readonly accessPolicy: AccessPolicyService,
   ) {}
 
   private clearUserCache(userId?: string) {
@@ -629,18 +631,24 @@ export class UsersService {
     const hasPremium =
       user?.subscription?.plan === 'PREMIUM' &&
       (!activeUntil || activeUntil > now);
-    const canCreatePitch = user?.role === UserRole.ENTREPRENEUR && hasPremium;
+    const entitlements = this.accessPolicy.entitlementsFor(user);
+    const canCreatePitch = entitlements.canCreatePitch;
 
     return {
       activePitches,
       pendingConnections,
       isVerified: user?.isVerified || false,
       hasPremium,
+      entitlements,
       pitchLimit: null,
       remainingPitchSlots: hasPremium ? null : 0,
       canCreatePitch,
       totalViews: 0,
     };
+  }
+
+  async getEntitlements(userId: string) {
+    return this.accessPolicy.getUserEntitlements(userId);
   }
 
   // Admin stats (platform overview)
@@ -808,6 +816,17 @@ export class UsersService {
   }
 
   async startTrial(userId: string) {
+    const user = await this.databaseService.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (user?.role !== UserRole.ASPIRING_BUSINESS_OWNER) {
+      throw new ForbiddenException(
+        'Free trials are only available for academy premium.',
+      );
+    }
+
     const subscription = await this.databaseService.subscription.findUnique({
       where: { userId },
     });

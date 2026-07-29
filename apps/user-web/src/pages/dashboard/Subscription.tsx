@@ -151,6 +151,7 @@ export default function Subscription() {
           amount: subscriptionAmount,
           userId: user.id,
           reason: pitchPaymentReason ? "pitch-payment" : undefined,
+          product: isAspirant ? "ACADEMY_PREMIUM" : "NETWORKING_PREMIUM",
         }),
       });
       const data = await res.json().catch(() => null);

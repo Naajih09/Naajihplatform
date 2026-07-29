@@ -89,11 +89,6 @@ const DealCard = ({
 
     <div className="mb-5 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-wider">
       <span className="rounded-full bg-slate-100 px-2 py-1 text-slate-500 dark:bg-white/10 dark:text-white/60">
-        {pitch.investmentType === "CONVENTIONAL"
-          ? "Conventional"
-          : "Ethical"}
-      </span>
-      <span className="rounded-full bg-slate-100 px-2 py-1 text-slate-500 dark:bg-white/10 dark:text-white/60">
         {pitch.user?.entrepreneurProfile?.stage || "Stage not set"}
       </span>
     </div>
@@ -139,7 +134,6 @@ export default function InvestorDashboard() {
 
   const API_BASE = getApiBaseUrl();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const investorProfile = user?.investorProfile || {};
   const authToken =
     localStorage.getItem("accessToken") ||
     localStorage.getItem("access_token") ||
@@ -152,13 +146,6 @@ export default function InvestorDashboard() {
       try {
         const params = new URLSearchParams();
         if (filter !== "All") params.set("category", filter);
-        if (
-          investorProfile.investmentPreference &&
-          investorProfile.investmentPreference !== "BOTH"
-        ) {
-          params.set("investmentType", investorProfile.investmentPreference);
-        }
-
         const res = await fetch(
           `${API_BASE}/pitches${params.toString() ? `?${params.toString()}` : ""}`,
         );
@@ -174,7 +161,7 @@ export default function InvestorDashboard() {
     };
 
     fetchPitches();
-  }, [API_BASE, filter, investorProfile.investmentPreference]);
+  }, [API_BASE, filter]);
 
   useEffect(() => {
     const fetchRecommended = async () => {

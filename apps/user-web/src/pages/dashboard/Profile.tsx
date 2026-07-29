@@ -181,15 +181,6 @@ const Profile = () => {
               ? `NGN ${Number(profile.maxTicketSize).toLocaleString()}`
               : "Not set",
           },
-          {
-            label: "Preference",
-            value:
-              profile.investmentPreference === "SHARIA_COMPLIANT"
-                ? "Ethical"
-                : profile.investmentPreference === "CONVENTIONAL"
-                  ? "Conventional"
-                  : "Both",
-          },
           { label: "Location", value: profile.location || "Nigeria" },
           {
             label: "Focus",
@@ -408,13 +399,7 @@ const Profile = () => {
                   </span>
                   <span className="flex items-center gap-1 text-primary">
                     <ShieldCheck size={16} />
-                    {user.role === "INVESTOR"
-                      ? profile.investmentPreference === "CONVENTIONAL"
-                        ? "Conventional"
-                        : profile.investmentPreference === "SHARIA_COMPLIANT"
-                          ? "Ethical"
-                          : "Open to Both"
-                      : "Ethical"}
+                    Standards Reviewed
                   </span>
                   {getProfile().website && (
                     <span className="flex items-center gap-1">
@@ -604,28 +589,6 @@ const Profile = () => {
                           })
                         }
                       />
-                    </div>
-                    <div className="col-span-2">
-                      <label className={labelStyle}>
-                        Investment Preference
-                      </label>
-                      <select
-                        aria-label="Investment Preference"
-                        className={inputStyle}
-                        value={formData.investmentPreference || "BOTH"}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            investmentPreference: e.target.value,
-                          })
-                        }
-                      >
-                        <option value="BOTH">Both</option>
-                        <option value="SHARIA_COMPLIANT">
-                          Ethical
-                        </option>
-                        <option value="CONVENTIONAL">Conventional</option>
-                      </select>
                     </div>
                   </div>
                 )}

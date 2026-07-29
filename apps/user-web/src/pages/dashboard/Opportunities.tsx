@@ -74,16 +74,8 @@ const Opportunities = () => {
     ["APPROVED", "ACTIVE"].includes((status || "PENDING").toUpperCase());
 
   // --- 1. FETCH PITCHES (With Search & Filter) ---
-  const defaultInvestmentType =
-    user.role === "INVESTOR" &&
-    ["SHARIA_COMPLIANT", "CONVENTIONAL"].includes(
-      user.investorProfile?.investmentPreference,
-    )
-      ? user.investorProfile.investmentPreference
-      : "All";
   const [filters, setFilters] = useState({
     stage: "All",
-    investmentType: defaultInvestmentType,
     minTicket: "",
     maxTicket: "",
   });
@@ -91,7 +83,6 @@ const Opportunities = () => {
     Boolean(searchTerm.trim()) ||
     activeCategory !== "All" ||
     filters.stage !== "All" ||
-    filters.investmentType !== "All" ||
     Boolean(filters.minTicket) ||
     Boolean(filters.maxTicket);
 
@@ -104,8 +95,6 @@ const Opportunities = () => {
       if (activeCategory && activeCategory !== "All")
         params.append("category", activeCategory);
       if (filters.stage !== "All") params.append("stage", filters.stage);
-      if (filters.investmentType !== "All")
-        params.append("investmentType", filters.investmentType);
       if (filters.minTicket) params.append("minTicket", filters.minTicket);
       if (filters.maxTicket) params.append("maxTicket", filters.maxTicket);
 
@@ -329,28 +318,6 @@ const Opportunities = () => {
             </select>
           </div>
 
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="text-xs font-bold text-slate-500 uppercase">
-              Type:
-            </span>
-            <label htmlFor="investment-type-filter-select" className="sr-only">
-              Filter by investment type
-            </label>
-            <select
-              value={filters.investmentType}
-              onChange={(e) =>
-                setFilters({ ...filters, investmentType: e.target.value })
-              }
-              className="bg-slate-200 dark:bg-[#151518] border-none rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none"
-              id="investment-type-filter-select"
-              aria-label="Filter pitches by investment type"
-            >
-              <option value="All">All Types</option>
-              <option value="SHARIA_COMPLIANT">Ethical</option>
-              <option value="CONVENTIONAL">Conventional</option>
-            </select>
-          </div>
-
           <div className="flex min-w-0 items-center gap-2 sm:col-span-2 lg:col-span-1">
             <span className="text-xs font-bold text-slate-500 uppercase">
               Ticket (NGN):
@@ -402,7 +369,6 @@ const Opportunities = () => {
               setActiveCategory("All");
               setFilters({
                 stage: "All",
-                investmentType: "All",
                 minTicket: "",
                 maxTicket: "",
               });
@@ -486,11 +452,6 @@ const Opportunities = () => {
                     </div>
                     <span className="text-[10px] text-slate-400 font-semibold uppercase">
                       {pitch.category}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-semibold uppercase">
-                      {pitch.investmentType === "CONVENTIONAL"
-                        ? "Conventional"
-                        : "Ethical"}
                     </span>
                   </div>
                 </div>
@@ -618,7 +579,6 @@ const CreatePitchModal = ({
     equityOffer: "",
     category: "FinTech",
     pitchDeckUrl: "",
-    investmentType: "SHARIA_COMPLIANT",
   });
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -841,34 +801,6 @@ const CreatePitchModal = ({
               onChange={handleChange}
               aria-label="Tagline"
             />
-          </div>
-          <div>
-            <label className={labelStyle}>Investment Type</label>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { value: "SHARIA_COMPLIANT", label: "Ethical" },
-                { value: "CONVENTIONAL", label: "Conventional" },
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      investmentType: option.value,
-                    }))
-                  }
-                  className={`rounded-lg border px-4 py-3 text-sm font-bold transition-colors ${
-                    formData.investmentType === option.value
-                      ? "border-primary bg-primary text-black"
-                      : "border-slate-300 bg-slate-100 text-slate-700 hover:border-primary/50 dark:border-gray-700 dark:bg-[#151518] dark:text-white"
-                  }`}
-                  aria-pressed={formData.investmentType === option.value}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
           </div>
           <div>
             <label className={labelStyle}>Problem Statement</label>

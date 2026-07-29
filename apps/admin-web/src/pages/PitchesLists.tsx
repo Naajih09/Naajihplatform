@@ -180,10 +180,6 @@ const PitchesList = () => {
 
   const getPitchStage = (pitch: any) =>
     pitch.user?.entrepreneurProfile?.stage || pitch.stage || "N/A";
-  const getInvestmentTypeLabel = (pitch: any) =>
-    pitch.investmentType === "CONVENTIONAL"
-      ? "Conventional"
-      : "Ethical";
   const getPitchEquity = (pitch: any) =>
     pitch.equityOffer ?? pitch.equityOffered;
 
@@ -360,9 +356,6 @@ const PitchesList = () => {
                       <p className="text-slate-500 dark:text-gray-500 text-[11px] font-bold uppercase mt-1">
                         {getPitchStage(pitch)}
                       </p>
-                      <p className="text-slate-500 dark:text-gray-500 text-[11px] font-bold uppercase mt-1">
-                        {getInvestmentTypeLabel(pitch)}
-                      </p>
                     </div>
                   </div>
 
@@ -470,9 +463,6 @@ const PitchesList = () => {
                 {getStatusBadge(selectedPitch.status)}
                 <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs font-bold">
                   {selectedPitch.category || selectedPitch.sector}
-                </span>
-                <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs font-bold dark:bg-white/10 dark:text-white/70">
-                  {getInvestmentTypeLabel(selectedPitch)}
                 </span>
               </div>
               <h2 className="text-2xl font-black text-slate-900 dark:text-white">

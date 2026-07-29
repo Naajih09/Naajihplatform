@@ -287,7 +287,7 @@ const PitchDetails = () => {
               <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded font-bold uppercase tracking-wider dark:bg-white/10 dark:text-white/70">
                 {pitch.investmentType === "CONVENTIONAL"
                   ? "Conventional"
-                  : "Sharia Compliant"}
+                  : "Ethical"}
               </span>
               <span className="text-slate-500 dark:text-gray-400 text-xs flex items-center gap-1">
                 <Calendar size={12} />{" "}

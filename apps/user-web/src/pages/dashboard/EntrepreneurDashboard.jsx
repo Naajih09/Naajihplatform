@@ -75,7 +75,7 @@ export default function EntrepreneurProfile() {
               Interests
             </h3>
             <div className="flex flex-wrap gap-2 text-xs">
-              {(interests.length > 0 ? interests : ["Sharia-Compliant"]).map(tag => (
+              {(interests.length > 0 ? interests : ["Values-Aligned"]).map(tag => (
                 <span
                   key={tag}
                   className="px-3 py-1 border border-white/10 rounded-full text-white/80"
@@ -118,7 +118,7 @@ export default function EntrepreneurProfile() {
                       <MapPin size={14} /> {location}
                     </span>
                     <span className="flex items-center gap-1 text-primary">
-                      <BadgeCheck size={14} /> Sharia-Compliant
+                      <BadgeCheck size={14} /> Values-Aligned
                     </span>
                     <span className="flex items-center gap-1">
                       <CheckCircle size={14} /> {stats.isVerified ? 'KYC Verified' : 'Not Verified'}

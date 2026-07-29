@@ -29,7 +29,7 @@ const Landing = () => {
               </h2>
             </div>
             <p className="text-slate-500 text-sm leading-relaxed mb-6">
-              Nigeria's premier Islamic investment platform connecting ethical
+              Nigeria's values-led investment platform connecting ethical
               capital with sustainable enterprise.
             </p>
           </div>
@@ -62,7 +62,7 @@ const Landing = () => {
               Legal
             </h4>
             <ul className="space-y-4 text-sm text-slate-500">
-              <li className="text-slate-500">Sharia Certification</li>
+              <li className="text-slate-500">Ethical Standards</li>
               <li>
                 <Link to="/privacy" className="hover:text-primary">
                   Privacy Policy
@@ -90,7 +90,7 @@ const Landing = () => {
           </div>
         </div>
         <div className="max-w-[1200px] mx-auto px-6 mt-16 pt-8 border-t border-slate-200 dark:border-white/5 text-center text-slate-500 text-xs">
-          (c) 2026 NaajihBiz Investment Platform. All rights reserved.
+          (c) 2026 NaajihBiz. All rights reserved.
         </div>
       </footer>
     </div>

@@ -16,15 +16,15 @@ const TrustSection = () => {
               Financial Ethics, <span className="text-primary">Redefined.</span>
             </h2>
             <p className="mb-8 text-base leading-relaxed text-slate-400 sm:text-lg md:mb-10">
-              We operate strictly under the principles of Islamic Finance. No
-              usury (Riba), no uncertainty (Gharar), only real growth.
+              We prioritize transparent, asset-aware, value-based financing that
+              keeps incentives fair and tied to real business growth.
             </p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
               {[
-                { t: "Musharakah", d: "Joint venture partnership." },
-                { t: "Mudarabah", d: "Capital meets expertise." },
-                { t: "Murabaha", d: "Asset-backed trade financing." },
-                { t: "Waqf Impact", d: "Sustainable endowment projects." },
+                { t: "Partnership Funding", d: "Capital and operators grow together." },
+                { t: "Profit Sharing", d: "Returns follow real business outcomes." },
+                { t: "Asset-Backed Deals", d: "Financing linked to tangible value." },
+                { t: "Impact Projects", d: "Sustainable ventures with clear purpose." },
               ].map((item) => (
                 <div
                   key={item.t}

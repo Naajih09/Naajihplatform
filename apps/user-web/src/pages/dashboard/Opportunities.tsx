@@ -247,7 +247,7 @@ const Opportunities = () => {
             Ethical Opportunities
           </h1>
           <p className="text-slate-500 dark:text-slate-400 max-w-lg">
-            Discover and fund Shariah-compliant businesses.
+            Discover and fund vetted, values-aligned businesses.
           </p>
         </div>
         <div className="flex w-full gap-3 md:w-96 md:gap-4">
@@ -346,7 +346,7 @@ const Opportunities = () => {
               aria-label="Filter pitches by investment type"
             >
               <option value="All">All Types</option>
-              <option value="SHARIA_COMPLIANT">Sharia Compliant</option>
+              <option value="SHARIA_COMPLIANT">Ethical</option>
               <option value="CONVENTIONAL">Conventional</option>
             </select>
           </div>
@@ -490,7 +490,7 @@ const Opportunities = () => {
                     <span className="text-[10px] text-slate-400 font-semibold uppercase">
                       {pitch.investmentType === "CONVENTIONAL"
                         ? "Conventional"
-                        : "Sharia Compliant"}
+                        : "Ethical"}
                     </span>
                   </div>
                 </div>
@@ -846,7 +846,7 @@ const CreatePitchModal = ({
             <label className={labelStyle}>Investment Type</label>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { value: "SHARIA_COMPLIANT", label: "Sharia Compliant" },
+                { value: "SHARIA_COMPLIANT", label: "Ethical" },
                 { value: "CONVENTIONAL", label: "Conventional" },
               ].map((option) => (
                 <button

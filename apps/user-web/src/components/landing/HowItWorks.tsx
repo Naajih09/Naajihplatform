@@ -8,7 +8,7 @@ const HowItWorks = () => {
       title: "Apply & Ethical Vetting",
       text: "Submit your business case. Our team reviews not just the financials, but the ethical impact.",
       icon: ShieldCheck,
-      tag: "Vetted by Sharia Board",
+      tag: "Vetted for fit",
     },
     {
       num: 2,

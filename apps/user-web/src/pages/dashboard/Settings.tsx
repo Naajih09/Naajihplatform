@@ -12,7 +12,7 @@ const FOCUS_AREAS = [
   "Education",
   "Logistics",
   "Real Estate",
-  "Islamic Finance",
+  "Responsible Finance",
   "SaaS",
   "Clean Energy",
   "Fashion",

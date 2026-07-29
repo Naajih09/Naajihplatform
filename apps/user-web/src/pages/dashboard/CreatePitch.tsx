@@ -290,7 +290,7 @@ const CreatePitch = () => {
                 <label className={labelStyles}>Investment Type</label>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {[
-                    { value: "SHARIA_COMPLIANT", label: "Sharia Compliant" },
+                    { value: "SHARIA_COMPLIANT", label: "Ethical" },
                     { value: "CONVENTIONAL", label: "Conventional" },
                   ].map((option) => (
                     <button

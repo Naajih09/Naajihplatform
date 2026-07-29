@@ -185,7 +185,7 @@ const Profile = () => {
             label: "Preference",
             value:
               profile.investmentPreference === "SHARIA_COMPLIANT"
-                ? "Sharia Compliant"
+                ? "Ethical"
                 : profile.investmentPreference === "CONVENTIONAL"
                   ? "Conventional"
                   : "Both",
@@ -412,9 +412,9 @@ const Profile = () => {
                       ? profile.investmentPreference === "CONVENTIONAL"
                         ? "Conventional"
                         : profile.investmentPreference === "SHARIA_COMPLIANT"
-                          ? "Sharia Compliant"
+                          ? "Ethical"
                           : "Open to Both"
-                      : "Sharia Compliant"}
+                      : "Ethical"}
                   </span>
                   {getProfile().website && (
                     <span className="flex items-center gap-1">
@@ -622,7 +622,7 @@ const Profile = () => {
                       >
                         <option value="BOTH">Both</option>
                         <option value="SHARIA_COMPLIANT">
-                          Sharia Compliant
+                          Ethical
                         </option>
                         <option value="CONVENTIONAL">Conventional</option>
                       </select>

@@ -152,7 +152,7 @@ const Signup = () => {
                 Choose your <span className="text-primary">path.</span>
               </h1>
               <p className="mx-auto max-w-2xl text-base font-light text-gray-600 dark:text-gray-400 sm:text-lg md:text-xl">
-                Build your legacy on ethical foundations. Select the role that
+                Build your legacy on strong foundations. Select the role that
                 best defines your journey.
               </p>
             </div>
@@ -161,14 +161,14 @@ const Signup = () => {
               <RoleCard
                 title="Entrepreneur"
                 icon={Rocket}
-                desc="Scale your Halal-certified business and access Sharia-compliant funding."
-                features={["Equity-based funding", "Halal compliance tools"]}
+                desc="Scale your business and access values-aligned funding."
+                features={["Equity-based funding", "Standards review tools"]}
                 onClick={() => handleRoleSelect("ENTREPRENEUR")}
               />
               <RoleCard
                 title="Investor"
                 icon={Wallet}
-                desc="Invest in Sharia-compliant opportunities. Diversify your portfolio."
+                desc="Invest in vetted, values-aligned opportunities. Diversify your portfolio."
                 features={["Ethical vetting reports", "Dividend tracking"]}
                 onClick={() => handleRoleSelect("INVESTOR")}
               />
@@ -233,7 +233,7 @@ const Signup = () => {
               Fuel Your Vision
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-base mt-2 text-center">
-              Join Nigeria's premier Sharia-compliant investment bridge.
+              Join Nigeria's values-led investment bridge.
             </p>
           </div>
 
@@ -386,9 +386,9 @@ const Signup = () => {
                   rel="noreferrer"
                   className="text-slate-900 dark:text-white font-bold underline decoration-primary underline-offset-4"
                 >
-                  Halal Investment Terms
+                  Platform Terms
                 </Link>{" "}
-                which prohibit interest (Riba).
+                and responsible participation standards.
               </label>
             </div>
 
@@ -419,7 +419,7 @@ const Signup = () => {
           <div className="flex items-center gap-1 text-slate-900 dark:text-white">
             <ShieldCheck size={16} />
             <span className="text-[10px] font-bold uppercase tracking-widest">
-              Sharia Certified
+              Standards Reviewed
             </span>
           </div>
           <div className="flex items-center gap-1 text-slate-900 dark:text-white">
@@ -431,7 +431,7 @@ const Signup = () => {
           <div className="flex items-center gap-1 text-slate-900 dark:text-white">
             <BadgeDollarSign size={16} />
             <span className="text-[10px] font-bold uppercase tracking-widest">
-              Interest-Free Equity
+              Transparent Equity
             </span>
           </div>
         </div>

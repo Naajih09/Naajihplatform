@@ -275,7 +275,7 @@ function DashboardHome() {
         <div className="max-w-3xl">
           <p className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-primary">
             <Rocket size={14} />
-            {isAspirant ? 'Naajih Academy' : 'Halal business network'}
+            {isAspirant ? 'Naajih Academy' : 'Values-led business network'}
           </p>
           <h3 className="mt-4 text-2xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
             {isAspirant
@@ -345,7 +345,7 @@ function DashboardHome() {
               </div>
               <h3 className="text-lg font-black text-slate-900 dark:text-white">Continue Academy</h3>
               <p className="mt-2 text-sm text-slate-500 dark:text-neutral-muted">
-                Work through business basics, Islamic finance lessons, and practical launch material.
+                Work through business basics, responsible finance lessons, and practical launch material.
               </p>
               <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
                 Open learning center <ChevronRight size={14} />
@@ -580,7 +580,7 @@ function DashboardHome() {
                 ? 'Stay in Academy while your idea is forming. Upgrade only when you are ready to become an Entrepreneur and submit a pitch for review.'
                 : pitchPaymentRequired
                 ? 'Entrepreneurs need Premium before submitting opportunities for review and investor discovery.'
-                : 'Connect with over 500+ certified halal investors.'}
+                : 'Connect with a network of vetted, values-aligned investors.'}
             </p>
 
             <Link to={isAspirant ? '/dashboard/subscription' : pitchPaymentRequired ? '/dashboard/subscription?reason=pitch-payment' : '/dashboard/create-pitch'} className="inline-block">
@@ -604,7 +604,7 @@ function DashboardHome() {
             <p className="text-slate-500 dark:text-neutral-muted text-sm mb-4">
               {isAspirant
                 ? 'Bring your idea to the community before you spend money building or pitching it.'
-                : 'Book a session with our Islamic Finance consultants.'}
+                : 'Book a session with our finance and growth consultants.'}
             </p>
 
             {isAspirant ? (

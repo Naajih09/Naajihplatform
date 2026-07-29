@@ -18,12 +18,12 @@ const RoleSelection = () => {
             For Entrepreneurs
           </h3>
           <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-            Access capital through Mudarabah (profit-sharing). Grow without
-            compromising values.
+            Access values-aligned capital through transparent partnership
+            models. Grow without compromising your principles.
           </p>
           <ul className="space-y-4 mb-8">
             {[
-              "100% Interest-Free (Riba-Free)",
+              "Transparent funding terms",
               "Mentorship from Leaders",
               "Fast-Track Vetting",
             ].map((item) => (
@@ -57,7 +57,7 @@ const RoleSelection = () => {
           </p>
           <ul className="space-y-4 mb-8">
             {[
-              "Sharia-Compliant Returns",
+              "Values-Aligned Returns",
               "Real-time Performance Tracking",
               "Social Impact Reporting",
             ].map((item) => (

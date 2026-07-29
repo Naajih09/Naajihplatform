@@ -174,7 +174,7 @@ const Dashboard = () => {
           Platform Command Center
         </h2>
         <p className="text-slate-500 mt-1 italic dark:text-gray-500">
-          Real-time management of Sharia-compliant investment flows.
+          Real-time management of vetted investment flows.
         </p>
       </div>
 
@@ -188,7 +188,7 @@ const Dashboard = () => {
           icon={Users}
         />
         <MetricCard
-          label="Active Halal Pitches"
+          label="Active Pitches"
           value={loading ? "..." : stats.pitches}
           trend="Live"
           icon={Rocket}
@@ -269,7 +269,7 @@ const Dashboard = () => {
               Pending Verification Requests
             </h3>
             <p className="text-sm text-slate-500 dark:text-gray-500">
-              Entrepreneurs awaiting Sharia-compliance approval
+              Entrepreneurs awaiting verification review
             </p>
           </div>
           <button

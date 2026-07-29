@@ -53,7 +53,7 @@ const roleWelcomeCopy: Record<
 > = {
   ENTREPRENEUR: {
     label: 'Entrepreneur',
-    body: 'Your founder workspace is ready. You can shape your profile, prepare your pitch, and connect with Sharia-compliant investors.',
+    body: 'Your founder workspace is ready. You can shape your profile, prepare your pitch, and connect with values-aligned investors.',
     next: 'Start by completing your business profile and creating your first pitch.',
   },
   INVESTOR: {

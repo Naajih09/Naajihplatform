@@ -52,7 +52,7 @@ const MentorBooking = () => {
               Mentor Booking
             </h1>
             <p className="text-slate-500 dark:text-neutral-muted text-sm">
-              Book office hours with vetted mentors and Islamic finance experts.
+              Book office hours with vetted mentors and finance experts.
             </p>
           </div>
         </div>
@@ -76,10 +76,10 @@ const MentorBooking = () => {
             Expert Clinics
           </p>
           <h3 className="text-lg font-black text-slate-900 dark:text-white mt-2">
-            Shariah Review
+            Funding Review
           </h3>
           <p className="text-sm text-slate-500 mt-2">
-            Get feedback on halal compliance and Islamic finance structures.
+            Get feedback on responsible funding structures and business model fit.
           </p>
         </div>
       </div>

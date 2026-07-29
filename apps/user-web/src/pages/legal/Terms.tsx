@@ -7,19 +7,19 @@ const sections = [
   },
   {
     title: "2. What NaajihBiz does",
-    body: "NaajihBiz is a digital marketplace and community platform designed to connect entrepreneurs, investors, and learners around ethical and Sharia-compliant business opportunities. We provide tools for discovery, profile management, communication, education, and workflow support. We do not guarantee investment results, funding outcomes, or business performance.",
+    body: "NaajihBiz is a digital marketplace and community platform designed to connect entrepreneurs, investors, and learners around ethical, values-aligned business opportunities. We provide tools for discovery, profile management, communication, education, and workflow support. We do not guarantee investment results, funding outcomes, or business performance.",
   },
   {
     title: "3. Eligibility and accounts",
     body: "You must be able to form a binding contract in your jurisdiction and provide accurate registration information. You are responsible for keeping your account credentials secure, for all activity carried out under your account, and for notifying us promptly if you suspect unauthorized access.",
   },
   {
-    title: "4. Ethical and halal use",
-    body: "The platform is intended for ethical business activity and interest-free, value-based participation. You agree not to use NaajihBiz to promote or facilitate fraud, deception, prohibited goods or services, gambling, or any activity that conflicts with applicable law or the platform’s halal principles.",
+    title: "4. Ethical use",
+    body: "The platform is intended for ethical business activity and value-based participation. You agree not to use NaajihBiz to promote or facilitate fraud, deception, prohibited goods or services, gambling, or any activity that conflicts with applicable law or the platform's responsible participation standards.",
   },
   {
     title: "5. Investment and business risk",
-    body: "Any investment, funding, mentorship, or business decision made through the platform carries risk. You are solely responsible for evaluating opportunities, carrying out due diligence, and seeking independent legal, tax, financial, or Sharia advice where appropriate. NaajihBiz is not a bank, broker-dealer, adviser, or guarantor of any deal.",
+    body: "Any investment, funding, mentorship, or business decision made through the platform carries risk. You are solely responsible for evaluating opportunities, carrying out due diligence, and seeking independent legal, tax, financial, or professional advice where appropriate. NaajihBiz is not a bank, broker-dealer, adviser, or guarantor of any deal.",
   },
   {
     title: "6. User content and conduct",

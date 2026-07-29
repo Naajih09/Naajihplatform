@@ -23,12 +23,12 @@ const HeroSection = () => {
             Now Live in Nigeria
           </div>
           <h1 className="mb-5 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl md:text-7xl">
-            Enabling <span className="text-primary">Halal</span> <br /> Business
+            Enabling <span className="text-primary">Ethical</span> <br /> Business
             Growth
           </h1>
           <p className="mb-8 max-w-lg text-base leading-relaxed text-gray-400 sm:text-lg md:mb-10">
-            Connecting ethical entrepreneurs with Sharia-compliant investors for
-            interest-free, sustainable growth.
+            Connecting ambitious entrepreneurs with values-aligned investors for
+            transparent, sustainable growth.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link

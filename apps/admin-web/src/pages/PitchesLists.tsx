@@ -183,7 +183,7 @@ const PitchesList = () => {
   const getInvestmentTypeLabel = (pitch: any) =>
     pitch.investmentType === "CONVENTIONAL"
       ? "Conventional"
-      : "Sharia Compliant";
+      : "Ethical";
   const getPitchEquity = (pitch: any) =>
     pitch.equityOffer ?? pitch.equityOffered;
 
@@ -213,7 +213,7 @@ const PitchesList = () => {
             Pitch Moderation
           </h1>
           <p className="text-slate-500 mt-1 dark:text-gray-500">
-            Review and approve Sharia-compliant business proposals.
+            Review and approve vetted business proposals.
           </p>
         </div>
 

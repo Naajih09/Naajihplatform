@@ -105,7 +105,7 @@ const LearningCenter = () => {
           Naajih <span className="text-primary">Academy</span>
         </h1>
         <p className="text-slate-500 dark:text-gray-400 max-w-2xl mx-auto text-lg">
-          Practical, Shariah-compliant business training for building,
+          Practical, responsible business training for building,
           validating, and presenting investment-ready ideas.
         </p>
       </div>

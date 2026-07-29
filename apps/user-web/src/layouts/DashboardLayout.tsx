@@ -308,7 +308,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               NaajihBiz
             </h1>
             <p className="text-xs text-slate-500 dark:text-gray-400 uppercase tracking-widest font-bold">
-              Halal Growth
+              Responsible Growth
             </p>
           </div>
           <button

@@ -35,6 +35,8 @@ const ADMIN_PERMISSIONS = [
   'settings',
 ] as const;
 
+export const FULL_ADMIN_PERMISSIONS = [...ADMIN_PERMISSIONS];
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -111,6 +113,44 @@ export class UsersService {
       .filter((permission) =>
         (ADMIN_PERMISSIONS as readonly string[]).includes(permission),
       );
+  }
+
+  private getPrimaryAdminEmail() {
+    return (process.env.ADMIN_EMAIL ?? 'admin@naajih.com').trim().toLowerCase();
+  }
+
+  private isPrimaryAdmin(user: {
+    email?: string | null;
+    role?: UserRole | null;
+  }) {
+    return (
+      user.role === UserRole.ADMIN &&
+      user.email?.trim().toLowerCase() === this.getPrimaryAdminEmail()
+    );
+  }
+
+  private async ensurePrimaryAdminPermissions<T extends User | null>(
+    user: T,
+  ): Promise<T> {
+    if (!user || !this.isPrimaryAdmin(user)) return user;
+
+    if (
+      Array.isArray(user.adminPermissions) &&
+      user.adminPermissions.length > 0
+    ) {
+      return user;
+    }
+
+    await this.databaseService.user.update({
+      where: { id: user.id },
+      data: { adminPermissions: FULL_ADMIN_PERMISSIONS },
+    });
+
+    this.clearUserCache(user.id);
+    return {
+      ...user,
+      adminPermissions: FULL_ADMIN_PERMISSIONS,
+    };
   }
 
   private async issueEmailVerification(userId: string, email: string) {
@@ -305,9 +345,10 @@ export class UsersService {
   }
 
   async findById(id: string): Promise<User | null> {
-    return this.databaseService.user.findUnique({
+    const user = await this.databaseService.user.findUnique({
       where: { id },
     });
+    return this.ensurePrimaryAdminPermissions(user);
   }
 
   // 2. LOGIN (Check Hashed Password)
@@ -414,7 +455,7 @@ export class UsersService {
 
   // 4. FIND ONE
   async findOne(email: string) {
-    return this.databaseService.user.findUnique({
+    const user = await this.databaseService.user.findUnique({
       where: { email },
       include: {
         entrepreneurProfile: true,
@@ -422,6 +463,7 @@ export class UsersService {
         subscription: true,
       },
     });
+    return this.ensurePrimaryAdminPermissions(user);
   }
 
   async findPublicByEmail(email: string) {

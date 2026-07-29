@@ -4,6 +4,17 @@ import * as bcrypt from 'bcryptjs';
 
 let seedPrisma = new PrismaClient();
 
+const ADMIN_PERMISSIONS = [
+  'dashboard',
+  'users',
+  'pitches',
+  'verification',
+  'academy',
+  'messages',
+  'audit',
+  'settings',
+];
+
 async function main() {
   const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@naajih.com';
   const adminPassword = process.env.ADMIN_PASSWORD ?? 'Password123!';
@@ -33,6 +44,7 @@ async function main() {
       isVerified: true,
       emailVerified: true,
       isActive: true,
+      adminPermissions: ADMIN_PERMISSIONS,
     },
     create: {
       email: adminEmail,
@@ -40,6 +52,7 @@ async function main() {
       role: UserRole.ADMIN,
       isVerified: true,
       emailVerified: true,
+      adminPermissions: ADMIN_PERMISSIONS,
     },
   });
 

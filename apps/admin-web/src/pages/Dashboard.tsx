@@ -21,7 +21,6 @@ import {
 } from "recharts";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import { hasAdminPermission } from "../utils/admin-access";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -73,48 +72,13 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const canViewPitches = hasAdminPermission("pitches");
-        const canViewVerification = hasAdminPermission("verification");
-        const canViewAudit = hasAdminPermission("audit");
-
-        const [
-          userStatsResult,
-          pitchStatsResult,
-          verificationsResult,
-          auditResult,
-          insightsResult,
-        ] = await Promise.allSettled([
-          api.get("/users/admin/stats"),
-          canViewPitches
-            ? api.get("/pitches/admin/stats")
-            : Promise.resolve({ data: null }),
-          canViewVerification
-            ? api.get("/verification/admin/pending?page=1&pageSize=5")
-            : Promise.resolve({ data: null }),
-          canViewAudit
-            ? api.get("/audit/recent?limit=5")
-            : Promise.resolve({ data: null }),
-          api.get("/users/admin/insights"),
-        ]);
-
-        const usersResponse =
-          userStatsResult.status === "fulfilled"
-            ? userStatsResult.value.data
-            : null;
-        const statsResponse =
-          pitchStatsResult.status === "fulfilled"
-            ? pitchStatsResult.value.data
-            : null;
-        const verificationsResponse =
-          verificationsResult.status === "fulfilled"
-            ? verificationsResult.value.data
-            : null;
-        const auditResponse =
-          auditResult.status === "fulfilled" ? auditResult.value.data : null;
-        const insightsResponse =
-          insightsResult.status === "fulfilled"
-            ? insightsResult.value.data
-            : null;
+        const response = await api.get("/users/admin/dashboard");
+        const dashboard = response.data || {};
+        const usersResponse = dashboard.userStats;
+        const statsResponse = dashboard.pitchStats;
+        const verificationsResponse = dashboard.pendingVerifications;
+        const auditResponse = dashboard.auditLogs;
+        const insightsResponse = dashboard.insights;
 
         const verifications =
           verificationsResponse?.data || verificationsResponse || [];
@@ -145,13 +109,6 @@ const Dashboard = () => {
         setNewPitchesLast7Days(statsResponse?.newPitchesLast7Days ?? 0);
         setAuditLogs(audits);
         setInsights(Array.isArray(insightsResponse) ? insightsResponse : []);
-
-        if (
-          userStatsResult.status === "rejected" ||
-          insightsResult.status === "rejected"
-        ) {
-          showToast("Failed to load dashboard data.", "error");
-        }
       } catch (err) {
         console.error("Dashboard fetch error:", err);
         showToast("Failed to load dashboard data.", "error");

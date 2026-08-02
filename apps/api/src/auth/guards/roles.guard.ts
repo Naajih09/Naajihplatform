@@ -5,6 +5,7 @@ import { ROLES_KEY } from '../decorators/roles.decorator';
 
 const getAdminPermissionForRequest = (path = '') => {
   if (path.includes('/users/admin/team')) return 'settings';
+  if (path.includes('/users/admin/dashboard')) return 'dashboard';
   if (path.includes('/users/admin/stats')) return 'dashboard';
   if (path.includes('/users/admin/insights')) return 'dashboard';
   if (path.includes('/users/password')) return 'settings';

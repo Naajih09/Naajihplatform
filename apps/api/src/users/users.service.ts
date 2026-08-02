@@ -767,6 +767,108 @@ export class UsersService {
     });
   }
 
+  async getAdminDashboard() {
+    return this.cache.getOrSet('admin-users:dashboard', 60, async () => {
+      const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      const [
+        userStats,
+        insights,
+        pitches,
+        newPitchesLast7Days,
+        pendingVerificationsTotal,
+        pendingVerifications,
+        auditLogs,
+      ] = await Promise.all([
+        this.getAdminStats(),
+        this.getAdminInsights(),
+        this.databaseService.pitch.findMany({
+          select: { fundingAsk: true, category: true },
+        }),
+        this.databaseService.pitch.count({
+          where: { createdAt: { gte: since } },
+        }),
+        this.databaseService.verificationRequest.count({
+          where: { status: 'PENDING' },
+        }),
+        this.databaseService.verificationRequest.findMany({
+          where: { status: 'PENDING' },
+          include: {
+            user: {
+              include: { entrepreneurProfile: true, investorProfile: true },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        }),
+        this.databaseService.auditLog.findMany({
+          include: {
+            actor: {
+              select: {
+                id: true,
+                email: true,
+                role: true,
+                entrepreneurProfile: true,
+                investorProfile: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        }),
+      ]);
+
+      const totalPitches = pitches.length;
+      const fundingTotal = pitches.reduce((sum, pitch) => {
+        const ask = Number(pitch.fundingAsk);
+        return sum + (Number.isFinite(ask) ? ask : 0);
+      }, 0);
+
+      const categoryCounts = pitches.reduce(
+        (acc: Record<string, number>, pitch) => {
+          const category = pitch.category || 'Uncategorized';
+          acc[category] = (acc[category] || 0) + 1;
+          return acc;
+        },
+        {},
+      );
+
+      const investmentBreakdown = Object.entries(categoryCounts)
+        .map(([label, count]) => ({
+          label,
+          value: Math.round((count / Math.max(totalPitches, 1)) * 100),
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 4);
+
+      return {
+        userStats,
+        pitchStats: {
+          totalPitches,
+          fundingTotal,
+          investmentBreakdown,
+          newPitchesLast7Days,
+        },
+        pendingVerifications: {
+          data: pendingVerifications,
+          meta: {
+            page: 1,
+            pageSize: 5,
+            total: pendingVerificationsTotal,
+            totalPages: Math.max(
+              1,
+              Math.ceil(pendingVerificationsTotal / 5),
+            ),
+          },
+        },
+        auditLogs: {
+          data: auditLogs,
+        },
+        insights,
+      };
+    });
+  }
+
   // 7. CHANGE PASSWORD
   async changePassword(id: string, newPassword: string) {
     const hashedPassword = await bcrypt.hash(newPassword, 10);

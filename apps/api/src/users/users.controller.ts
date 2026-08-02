@@ -115,6 +115,13 @@ export class UsersController {
   // 3b. ADMIN PLATFORM STATS
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
+  @Get('admin/dashboard')
+  getAdminDashboard() {
+    return this.usersService.getAdminDashboard();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Get('admin/stats')
   getAdminStats() {
     return this.usersService.getAdminStats();

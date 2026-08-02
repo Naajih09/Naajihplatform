@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import { UsersService } from './users.service';
 
 describe('UsersService (email verification)', () => {
@@ -29,8 +30,18 @@ describe('UsersService (email verification)', () => {
     ),
   };
 
+  const accessPolicyService: any = {
+    entitlementsFor: jest.fn(),
+    getUserEntitlements: jest.fn(),
+  };
+
   const createService = () =>
-    new UsersService(databaseService, mailerService, cacheService);
+    new UsersService(
+      databaseService,
+      mailerService,
+      cacheService,
+      accessPolicyService,
+    );
 
   beforeEach(() => {
     jest.resetAllMocks();
@@ -144,5 +155,37 @@ describe('UsersService (email verification)', () => {
       }),
     );
     expect(cacheService.deleteByPrefix).toHaveBeenCalledWith('user:user-1:');
+  });
+
+  it('backfills permissions for legacy admin accounts', async () => {
+    databaseService.user.findUnique.mockResolvedValue({
+      id: 'admin-1',
+      email: 'admin@example.com',
+      role: UserRole.ADMIN,
+      adminPermissions: [],
+    });
+    databaseService.user.update.mockResolvedValue({});
+    const service = createService();
+
+    const result = await service.findById('admin-1');
+
+    expect(databaseService.user.update).toHaveBeenCalledWith({
+      where: { id: 'admin-1' },
+      data: {
+        adminPermissions: [
+          'dashboard',
+          'users',
+          'pitches',
+          'verification',
+          'academy',
+          'messages',
+          'audit',
+          'settings',
+        ],
+      },
+    });
+    expect(result?.adminPermissions).toContain('dashboard');
+    expect(result?.adminPermissions).toContain('settings');
+    expect(cacheService.deleteByPrefix).toHaveBeenCalledWith('user:admin-1:');
   });
 });

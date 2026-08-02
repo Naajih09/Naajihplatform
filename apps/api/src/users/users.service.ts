@@ -115,24 +115,10 @@ export class UsersService {
       );
   }
 
-  private getPrimaryAdminEmail() {
-    return (process.env.ADMIN_EMAIL ?? 'admin@naajih.com').trim().toLowerCase();
-  }
-
-  private isPrimaryAdmin(user: {
-    email?: string | null;
-    role?: UserRole | null;
-  }) {
-    return (
-      user.role === UserRole.ADMIN &&
-      user.email?.trim().toLowerCase() === this.getPrimaryAdminEmail()
-    );
-  }
-
-  private async ensurePrimaryAdminPermissions<T extends User | null>(
+  private async ensureLegacyAdminPermissions<T extends User | null>(
     user: T,
   ): Promise<T> {
-    if (!user || !this.isPrimaryAdmin(user)) return user;
+    if (!user || user.role !== UserRole.ADMIN) return user;
 
     if (
       Array.isArray(user.adminPermissions) &&
@@ -348,7 +334,7 @@ export class UsersService {
     const user = await this.databaseService.user.findUnique({
       where: { id },
     });
-    return this.ensurePrimaryAdminPermissions(user);
+    return this.ensureLegacyAdminPermissions(user);
   }
 
   // 2. LOGIN (Check Hashed Password)
@@ -463,7 +449,7 @@ export class UsersService {
         subscription: true,
       },
     });
-    return this.ensurePrimaryAdminPermissions(user);
+    return this.ensureLegacyAdminPermissions(user);
   }
 
   async findPublicByEmail(email: string) {

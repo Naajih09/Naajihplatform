@@ -41,6 +41,10 @@ const Settings = () => {
   >({});
   const [teamLoading, setTeamLoading] = useState(true);
   const [savingAdminId, setSavingAdminId] = useState("");
+  const [savingPasswordAdminId, setSavingPasswordAdminId] = useState("");
+  const [passwordDrafts, setPasswordDrafts] = useState<Record<string, string>>(
+    {},
+  );
   const [creatingAdmin, setCreatingAdmin] = useState(false);
   const [newAdmin, setNewAdmin] = useState({
     firstName: "",
@@ -172,6 +176,31 @@ const Settings = () => {
     }
   };
 
+  const resetAdminPassword = async (admin: AdminUser) => {
+    const password = passwordDrafts[admin.id] || "";
+    if (password.length < 6) {
+      showToast("Password must be at least 6 characters.", "error");
+      return;
+    }
+
+    setSavingPasswordAdminId(admin.id);
+    try {
+      await api.patch(`/users/admin/team/${admin.id}/password`, {
+        password,
+      });
+      setPasswordDrafts((current) => ({ ...current, [admin.id]: "" }));
+      showToast("Admin password updated.", "success");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Unable to update admin password.";
+      showToast(Array.isArray(message) ? message[0] : message, "error");
+    } finally {
+      setSavingPasswordAdminId("");
+    }
+  };
+
   const createAdmin = async (event: React.FormEvent) => {
     event.preventDefault();
     if (newAdmin.adminPermissions.length === 0) {
@@ -185,7 +214,10 @@ const Settings = () => {
 
     setCreatingAdmin(true);
     try {
-      await api.post("/users/admin/team", newAdmin);
+      await api.post("/users/admin/team", {
+        ...newAdmin,
+        email: newAdmin.email.trim().toLowerCase(),
+      });
       setNewAdmin({
         firstName: "",
         lastName: "",
@@ -464,19 +496,46 @@ const Settings = () => {
                         {admin.email}
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => savePermissions(admin)}
-                      disabled={savingAdminId === admin.id}
-                      className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 px-4 py-2 text-sm font-bold text-primary hover:bg-primary hover:text-black disabled:opacity-60"
-                    >
-                      {savingAdminId === admin.id ? (
-                        <Loader2 size={16} className="animate-spin" />
-                      ) : (
-                        <Save size={16} />
-                      )}
-                      Save Access
-                    </button>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <input
+                        type="password"
+                        value={passwordDrafts[admin.id] || ""}
+                        onChange={(event) =>
+                          setPasswordDrafts((current) => ({
+                            ...current,
+                            [admin.id]: event.target.value,
+                          }))
+                        }
+                        className="admin-input px-3 py-2 text-sm"
+                        placeholder="New password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => resetAdminPassword(admin)}
+                        disabled={savingPasswordAdminId === admin.id}
+                        className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/10"
+                      >
+                        {savingPasswordAdminId === admin.id ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <ShieldCheck size={16} />
+                        )}
+                        Reset Password
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => savePermissions(admin)}
+                        disabled={savingAdminId === admin.id}
+                        className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 px-4 py-2 text-sm font-bold text-primary hover:bg-primary hover:text-black disabled:opacity-60"
+                      >
+                        {savingAdminId === admin.id ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <Save size={16} />
+                        )}
+                        Save Access
+                      </button>
+                    </div>
                   </div>
                   <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                     {ADMIN_PERMISSIONS.map((permission) => (

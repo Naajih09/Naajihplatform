@@ -308,6 +308,35 @@ export class UsersService {
     return this.sanitizeUser(newAdmin);
   }
 
+  async updateAdminPassword(adminId: string, password?: string) {
+    if (!password || password.length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters.');
+    }
+
+    const admin = await this.databaseService.user.findUnique({
+      where: { id: adminId },
+      select: { id: true, role: true },
+    });
+
+    if (!admin || admin.role !== UserRole.ADMIN) {
+      throw new BadRequestException('Admin user not found.');
+    }
+
+    const updated = await this.databaseService.user.update({
+      where: { id: adminId },
+      data: {
+        password: await bcrypt.hash(password, 10),
+        isActive: true,
+        isVerified: true,
+        emailVerified: true,
+      },
+      include: { entrepreneurProfile: true },
+    });
+
+    this.clearUserCache(adminId);
+    return this.sanitizeUser(updated);
+  }
+
   async updateAdminPermissions(adminId: string, permissions: unknown) {
     const admin = await this.databaseService.user.findUnique({
       where: { id: adminId },
@@ -339,8 +368,9 @@ export class UsersService {
 
   // 2. LOGIN (Check Hashed Password)
   async login(email: string, pass: string) {
+    const normalizedEmail = email.trim().toLowerCase();
     const user = await this.databaseService.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
       include: { entrepreneurProfile: true, investorProfile: true },
     });
 
@@ -441,8 +471,9 @@ export class UsersService {
 
   // 4. FIND ONE
   async findOne(email: string) {
+    const normalizedEmail = email.trim().toLowerCase();
     const user = await this.databaseService.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
       include: {
         entrepreneurProfile: true,
         investorProfile: true,

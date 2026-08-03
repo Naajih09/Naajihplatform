@@ -133,6 +133,52 @@ describe('UsersService (email verification)', () => {
     expect(mailerService.sendMail).not.toHaveBeenCalled();
   });
 
+  it('normalizes email when finding a user for login', async () => {
+    databaseService.user.findUnique.mockResolvedValue({
+      id: 'admin-1',
+      email: 'admin2@example.com',
+      role: UserRole.ADMIN,
+      adminPermissions: ['dashboard'],
+    });
+    const service = createService();
+
+    await service.findOne(' Admin2@Example.com ');
+
+    expect(databaseService.user.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { email: 'admin2@example.com' },
+      }),
+    );
+  });
+
+  it('resets an admin password and reactivates the account', async () => {
+    databaseService.user.findUnique.mockResolvedValue({
+      id: 'admin-2',
+      role: UserRole.ADMIN,
+    });
+    databaseService.user.update.mockResolvedValue({
+      id: 'admin-2',
+      email: 'admin2@example.com',
+      role: UserRole.ADMIN,
+    });
+    const service = createService();
+
+    await service.updateAdminPassword('admin-2', 'new-password');
+
+    expect(databaseService.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'admin-2' },
+        data: expect.objectContaining({
+          password: expect.any(String),
+          isActive: true,
+          isVerified: true,
+          emailVerified: true,
+        }),
+      }),
+    );
+    expect(cacheService.deleteByPrefix).toHaveBeenCalledWith('user:admin-2:');
+  });
+
   it('resets password with a valid token and clears the token', async () => {
     databaseService.user.findFirst.mockResolvedValue({ id: 'user-1' });
     databaseService.user.update.mockResolvedValue({});

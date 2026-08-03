@@ -170,6 +170,13 @@ export class UsersController {
     return this.usersService.updateAdminPermissions(id, body?.adminPermissions);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Patch('admin/team/:id/password')
+  updateAdminPassword(@Param('id') id: string, @Body() body: any) {
+    return this.usersService.updateAdminPassword(id, body?.password);
+  }
+
   // 5b. REQUEST EMAIL VERIFICATION (Authenticated)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(

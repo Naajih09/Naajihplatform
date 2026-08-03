@@ -21,7 +21,10 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await api.post("/users/login", { email, password });
+      const response = await api.post("/users/login", {
+        email: email.trim().toLowerCase(),
+        password,
+      });
       const { access_token: accessToken, user } = response.data || {};
 
       if (!accessToken) {

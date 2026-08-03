@@ -81,11 +81,10 @@ export const storeAdminPermissions = (permissions?: unknown) => {
 export const hasAdminPermission = (permission: AdminPermission) => {
   const permissions = getStoredAdminPermissions();
 
-  // If the stored permissions array is empty, treat it as "no permissions".
-  // Backend denies access when `adminPermissions` is an empty array, so
-  // the frontend must behave consistently and *not* allow access.
+  // Legacy admin accounts may have an empty permissions array. Backend treats
+  // those accounts as full admins until explicit permissions are saved.
   if (permissions.length === 0) {
-    return false;
+    return true;
   }
 
   return permissions.includes(permission);

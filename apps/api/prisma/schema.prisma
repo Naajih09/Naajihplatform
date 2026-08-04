@@ -28,6 +28,31 @@ enum VerificationStatus {
   PENDING
   APPROVED
   REJECTED
+  FLAGGED
+}
+
+enum VerificationType {
+  IDENTITY
+  BUSINESS
+}
+
+enum VerificationProvider {
+  MANUAL
+  INTERNAL_SANDBOX
+  SMILE_ID
+  DOJAH
+  VERIFYME
+}
+
+enum TrustLevel {
+  UNVERIFIED
+  IDENTITY_PENDING
+  IDENTITY_VERIFIED
+  BUSINESS_PENDING
+  BUSINESS_VERIFIED
+  FULLY_VERIFIED
+  REJECTED
+  FLAGGED
 }
 
 enum PitchStatus {
@@ -93,7 +118,7 @@ model User {
   // Profile Relations
   entrepreneurProfile EntrepreneurProfile?
   investorProfile     InvestorProfile?
-  verification        VerificationRequest?
+  verificationRequests VerificationRequest[]
   subscription        Subscription?
 
   // App Relations
@@ -244,13 +269,29 @@ model MessageReport {
 
 // --- 5. EXTRAS ---
 model VerificationRequest {
-  id          String             @id @default(uuid())
-  userId      String             @unique
-  user        User               @relation(fields: [userId], references: [id])
-  documentUrl String
-  status      VerificationStatus @default(PENDING)
-  createdAt   DateTime           @default(now())
-  rejectionReason String?
+  id                String               @id @default(uuid())
+  userId            String
+  user              User                 @relation(fields: [userId], references: [id])
+  documentUrl       String?
+  status            VerificationStatus   @default(PENDING)
+  verificationType  VerificationType     @default(IDENTITY)
+  provider          VerificationProvider @default(MANUAL)
+  providerReference String?
+  providerStatus    String?
+  trustLevel        TrustLevel           @default(UNVERIFIED)
+  consentedAt       DateTime?
+  verifiedAt        DateTime?
+  riskFlags         String[]             @default([])
+  metadata          Json?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  rejectionReason   String?
+
+  @@index([status])
+  @@index([verificationType])
+  @@index([provider, providerReference])
+  @@index([trustLevel])
+  @@unique([userId, verificationType])
 }
 
 model Subscription {

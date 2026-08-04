@@ -6,6 +6,7 @@ import {
   Clock,
   AlertTriangle,
   Loader2,
+  Building2,
 } from "lucide-react";
 import { getApiBaseUrl } from "../../lib/api-base";
 
@@ -20,6 +21,11 @@ const Verification = () => {
   const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
   const [emailSending, setEmailSending] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [startingProvider, setStartingProvider] = useState(false);
+  const [selectedVerificationType, setSelectedVerificationType] = useState<
+    "IDENTITY" | "BUSINESS"
+  >("IDENTITY");
+  const [consentAccepted, setConsentAccepted] = useState(false);
   const [toast, setToast] = useState<{
     show: boolean;
     message: string;
@@ -31,7 +37,20 @@ const Verification = () => {
   });
   const role = user.role || "USER";
   const isEntrepreneur = role === "ENTREPRENEUR";
-  const statusLabel = status?.status || "NOT_SUBMITTED";
+  const verificationRequests = Array.isArray(status?.requests)
+    ? status.requests
+    : status
+      ? [status]
+      : [];
+  const identityRequest = verificationRequests.find(
+    (request: any) => request?.verificationType === "IDENTITY",
+  );
+  const businessRequest = verificationRequests.find(
+    (request: any) => request?.verificationType === "BUSINESS",
+  );
+  const selectedRequest =
+    selectedVerificationType === "BUSINESS" ? businessRequest : identityRequest;
+  const statusLabel = selectedRequest?.status || status?.status || "NOT_SUBMITTED";
   const isApproved = statusLabel === "APPROVED";
   const isPending = statusLabel === "PENDING";
   const isRejected = statusLabel === "REJECTED";
@@ -156,6 +175,15 @@ const Verification = () => {
       e.target.value = "";
       return;
     }
+    if (!consentAccepted) {
+      setToast({
+        show: true,
+        message: "Consent is required before submitting verification details.",
+        type: "error",
+      });
+      e.target.value = "";
+      return;
+    }
 
     setUploading(true);
     const formData = new FormData();
@@ -176,7 +204,11 @@ const Verification = () => {
             "Content-Type": "application/json",
             ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
           },
-          body: JSON.stringify({ documentUrl: uploadUrl }),
+          body: JSON.stringify({
+            documentUrl: uploadUrl,
+            verificationType: selectedVerificationType,
+            consentAccepted,
+          }),
         });
         const submitData = await submitRes.json().catch(() => null);
         if (!submitRes.ok) {
@@ -184,7 +216,28 @@ const Verification = () => {
             submitData?.message || "Verification submission failed.",
           );
         }
-        setStatus({ status: "PENDING", documentUrl: uploadUrl });
+        setStatus((current: any) => {
+          const existing = Array.isArray(current?.requests)
+            ? current.requests
+            : current
+              ? [current]
+              : [];
+          return {
+            status: "PENDING",
+            requests: [
+              ...existing.filter(
+                (request: any) =>
+                  request?.verificationType !== selectedVerificationType,
+              ),
+              {
+                status: "PENDING",
+                documentUrl: uploadUrl,
+                verificationType: selectedVerificationType,
+                provider: "MANUAL",
+              },
+            ],
+          };
+        });
         setToast({
           show: true,
           message: "Documents submitted successfully. Pending review.",
@@ -200,6 +253,77 @@ const Verification = () => {
     } finally {
       setUploading(false);
       e.target.value = "";
+    }
+  };
+
+  const startProviderVerification = async () => {
+    if (!authToken) {
+      setToast({ show: true, message: "Please log in again.", type: "error" });
+      return;
+    }
+    if (!consentAccepted) {
+      setToast({
+        show: true,
+        message: "Consent is required before third-party verification.",
+        type: "error",
+      });
+      return;
+    }
+
+    setStartingProvider(true);
+    try {
+      const res = await fetch(`${API_BASE}/verification/provider/start`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
+        body: JSON.stringify({
+          verificationType: selectedVerificationType,
+          consentAccepted,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.message || "Could not start verification.");
+      }
+      if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
+      setStatus((current: any) => {
+        const existing = Array.isArray(current?.requests)
+          ? current.requests
+          : current
+            ? [current]
+            : [];
+        const nextRequest = data?.request;
+        return {
+          status: "PENDING",
+          requests: [
+            ...existing.filter(
+              (request: any) =>
+                request?.verificationType !== nextRequest?.verificationType,
+            ),
+            nextRequest,
+          ].filter(Boolean),
+        };
+      });
+      setToast({
+        show: true,
+        message:
+          data?.message ||
+          "Verification session created. We will update you when the provider returns a result.",
+        type: "success",
+      });
+    } catch (err: any) {
+      setToast({
+        show: true,
+        message: err?.message || "Could not start verification.",
+        type: "error",
+      });
+    } finally {
+      setStartingProvider(false);
     }
   };
 
@@ -219,8 +343,8 @@ const Verification = () => {
           Verification Center
         </h1>
         <p className="text-slate-500 dark:text-gray-400 mt-1">
-          Confirm your email and submit one clear document so trusted users can
-          pitch, connect, and message safely.
+          Confirm your email, verify your identity, and verify your business
+          through a trusted compliance partner.
         </p>
       </div>
 
@@ -258,6 +382,21 @@ const Verification = () => {
                 </button>
               )}
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <VerificationTrackCard
+              title="Identity verification"
+              description="Government identity, selfie/liveness, and account ownership checks."
+              status={identityRequest?.status || "NOT_SUBMITTED"}
+              icon={ShieldCheck}
+            />
+            <VerificationTrackCard
+              title="Business verification"
+              description="CAC or business registration checks for entrepreneur credibility."
+              status={businessRequest?.status || "NOT_SUBMITTED"}
+              icon={Building2}
+            />
           </div>
 
           {/* Status Card */}
@@ -315,14 +454,67 @@ const Verification = () => {
               </div>
               <div>
                 <h4 className="font-bold text-slate-900 dark:text-white">
-                  Submit your document
+                  Start verification
                 </h4>
                 <p className="text-sm text-slate-500 dark:text-gray-500">
-                  Upload a clear {documentExamples}. Your name should be
-                  readable.
+                  Use a trusted partner first. Manual document upload remains
+                  available as a fallback while provider integration is being
+                  completed.
                 </p>
               </div>
             </div>
+
+            <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2">
+              {(["IDENTITY", "BUSINESS"] as const).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setSelectedVerificationType(type)}
+                  className={`rounded-lg border px-4 py-3 text-left transition ${
+                    selectedVerificationType === type
+                      ? "border-primary bg-primary/10 text-slate-900 dark:text-white"
+                      : "border-slate-200 text-slate-500 hover:border-primary/40 dark:border-gray-800 dark:text-gray-400"
+                  }`}
+                >
+                  <span className="block text-sm font-bold">
+                    {type === "IDENTITY" ? "Identity" : "Business"}
+                  </span>
+                  <span className="text-xs">
+                    {type === "IDENTITY"
+                      ? "Personal KYC and liveness checks"
+                      : "Business registration and ownership checks"}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <label className="mb-5 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-gray-800 dark:bg-white/5 dark:text-gray-300">
+              <input
+                type="checkbox"
+                checked={consentAccepted}
+                onChange={(event) => setConsentAccepted(event.target.checked)}
+                className="mt-1"
+              />
+              <span>
+                I agree that NaajihBiz may share the required verification
+                details with a trusted verification partner for KYC/KYB checks,
+                fraud prevention, and compliance review.
+              </span>
+            </label>
+
+            <button
+              type="button"
+              onClick={startProviderVerification}
+              disabled={startingProvider || isPending || isApproved}
+              className="mb-5 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-bold text-neutral-dark hover:brightness-110 disabled:opacity-60"
+            >
+              {startingProvider ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <ShieldCheck size={18} />
+              )}
+              Start Trusted Partner Verification
+            </button>
 
             {isPending || isApproved ? (
               <div className="p-6 bg-slate-100 dark:bg-[#151518] rounded-xl border border-slate-200 dark:border-gray-700 text-center">
@@ -340,7 +532,7 @@ const Verification = () => {
                 <p className="text-xs text-slate-500 dark:text-gray-500">
                   {isApproved
                     ? "No further action is required."
-                    : "We will notify you when the review is complete."}
+                    : "We will notify you when the provider or review team returns a result."}
                 </p>
               </div>
             ) : (
@@ -368,10 +560,10 @@ const Verification = () => {
                     <p className="font-bold text-slate-900 dark:text-white">
                       {isRejected
                         ? "Upload Replacement Document"
-                        : "Click to Upload Document"}
+                        : `Upload ${selectedVerificationType.toLowerCase()} document fallback`}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-gray-500 mt-2">
-                      PDF, JPG, or PNG (Max 5MB)
+                      {documentExamples}. PDF, JPG, or PNG under 5MB.
                     </p>
                   </>
                 )}
@@ -386,11 +578,11 @@ const Verification = () => {
               </div>
               <div>
                 <h4 className="font-bold text-slate-900 dark:text-white">
-                  Admin review
+                  Provider result and exception review
                 </h4>
                 <p className="text-sm text-slate-500 dark:text-gray-500">
-                  Our team checks the document, role, and profile details before
-                  unlocking verified-only actions.
+                  Our team reviews failed, flagged, or mismatched provider
+                  results before unlocking verified-only actions.
                 </p>
               </div>
             </div>
@@ -453,6 +645,58 @@ const Verification = () => {
           </div>
         </div>
       </div>
+    </div>
+  );
+};
+
+const VerificationTrackCard = ({
+  title,
+  description,
+  status,
+  icon: Icon,
+}: {
+  title: string;
+  description: string;
+  status: string;
+  icon: typeof ShieldCheck;
+}) => {
+  const isApproved = status === "APPROVED";
+  const isPending = status === "PENDING";
+  const isRejected = status === "REJECTED";
+  const label = isApproved
+    ? "Verified"
+    : isPending
+      ? "Pending"
+      : isRejected
+        ? "Needs review"
+        : "Not started";
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#1d1d20]">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
+            <Icon size={18} />
+          </div>
+          <h3 className="font-bold text-slate-900 dark:text-white">{title}</h3>
+        </div>
+        <span
+          className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${
+            isApproved
+              ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300"
+              : isPending
+                ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300"
+                : isRejected
+                  ? "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300"
+                  : "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-gray-300"
+          }`}
+        >
+          {label}
+        </span>
+      </div>
+      <p className="text-sm text-slate-500 dark:text-gray-400">
+        {description}
+      </p>
     </div>
   );
 };

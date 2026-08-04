@@ -339,14 +339,21 @@ const Dashboard = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <a
-                          href={req.documentUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-primary hover:underline flex items-center gap-1"
-                        >
-                          <FileText size={14} /> View <ExternalLink size={10} />
-                        </a>
+                        {req.documentUrl ? (
+                          <a
+                            href={req.documentUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-primary hover:underline flex items-center gap-1"
+                          >
+                            <FileText size={14} /> View{" "}
+                            <ExternalLink size={10} />
+                          </a>
+                        ) : (
+                          <span className="text-xs text-slate-500 dark:text-gray-500">
+                            {req.provider || "Provider"} result
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-amber-500 flex items-center gap-1 text-xs font-bold uppercase">

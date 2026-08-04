@@ -28,7 +28,13 @@ interface VerificationUser {
 interface VerificationRequest {
   id: string;
   documentUrl?: string;
-  status?: "PENDING" | "APPROVED" | "REJECTED";
+  status?: "PENDING" | "APPROVED" | "REJECTED" | "FLAGGED";
+  verificationType?: "IDENTITY" | "BUSINESS";
+  provider?: string;
+  providerStatus?: string;
+  providerReference?: string;
+  trustLevel?: string;
+  riskFlags?: string[];
   user?: VerificationUser;
   createdAt?: string;
 }
@@ -38,6 +44,7 @@ const verificationStatusOptions: VerificationStatusFilter[] = [
   "PENDING",
   "APPROVED",
   "REJECTED",
+  "FLAGGED",
 ];
 
 const Verification = () => {
@@ -248,7 +255,9 @@ const Verification = () => {
               <tr>
                 <th className="px-6 py-4">User</th>
                 <th className="px-6 py-4">Role</th>
-                <th className="px-6 py-4">Document</th>
+                <th className="px-6 py-4">Check</th>
+                <th className="px-6 py-4">Provider</th>
+                <th className="px-6 py-4">Evidence</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -281,18 +290,49 @@ const Verification = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button
-                        onClick={() =>
-                          setDocModal({
-                            show: true,
-                            url: req.documentUrl ?? null,
-                          })
-                        }
-                        className="flex items-center gap-2 text-primary hover:underline"
-                      >
-                        <FileText size={16} /> Preview{" "}
-                        <ExternalLink size={12} />
-                      </button>
+                      <div className="font-bold text-slate-900 dark:text-white">
+                        {req.verificationType || "IDENTITY"}
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-gray-500">
+                        {req.status || "PENDING"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-slate-900 dark:text-white">
+                        {req.provider || "MANUAL"}
+                      </div>
+                      <div className="max-w-[180px] truncate text-xs text-slate-500 dark:text-gray-500">
+                        {req.providerStatus ||
+                          req.providerReference ||
+                          req.trustLevel ||
+                          "Awaiting review"}
+                      </div>
+                      {req.riskFlags?.length ? (
+                        <div className="mt-1 text-xs font-bold text-amber-500">
+                          {req.riskFlags.length} risk flag
+                          {req.riskFlags.length === 1 ? "" : "s"}
+                        </div>
+                      ) : null}
+                    </td>
+                    <td className="px-6 py-4">
+                      {req.documentUrl ? (
+                        <button
+                          onClick={() =>
+                            setDocModal({
+                              show: true,
+                              url: req.documentUrl ?? null,
+                            })
+                          }
+                          className="flex items-center gap-2 text-primary hover:underline"
+                        >
+                          <FileText size={16} /> Preview{" "}
+                          <ExternalLink size={12} />
+                        </button>
+                      ) : (
+                        <span className="text-xs text-slate-500 dark:text-gray-500">
+                          Provider result
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right flex justify-end gap-2">
                       <button
@@ -452,18 +492,45 @@ const Verification = () => {
 
 const exportCsv = (rows: VerificationRequest[]) => {
   if (!rows.length) return;
-  const headers = ["email", "role", "status", "documentUrl", "createdAt"];
+  const headers = [
+    "email",
+    "role",
+    "status",
+    "verificationType",
+    "provider",
+    "providerStatus",
+    "providerReference",
+    "documentUrl",
+    "riskFlags",
+    "createdAt",
+  ];
   const lines = [
     headers.join(","),
     ...rows.map((req) => {
       const email = req.user?.email || "";
       const role = req.user?.role || "";
       const status = req.status || "";
+      const verificationType = req.verificationType || "";
+      const provider = req.provider || "";
+      const providerStatus = req.providerStatus || "";
+      const providerReference = req.providerReference || "";
       const documentUrl = req.documentUrl || "";
+      const riskFlags = req.riskFlags?.join("; ") || "";
       const createdAt = req.createdAt
         ? new Date(req.createdAt).toISOString()
         : "";
-      return [email, role, status, documentUrl, createdAt]
+      return [
+        email,
+        role,
+        status,
+        verificationType,
+        provider,
+        providerStatus,
+        providerReference,
+        documentUrl,
+        riskFlags,
+        createdAt,
+      ]
         .map((value) => `"${String(value).replace(/"/g, '""')}"`)
         .join(",");
     }),

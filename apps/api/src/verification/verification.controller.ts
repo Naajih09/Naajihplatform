@@ -1,37 +1,60 @@
 import {
+  Body,
   Controller,
-  Post,
+  ForbiddenException,
   Get,
+  Headers,
   Param,
   Patch,
-  Body,
-  UseGuards,
-  Request,
-  ForbiddenException,
+  Post,
   Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
+import { UserRole, VerificationStatus, VerificationType } from '@prisma/client';
 import { VerificationService } from './verification.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole, VerificationStatus } from '@prisma/client';
-
-// DTO for submitting verification requests
-// Consider moving this to `apps/api/src/verification/dto/submit-verification.dto.ts`
-import { IsString, IsUrl, IsNotEmpty } from 'class-validator';
 
 export class SubmitVerificationDto {
   @IsUrl()
   @IsNotEmpty()
   documentUrl: string;
+
+  @IsEnum(VerificationType)
+  @IsOptional()
+  verificationType?: VerificationType;
+
+  @IsBoolean()
+  @IsOptional()
+  consentAccepted?: boolean;
 }
 
-// DTO for updating verification status
-// Consider moving this to `apps/api/src/verification/dto/update-verification-status.dto.ts`
-import { IsEnum, IsOptional } from 'class-validator';
+export class StartProviderVerificationDto {
+  @IsEnum(VerificationType)
+  @IsOptional()
+  verificationType?: VerificationType;
+
+  @IsString()
+  @IsOptional()
+  provider?: string;
+
+  @IsBoolean()
+  consentAccepted: boolean;
+
+  @IsString()
+  @IsOptional()
+  businessName?: string;
+
+  @IsString()
+  @IsOptional()
+  cacNumber?: string;
+}
 
 export class UpdateVerificationStatusDto {
-  @IsEnum(VerificationStatus) // Use the Prisma enum
+  @IsEnum(VerificationStatus)
   status: VerificationStatus;
 
   @IsString()
@@ -39,43 +62,56 @@ export class UpdateVerificationStatusDto {
   rejectionReason?: string;
 }
 
-// Protect the whole controller with authentication and role checking
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('verification')
 export class VerificationController {
   constructor(private readonly verificationService: VerificationService) {}
 
-  // 1️⃣ USER: Submit verification request
-  // Entrepreneur/Investor can submit their own verification
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('submit')
   @Roles(UserRole.ENTREPRENEUR, UserRole.INVESTOR)
-  async submitVerification(
-    @Body() submitVerificationDto: SubmitVerificationDto, // Use DTO
-    @Request() req, // Get user info from JWT
+  submitVerification(
+    @Body() body: SubmitVerificationDto,
+    @Request() req,
   ) {
     return this.verificationService.create({
       userId: req.user.id,
-      documentUrl: submitVerificationDto.documentUrl,
+      documentUrl: body.documentUrl,
+      verificationType: body.verificationType,
+      consentAccepted: body.consentAccepted,
     });
   }
 
-  // 2️⃣ USER: Check verification status
-  // Entrepreneur/Investor can check their own status
-  @Get(':userId')
-  @Roles(UserRole.ENTREPRENEUR, UserRole.INVESTOR, UserRole.ADMIN) // Admin can also check
-  async getVerificationStatus(@Param('userId') userId: string, @Request() req) {
-    // Ensure the userId in the param matches the authenticated user's ID, unless it's an ADMIN
-    if (req.user.role !== UserRole.ADMIN && req.user.id !== userId) {
-      throw new ForbiddenException(
-        'You can only view your own verification status.',
-      );
-    }
-    return this.verificationService.getStatus(userId);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post('provider/start')
+  @Roles(UserRole.ENTREPRENEUR, UserRole.INVESTOR)
+  startProviderVerification(
+    @Body() body: StartProviderVerificationDto,
+    @Request() req,
+  ) {
+    return this.verificationService.startProviderSession({
+      userId: req.user.id,
+      verificationType: body.verificationType,
+      provider: body.provider,
+      consentAccepted: body.consentAccepted,
+      businessName: body.businessName,
+      cacNumber: body.cacNumber,
+    });
   }
 
-  // 3️⃣ ADMIN: Get all pending verification requests
+  @Post('provider/webhook')
+  providerWebhook(
+    @Body() body: any,
+    @Headers('x-verification-webhook-secret') signature?: string,
+  ) {
+    return this.verificationService.handleProviderWebhook({
+      ...body,
+      signature,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('admin/pending')
-  @Roles(UserRole.ADMIN) // Only ADMIN
+  @Roles(UserRole.ADMIN)
   getPendingVerifications(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -90,25 +126,46 @@ export class VerificationController {
     });
   }
 
-  // 4️⃣ ADMIN: Approve or reject verification
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch('admin/:id')
-  @Roles(UserRole.ADMIN) // Only ADMIN
+  @Roles(UserRole.ADMIN)
   updateVerificationStatus(
-    @Param('id') id: string, // Verification Request ID
-    @Body() updateVerificationStatusDto: UpdateVerificationStatusDto, // Use DTO
+    @Param('id') id: string,
+    @Body() body: UpdateVerificationStatusDto,
     @Request() req,
   ) {
     if (
-      updateVerificationStatusDto.status !== 'APPROVED' &&
-      updateVerificationStatusDto.status !== 'REJECTED'
+      body.status !== VerificationStatus.APPROVED &&
+      body.status !== VerificationStatus.REJECTED &&
+      body.status !== VerificationStatus.FLAGGED
     ) {
-      throw new ForbiddenException('Status must be APPROVED or REJECTED.');
+      throw new ForbiddenException(
+        'Status must be APPROVED, REJECTED, or FLAGGED.',
+      );
     }
+
     return this.verificationService.updateStatus(
       id,
-      updateVerificationStatusDto.status,
-      updateVerificationStatusDto.rejectionReason,
+      body.status,
+      body.rejectionReason,
       req.user.id,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get(':userId')
+  @Roles(UserRole.ENTREPRENEUR, UserRole.INVESTOR, UserRole.ADMIN)
+  getVerificationStatus(
+    @Param('userId') userId: string,
+    @Query('type') type: string | undefined,
+    @Request() req,
+  ) {
+    if (req.user.role !== UserRole.ADMIN && req.user.id !== userId) {
+      throw new ForbiddenException(
+        'You can only view your own verification status.',
+      );
+    }
+
+    return this.verificationService.getStatus(userId, type);
   }
 }

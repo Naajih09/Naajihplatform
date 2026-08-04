@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import {
+  Prisma,
   TrustLevel,
   UserRole,
   VerificationProvider,
@@ -14,6 +15,7 @@ import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { AuditService } from '../audit/audit.service';
 import { AccessPolicyService } from '../policies/access-policy.service';
+import { VerificationProviderRegistry } from './providers/verification-provider.registry';
 
 const VERIFICATION_PROVIDERS = Object.values(VerificationProvider);
 const VERIFICATION_TYPES = Object.values(VerificationType);
@@ -25,6 +27,7 @@ export class VerificationService {
     private readonly notificationsService: NotificationsService,
     private readonly auditService: AuditService,
     private readonly accessPolicy: AccessPolicyService,
+    private readonly providerRegistry: VerificationProviderRegistry,
   ) {}
 
   private normalizeVerificationType(type?: string) {
@@ -195,15 +198,28 @@ export class VerificationService {
       verificationType.toLowerCase(),
       Date.now(),
     ].join('_');
+    const adapter = this.providerRegistry.get(provider);
+    const session = await adapter.startSession({
+      userId: data.userId,
+      email: user?.email,
+      verificationType,
+      providerReference,
+      businessName:
+        data.businessName || user?.entrepreneurProfile?.businessName || null,
+      cacNumber: data.cacNumber || user?.entrepreneurProfile?.cacNumber || null,
+      metadata: {
+        providerMode:
+          provider === VerificationProvider.INTERNAL_SANDBOX
+            ? 'placeholder'
+            : 'external',
+      },
+    });
 
     const metadata = {
       businessName:
         data.businessName || user?.entrepreneurProfile?.businessName || null,
       cacNumber: data.cacNumber || user?.entrepreneurProfile?.cacNumber || null,
-      providerMode:
-        provider === VerificationProvider.INTERNAL_SANDBOX
-          ? 'placeholder'
-          : 'external',
+      ...(session.metadata || {}),
     };
 
     const request = await this.databaseService.verificationRequest.upsert({
@@ -216,9 +232,9 @@ export class VerificationService {
       update: {
         status: VerificationStatus.PENDING,
         verificationType,
-        provider,
-        providerReference,
-        providerStatus: 'session_created',
+        provider: session.provider,
+        providerReference: session.providerReference,
+        providerStatus: session.providerStatus,
         trustLevel: this.trustLevelFor(
           verificationType,
           VerificationStatus.PENDING,
@@ -233,9 +249,9 @@ export class VerificationService {
         userId: data.userId,
         status: VerificationStatus.PENDING,
         verificationType,
-        provider,
-        providerReference,
-        providerStatus: 'session_created',
+        provider: session.provider,
+        providerReference: session.providerReference,
+        providerStatus: session.providerStatus,
         trustLevel: this.trustLevelFor(
           verificationType,
           VerificationStatus.PENDING,
@@ -247,13 +263,10 @@ export class VerificationService {
 
     return {
       request,
-      provider,
-      providerReference,
-      redirectUrl: null,
-      message:
-        provider === VerificationProvider.INTERNAL_SANDBOX
-          ? 'Verification session created. Connect a provider adapter to launch hosted KYC/KYB.'
-          : 'Verification session created. Provider adapter pending.',
+      provider: session.provider,
+      providerReference: session.providerReference,
+      redirectUrl: session.redirectUrl,
+      message: session.message,
     };
   }
 
@@ -443,21 +456,14 @@ export class VerificationService {
 
     const provider = data.provider
       ? this.normalizeProvider(data.provider)
-      : undefined;
-    const statusText = String(data.status || '').toLowerCase();
-    const status =
-      ['approved', 'verified', 'passed', 'success'].includes(statusText)
-        ? VerificationStatus.APPROVED
-        : ['flagged', 'review', 'manual_review'].includes(statusText)
-          ? VerificationStatus.FLAGGED
-          : ['rejected', 'failed', 'declined'].includes(statusText)
-            ? VerificationStatus.REJECTED
-            : VerificationStatus.PENDING;
+      : VerificationProvider.INTERNAL_SANDBOX;
+    const adapter = this.providerRegistry.get(provider);
+    const normalized = adapter.normalizeWebhook(data);
 
     const existing = await this.databaseService.verificationRequest.findFirst({
       where: {
-        providerReference: data.providerReference,
-        ...(provider ? { provider } : {}),
+        providerReference: normalized.providerReference,
+        provider,
       },
     });
 
@@ -468,19 +474,19 @@ export class VerificationService {
     const updated = await this.databaseService.verificationRequest.update({
       where: { id: existing.id },
       data: {
-        status,
-        providerStatus: data.status,
-        trustLevel: this.trustLevelFor(existing.verificationType, status),
-        verifiedAt: status === VerificationStatus.APPROVED ? new Date() : null,
-        riskFlags: Array.isArray(data.riskFlags)
-          ? data.riskFlags.filter((flag): flag is string => typeof flag === 'string')
-          : [],
-        metadata:
-          data.metadata && typeof data.metadata === 'object'
-            ? data.metadata
-            : existing.metadata,
+        status: normalized.status,
+        providerStatus: normalized.providerStatus,
+        trustLevel: this.trustLevelFor(
+          existing.verificationType,
+          normalized.status,
+        ),
+        verifiedAt:
+          normalized.status === VerificationStatus.APPROVED ? new Date() : null,
+        riskFlags: normalized.riskFlags,
+        metadata: (normalized.metadata ||
+          existing.metadata) as Prisma.InputJsonValue,
         rejectionReason:
-          status === VerificationStatus.REJECTED
+          normalized.status === VerificationStatus.REJECTED
             ? 'Rejected by verification provider.'
             : null,
       },

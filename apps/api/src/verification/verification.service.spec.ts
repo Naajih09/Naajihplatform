@@ -32,6 +32,13 @@ describe('VerificationService', () => {
   const accessPolicy: any = {
     assertCanSubmitVerification: jest.fn(),
   };
+  const internalAdapter: any = {
+    startSession: jest.fn(),
+    normalizeWebhook: jest.fn(),
+  };
+  const providerRegistry: any = {
+    get: jest.fn(() => internalAdapter),
+  };
 
   const createService = () =>
     new VerificationService(
@@ -39,6 +46,7 @@ describe('VerificationService', () => {
       notificationsService,
       auditService,
       accessPolicy,
+      providerRegistry,
     );
 
   beforeEach(() => {
@@ -46,6 +54,23 @@ describe('VerificationService', () => {
     delete process.env.VERIFICATION_PROVIDER;
     delete process.env.VERIFICATION_WEBHOOK_SECRET;
     process.env.NODE_ENV = 'test';
+    providerRegistry.get.mockReturnValue(internalAdapter);
+    internalAdapter.startSession.mockResolvedValue({
+      provider: VerificationProvider.INTERNAL_SANDBOX,
+      providerReference: 'naajih_user-1_identity_123',
+      providerStatus: 'session_created',
+      redirectUrl: null,
+      metadata: { providerMode: 'placeholder' },
+      message:
+        'Verification session created. Connect a provider adapter to launch hosted KYC/KYB.',
+    });
+    internalAdapter.normalizeWebhook.mockReturnValue({
+      providerReference: 'provider-ref',
+      status: VerificationStatus.APPROVED,
+      providerStatus: 'verified',
+      riskFlags: [],
+      metadata: undefined,
+    });
   });
 
   it('requires consent before starting a provider session', async () => {
@@ -94,6 +119,12 @@ describe('VerificationService', () => {
         }),
       }),
     );
+    expect(internalAdapter.startSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user-1',
+        verificationType: VerificationType.IDENTITY,
+      }),
+    );
     expect(result.provider).toBe(VerificationProvider.INTERNAL_SANDBOX);
     expect(result.providerReference).toContain('user-1_identity');
   });
@@ -126,6 +157,7 @@ describe('VerificationService', () => {
 
     const result = await service.handleProviderWebhook({
       providerReference: 'provider-ref',
+      provider: VerificationProvider.INTERNAL_SANDBOX,
       status: 'verified',
       signature: 'secret',
     });

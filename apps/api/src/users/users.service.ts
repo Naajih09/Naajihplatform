@@ -3,7 +3,7 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { User, UserRole } from '@prisma/client';
+import { BillingInterval, User, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
 import { DatabaseService } from '../database/database.service';
@@ -75,6 +75,11 @@ export class UsersService {
   private getTrialDurationDays() {
     const days = Number(process.env.TRIAL_DURATION_DAYS || 14);
     return Number.isFinite(days) && days > 0 ? days : 14;
+  }
+
+  private getPremiumDurationDays() {
+    const days = Number(process.env.SUBSCRIPTION_DURATION_DAYS || 30);
+    return Number.isFinite(days) && days > 0 ? days : 30;
   }
 
   private getPasswordResetTtlMinutes() {
@@ -953,6 +958,9 @@ export class UsersService {
 
   // 9. UPGRADE TO PREMIUM
   async upgradeToPremium(userId: string) {
+    const endDate = new Date(
+      Date.now() + this.getPremiumDurationDays() * 24 * 60 * 60 * 1000,
+    );
     const sub = await this.databaseService.subscription.findUnique({
       where: { userId },
     });
@@ -960,7 +968,12 @@ export class UsersService {
     if (sub) {
       const subscription = await this.databaseService.subscription.update({
         where: { userId },
-        data: { plan: 'PREMIUM' },
+        data: {
+          plan: 'PREMIUM',
+          billingInterval: BillingInterval.MONTHLY,
+          endDate,
+          trialEndsAt: null,
+        },
       });
       this.clearUserCache(userId);
       return subscription;
@@ -969,6 +982,8 @@ export class UsersService {
         data: {
           userId,
           plan: 'PREMIUM',
+          billingInterval: BillingInterval.MONTHLY,
+          endDate,
         },
       });
       this.clearUserCache(userId);
@@ -1016,6 +1031,7 @@ export class UsersService {
         where: { userId },
         data: {
           plan: 'PREMIUM',
+          billingInterval: BillingInterval.MONTHLY,
           endDate: trialEndsAt,
           trialEndsAt,
           trialUsed: true,
@@ -1029,6 +1045,7 @@ export class UsersService {
       data: {
         userId,
         plan: 'PREMIUM',
+        billingInterval: BillingInterval.MONTHLY,
         endDate: trialEndsAt,
         trialEndsAt,
         trialUsed: true,

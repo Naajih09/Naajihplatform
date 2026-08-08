@@ -72,6 +72,11 @@ enum SubscriptionPlan {
   PREMIUM
 }
 
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
 enum PaymentProvider {
   PAYSTACK
   OPAY
@@ -299,6 +304,7 @@ model Subscription {
   userId  String           @unique
   user    User             @relation(fields: [userId], references: [id])
   plan    SubscriptionPlan @default(FREE)
+  billingInterval BillingInterval @default(MONTHLY)
   endDate DateTime?
   trialEndsAt DateTime?
   trialUsed Boolean @default(false)

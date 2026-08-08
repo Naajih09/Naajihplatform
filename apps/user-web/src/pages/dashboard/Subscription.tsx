@@ -9,6 +9,9 @@ export default function Subscription() {
   const [selectedProvider, setSelectedProvider] = useState<"paystack" | "opay">(
     "paystack",
   );
+  const [billingInterval, setBillingInterval] = useState<"MONTHLY" | "YEARLY">(
+    "MONTHLY",
+  );
   const [searchParams] = useSearchParams();
   const [toast, setToast] = useState<{
     show: boolean;
@@ -31,7 +34,14 @@ export default function Subscription() {
     import.meta.env.VITE_SUBSCRIPTION_AMOUNT_NGN || 15000,
   );
   const subscriptionAmount = isAspirant ? 5000 : defaultSubscriptionAmount;
-  const estimatedAnnualValue = subscriptionAmount * 10;
+  const yearlyBillingMonths = Number(
+    import.meta.env.VITE_YEARLY_SUBSCRIPTION_BILLING_MONTHS || 10,
+  );
+  const checkoutAmount =
+    billingInterval === "YEARLY"
+      ? subscriptionAmount * yearlyBillingMonths
+      : subscriptionAmount;
+  const estimatedAnnualValue = subscriptionAmount * yearlyBillingMonths;
   const authToken =
     localStorage.getItem("accessToken") ||
     localStorage.getItem("access_token") ||
@@ -148,10 +158,11 @@ export default function Subscription() {
         body: JSON.stringify({
           provider: selectedProvider,
           email: user.email,
-          amount: subscriptionAmount,
+          amount: checkoutAmount,
           userId: user.id,
           reason: pitchPaymentReason ? "pitch-payment" : undefined,
           product: isAspirant ? "ACADEMY_PREMIUM" : "NETWORKING_PREMIUM",
+          billingInterval,
         }),
       });
       const data = await res.json().catch(() => null);
@@ -356,13 +367,16 @@ export default function Subscription() {
             </h3>
             <div className="flex items-baseline gap-1 mb-2">
               <span className="text-4xl font-black sm:text-5xl">
-                NGN {subscriptionAmount.toLocaleString()}
+                NGN {checkoutAmount.toLocaleString()}
               </span>
-              <span className="text-slate-400 dark:text-white/50">/ month</span>
+              <span className="text-slate-400 dark:text-white/50">
+                / {billingInterval === "YEARLY" ? "year" : "month"}
+              </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-white/50 mb-4 font-bold uppercase tracking-widest">
-              Estimated annual value: NGN{" "}
-              {estimatedAnnualValue.toLocaleString()}
+              {billingInterval === "YEARLY"
+                ? `Yearly plan covers 12 months. Pay ${yearlyBillingMonths} months upfront.`
+                : `Monthly plan. Yearly checkout is NGN ${estimatedAnnualValue.toLocaleString()}`}
             </p>
             {isAspirant && (
               <p className="text-xs text-primary mb-4 font-bold uppercase tracking-widest">
@@ -371,6 +385,26 @@ export default function Subscription() {
             )}
 
             <div className="mb-6 space-y-3">
+              <p className="text-xs font-bold text-slate-400 dark:text-white/50 uppercase tracking-widest">
+                Billing Period
+              </p>
+              <div className="flex gap-3 sm:gap-4">
+                <button
+                  type="button"
+                  onClick={() => setBillingInterval("MONTHLY")}
+                  className={`flex-1 rounded-lg border py-2 text-xs font-bold transition-all ${billingInterval === "MONTHLY" ? "bg-primary text-black border-primary" : "bg-slate-100 text-slate-600 border-slate-200 hover:border-slate-300 dark:bg-white/5 dark:text-white/60 dark:border-white/10 dark:hover:border-white/20"}`}
+                >
+                  Monthly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBillingInterval("YEARLY")}
+                  className={`flex-1 rounded-lg border py-2 text-xs font-bold transition-all ${billingInterval === "YEARLY" ? "bg-primary text-black border-primary" : "bg-slate-100 text-slate-600 border-slate-200 hover:border-slate-300 dark:bg-white/5 dark:text-white/60 dark:border-white/10 dark:hover:border-white/20"}`}
+                >
+                  Yearly
+                </button>
+              </div>
+
               <p className="text-xs font-bold text-slate-400 dark:text-white/50 uppercase tracking-widest">
                 Select Payment Method
               </p>

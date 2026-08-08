@@ -9,7 +9,12 @@ import axios from 'axios';
 import { AppCacheService } from '../cache/app-cache.service';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { PaymentProvider, PaymentStatus, UserRole } from '@prisma/client';
+import {
+  BillingInterval,
+  PaymentProvider,
+  PaymentStatus,
+  UserRole,
+} from '@prisma/client';
 import { Cron } from '@nestjs/schedule';
 
 @Injectable()
@@ -101,16 +106,104 @@ export class PaymentsService {
     return Number.isFinite(days) && days > 0 ? days : 30;
   }
 
+  private get yearlySubscriptionDurationDays() {
+    const days = Number(process.env.YEARLY_SUBSCRIPTION_DURATION_DAYS || 365);
+    return Number.isFinite(days) && days > 0 ? days : 365;
+  }
+
+  private get yearlyDiscountMonths() {
+    const months = Number(process.env.YEARLY_SUBSCRIPTION_BILLING_MONTHS || 10);
+    return Number.isFinite(months) && months > 0 ? months : 10;
+  }
+
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly notificationsService: NotificationsService,
     private readonly cache: AppCacheService,
   ) {}
 
+  private normalizeBillingInterval(interval?: string): BillingInterval {
+    const normalized = String(interval || BillingInterval.MONTHLY).toUpperCase();
+    return normalized === BillingInterval.YEARLY
+      ? BillingInterval.YEARLY
+      : BillingInterval.MONTHLY;
+  }
+
+  private getSubscriptionDurationDays(interval: BillingInterval) {
+    return interval === BillingInterval.YEARLY
+      ? this.yearlySubscriptionDurationDays
+      : this.subscriptionDurationDays;
+  }
+
+  private getExpectedAmountNgn(
+    product: 'ACADEMY_PREMIUM' | 'NETWORKING_PREMIUM' | undefined,
+    userRole: UserRole | undefined,
+    interval: BillingInterval,
+  ) {
+    const monthly =
+      product === 'ACADEMY_PREMIUM' ||
+      userRole === UserRole.ASPIRING_BUSINESS_OWNER
+        ? this.aspiringOwnerSubscriptionAmountNgn
+        : this.subscriptionAmountNgn;
+
+    if (!monthly) return null;
+    return interval === BillingInterval.YEARLY
+      ? monthly * this.yearlyDiscountMonths
+      : monthly;
+  }
+
   private clearUserSubscriptionCache(userId: string) {
     void this.cache.deleteByPrefix(`user:${userId}:`);
     void this.cache.deleteByPrefix('users:');
     void this.cache.deleteByPrefix('admin-users:');
+  }
+
+  private async applySuccessfulSubscription(userId: string, transaction: any) {
+    const metadata =
+      transaction?.metadata && typeof transaction.metadata === 'object'
+        ? transaction.metadata
+        : {};
+    const interval = this.normalizeBillingInterval(metadata.billingInterval);
+    const durationDays = this.getSubscriptionDurationDays(interval);
+    const existing = await this.databaseService.subscription.findUnique({
+      where: { userId },
+    });
+    const now = new Date();
+    const currentEnd = existing?.endDate || existing?.trialEndsAt;
+    const startsAt = currentEnd && currentEnd > now ? currentEnd : now;
+    const endDate = new Date(
+      startsAt.getTime() + durationDays * 24 * 60 * 60 * 1000,
+    );
+
+    await this.databaseService.subscription.upsert({
+      where: { userId },
+      create: {
+        userId,
+        plan: 'PREMIUM',
+        billingInterval: interval,
+        endDate,
+        trialUsed: true,
+        trialEndsAt: null,
+      },
+      update: {
+        plan: 'PREMIUM',
+        billingInterval: interval,
+        endDate,
+        trialUsed: true,
+        trialEndsAt: null,
+      },
+    });
+
+    this.clearUserSubscriptionCache(userId);
+
+    await this.notificationsService.create(
+      userId,
+      `Subscription upgraded to PREMIUM until ${endDate.toLocaleDateString(
+        'en-NG',
+      )}.`,
+    );
+
+    return endDate;
   }
 
   async initializeTransaction(
@@ -122,6 +215,7 @@ export class PaymentsService {
     reason?: string,
     clientIp?: string,
     product?: 'ACADEMY_PREMIUM' | 'NETWORKING_PREMIUM',
+    billingInterval?: 'MONTHLY' | 'YEARLY',
   ) {
     if (!email || !userId) {
       throw new BadRequestException('Authenticated user is required');
@@ -130,11 +224,17 @@ export class PaymentsService {
       throw new BadRequestException('Invalid amount');
     }
 
-    const expectedAmount =
-      product === 'ACADEMY_PREMIUM' ||
-      userRole === UserRole.ASPIRING_BUSINESS_OWNER
-        ? this.aspiringOwnerSubscriptionAmountNgn
-        : this.subscriptionAmountNgn;
+    const interval = this.normalizeBillingInterval(billingInterval);
+    const resolvedProduct =
+      product ||
+      (userRole === UserRole.ASPIRING_BUSINESS_OWNER
+        ? 'ACADEMY_PREMIUM'
+        : 'NETWORKING_PREMIUM');
+    const expectedAmount = this.getExpectedAmountNgn(
+      resolvedProduct,
+      userRole,
+      interval,
+    );
 
     if (expectedAmount && amount !== expectedAmount) {
       throw new BadRequestException('Invalid subscription amount');
@@ -158,12 +258,9 @@ export class PaymentsService {
         userId,
         status: PaymentStatus.INITIALIZED,
         metadata: {
-          product:
-            product ||
-            (userRole === UserRole.ASPIRING_BUSINESS_OWNER
-              ? 'ACADEMY_PREMIUM'
-              : 'NETWORKING_PREMIUM'),
+          product: resolvedProduct,
           reason,
+          billingInterval: interval,
         },
       },
     });
@@ -333,32 +430,7 @@ export class PaymentsService {
           });
 
       if (user) {
-        const endDate = new Date(
-          Date.now() + this.subscriptionDurationDays * 24 * 60 * 60 * 1000,
-        );
-        await this.databaseService.subscription.upsert({
-          where: { userId: user.id },
-          create: {
-            userId: user.id,
-            plan: 'PREMIUM',
-            endDate,
-            trialUsed: true,
-            trialEndsAt: null,
-          },
-          update: {
-            plan: 'PREMIUM',
-            endDate,
-            trialUsed: true,
-            trialEndsAt: null,
-          },
-        });
-        this.clearUserSubscriptionCache(user.id);
-
-        // Notify user
-        await this.notificationsService.create(
-          user.id,
-          `Subscription upgraded to PREMIUM! Enjoy your new perks.`,
-        );
+        await this.applySuccessfulSubscription(user.id, transaction);
       }
     }
     return { status };

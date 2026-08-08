@@ -24,6 +24,7 @@ export class PaymentsController {
       amount: number;
       reason?: string;
       product?: 'ACADEMY_PREMIUM' | 'NETWORKING_PREMIUM';
+      billingInterval?: 'MONTHLY' | 'YEARLY';
     },
     @Req() req: any,
   ) {
@@ -41,6 +42,7 @@ export class PaymentsController {
       data.reason,
       clientIp,
       data.product,
+      data.billingInterval,
     );
   }
 

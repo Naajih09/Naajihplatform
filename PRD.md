@@ -2,8 +2,8 @@
 
 # Naajih Platform
 
-**Document Version:** 2.0  
-**Last Updated:** March 19, 2026  
+**Document Version:** 2.0
+**Last Updated:** March 19, 2026
 **Status:** MVP Ready
 
 ---

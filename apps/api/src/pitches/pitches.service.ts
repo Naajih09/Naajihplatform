@@ -407,18 +407,23 @@ export class PitchesService {
     const where =
       industryList.length > 0
         ? {
-            OR: [
-              { category: { in: industryList } },
+            AND: [
+              { status: PitchStatus.APPROVED },
               {
-                user: {
-                  entrepreneurProfile: {
-                    industry: { in: industryList },
+                OR: [
+                  { category: { in: industryList } },
+                  {
+                    user: {
+                      entrepreneurProfile: {
+                        industry: { in: industryList },
+                      },
+                    },
                   },
-                },
+                ],
               },
             ],
           }
-        : {};
+        : { status: PitchStatus.APPROVED };
 
     return this.cache.getOrSet(`pitches-recommended:${userId}:list`, 30, () =>
       this.prisma.pitch.findMany({

@@ -49,7 +49,6 @@ export class PitchesController {
       maxTicket,
       page,
       pageSize,
-      includeNonApproved: true,
     });
   }
 
@@ -107,6 +106,7 @@ export class PitchesController {
       maxTicket,
       page,
       pageSize,
+      includeNonApproved: true,
     });
   }
 

@@ -11,23 +11,28 @@ export class AuthService {
   ) {}
 
   async login(email: string, pass: string) {
+    const normalizedEmail =
+      typeof email === 'string' ? email.trim().toLowerCase() : '';
+
     // 1. Find the user
-    const user = await this.usersService.findOne(email);
+    const user = normalizedEmail
+      ? await this.usersService.findOne(normalizedEmail)
+      : null;
 
     // 2. Validate User & Password
     if (!user || user.isActive === false) {
       throw new UnauthorizedException('Invalid Credentials');
     }
 
-    if (
-      process.env.REQUIRE_EMAIL_VERIFICATION === 'true' &&
-      !(user.emailVerified || user.isVerified)
-    ) {
-      throw new UnauthorizedException('Email not verified');
-    }
-
     if (!(await bcrypt.compare(pass, user.password).catch(() => false))) {
       throw new UnauthorizedException('Invalid Credentials');
+    }
+
+    if (
+      process.env.REQUIRE_EMAIL_VERIFICATION === 'true' &&
+      !user.emailVerified
+    ) {
+      throw new UnauthorizedException('Email not verified');
     }
 
     // 3. Create the Token Payload

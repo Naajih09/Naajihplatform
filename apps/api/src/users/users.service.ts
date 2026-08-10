@@ -108,6 +108,17 @@ export class UsersService {
     );
   }
 
+  private shouldExposeEmailVerificationLink(emailDelivered?: boolean) {
+    return (
+      process.env.NODE_ENV !== 'production' ||
+      (process.env.BETA_TEST_MODE === 'true' &&
+        process.env.EMAIL_VERIFICATION_EXPOSE_LINK === 'true') ||
+      (emailDelivered === false &&
+        process.env.EMAIL_VERIFICATION_FALLBACK_LINK_ON_EMAIL_FAILURE ===
+          'true')
+    );
+  }
+
   private normalizeAdminPermissions(permissions?: unknown) {
     if (!Array.isArray(permissions)) return [];
     return permissions
@@ -153,14 +164,12 @@ export class UsersService {
     await this.databaseService.user.update({
       where: { id: userId },
       data: {
-        emailVerificationToken: token,
+        emailVerificationToken: this.hashToken(token),
         emailVerificationExpires: expires,
       },
     });
 
-    const apiPrefix = process.env.API_PREFIX || 'api';
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
-    const verifyUrl = `${backendUrl}/${apiPrefix}/users/verify-email?token=${token}`;
+    const verifyUrl = `${this.getFrontendUrl()}/verify-email?token=${token}`;
 
     const emailed = await this.mailerService.sendMail(
       email,
@@ -196,6 +205,7 @@ export class UsersService {
   // 1. SIGNUP (Create User + Profile + Hash Password)
   async create(createUserDto: CreateUserDto) {
     const { email, password, role, firstName, lastName } = createUserDto;
+    const normalizedEmail = email.trim().toLowerCase();
 
     // 🔐 HASH THE PASSWORD
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -218,7 +228,7 @@ export class UsersService {
     // Save to Database
     const newUser = await this.databaseService.user.create({
       data: {
-        email,
+        email: normalizedEmail,
         password: hashedPassword, // Save the HASH
         role,
         ...profileData,
@@ -231,9 +241,8 @@ export class UsersService {
       this.sendWelcomeEmail(newUser),
     ]);
 
-    const { password: _, ...result } = newUser;
     this.clearUserCache(newUser.id);
-    return result;
+    return this.sanitizeUser(newUser);
   }
 
   // Admin-only creation (no public signup)
@@ -511,19 +520,82 @@ export class UsersService {
       user.id,
       user.email,
     );
-    return {
+    const response = {
       status: 'ok',
       message: emailed
         ? 'Verification email sent'
         : 'SMTP is not configured. Use the verification link manually.',
       emailed,
-      verifyUrl,
     };
+
+    if (this.shouldExposeEmailVerificationLink(emailed)) {
+      return {
+        ...response,
+        verifyUrl,
+        deliveryFallback:
+          emailed === false
+            ? 'Email delivery failed, so a temporary verification link is shown for this beta environment.'
+            : undefined,
+      };
+    }
+
+    return response;
+  }
+
+  async requestEmailVerificationByEmail(email: string) {
+    const normalizedEmail = email.trim().toLowerCase();
+    const genericResponse = {
+      status: 'ok',
+      message:
+        'If an unverified account exists for that email, a verification link has been sent.',
+    };
+
+    const user = await this.databaseService.user.findUnique({
+      where: { email: normalizedEmail },
+      select: {
+        id: true,
+        email: true,
+        emailVerified: true,
+        isActive: true,
+      },
+    });
+
+    if (!user || user.isActive === false || user.emailVerified) {
+      return genericResponse;
+    }
+
+    const { verifyUrl, emailed } = await this.issueEmailVerification(
+      user.id,
+      user.email,
+    );
+    const response = {
+      ...genericResponse,
+      emailed,
+    };
+
+    if (this.shouldExposeEmailVerificationLink(emailed)) {
+      return {
+        ...response,
+        verifyUrl,
+        deliveryFallback:
+          emailed === false
+            ? 'Email delivery failed, so a temporary verification link is shown for this beta environment.'
+            : undefined,
+      };
+    }
+
+    return response;
   }
 
   async verifyEmailToken(token: string) {
+    const tokenHash = this.hashToken(token);
     const user = await this.databaseService.user.findFirst({
-      where: { emailVerificationToken: token },
+      where: {
+        OR: [
+          { emailVerificationToken: tokenHash },
+          { emailVerificationToken: token },
+        ],
+      },
     });
 
     if (!user) {

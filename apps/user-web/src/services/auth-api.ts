@@ -15,7 +15,33 @@ export const authApi = createApi({
         };
       },
     }),
+    verifyEmail: builder.query<
+      { status: string; message: string },
+      string
+    >({
+      query: (token) => `users/verify-email?token=${encodeURIComponent(token)}`,
+    }),
+    resendVerificationEmail: builder.mutation<
+      {
+        status: string;
+        message: string;
+        emailed?: boolean;
+        verifyUrl?: string;
+        deliveryFallback?: string;
+      },
+      { email: string }
+    >({
+      query: (data) => ({
+        url: `users/verify-email/resend`,
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation } = authApi;
+export const {
+  useLoginMutation,
+  useVerifyEmailQuery,
+  useResendVerificationEmailMutation,
+} = authApi;

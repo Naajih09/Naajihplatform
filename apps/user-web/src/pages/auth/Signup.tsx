@@ -96,12 +96,14 @@ const Signup = () => {
 
       setToast({
         show: true,
-        message: "Account created successfully. Please log in.",
+        message: "Account created successfully. Check your email to verify it.",
         type: "success",
       });
       setTimeout(() => {
         setToast({ show: false, message: "", type: "success" });
-        navigate("/login");
+        navigate(
+          `/verify-email?email=${encodeURIComponent(formData.email)}&sent=1`,
+        );
       }, 1500);
     } catch (err: any) {
       setError(err.message);

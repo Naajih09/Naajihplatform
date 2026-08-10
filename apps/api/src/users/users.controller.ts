@@ -191,6 +191,16 @@ export class UsersController {
     return this.usersService.requestEmailVerification(req.user.id);
   }
 
+  // 5b. PUBLIC EMAIL VERIFICATION RESEND
+  @Throttle({ short: { limit: 3, ttl: 60000 } })
+  @Post('verify-email/resend')
+  resendVerification(@Body() body: { email?: string }) {
+    if (!body?.email) {
+      throw new BadRequestException('Email is required');
+    }
+    return this.usersService.requestEmailVerificationByEmail(body.email);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(
     UserRole.ADMIN,

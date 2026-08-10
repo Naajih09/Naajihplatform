@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Mail, Lock, ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  ArrowRight,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  Send,
+} from "lucide-react";
 import Button from "../../components/Button";
 import { useAppDispatch } from "@/store/store";
 import { setAuth, setToken, setUser } from "@/store/slices/auth-slice";
@@ -12,14 +20,21 @@ const Login = () => {
   const dispatch = useAppDispatch();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [resendingVerification, setResendingVerification] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [verificationMessage, setVerificationMessage] = useState("");
+  const [verificationUrl, setVerificationUrl] = useState("");
+  const [needsEmailVerification, setNeedsEmailVerification] = useState(false);
   const API_BASE = getApiBaseUrl();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setVerificationMessage("");
+    setVerificationUrl("");
+    setNeedsEmailVerification(false);
 
     try {
       const res = await fetch(`${API_BASE}/users/login`, {
@@ -51,9 +66,46 @@ const Login = () => {
       navigate(returnUrl || "/dashboard", { replace: true });
     } catch (err: any) {
       console.error(err);
-      setError(err.message);
+      const message = err.message || "Login failed. Check your email/password.";
+      setError(message);
+      setNeedsEmailVerification(
+        message.toLowerCase().includes("email not verified"),
+      );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!formData.email.trim()) return;
+
+    setResendingVerification(true);
+    setVerificationMessage("");
+    setVerificationUrl("");
+
+    try {
+      const response = await fetch(`${API_BASE}/users/verify-email/resend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to resend verification email.");
+      }
+
+      setVerificationMessage(
+        data.message ||
+          "If your account is unverified, a verification link has been sent.",
+      );
+      setVerificationUrl(
+        typeof data.verifyUrl === "string" ? data.verifyUrl : "",
+      );
+    } catch (err: any) {
+      setError(err.message || "Unable to resend verification email.");
+    } finally {
+      setResendingVerification(false);
     }
   };
 
@@ -100,6 +152,19 @@ const Login = () => {
           {error && (
             <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg flex items-center gap-2 text-sm">
               <AlertCircle size={16} /> {error}
+            </div>
+          )}
+          {verificationMessage && (
+            <div className="mb-6 rounded-lg border border-green-500/20 bg-green-500/10 p-3 text-sm text-green-600">
+              <p>{verificationMessage}</p>
+              {verificationUrl && (
+                <a
+                  href={verificationUrl}
+                  className="mt-3 inline-flex rounded-md bg-green-600 px-3 py-2 text-xs font-bold text-white hover:bg-green-700"
+                >
+                  Open verification link
+                </a>
+              )}
             </div>
           )}
 
@@ -171,6 +236,17 @@ const Login = () => {
             >
               Log In <ArrowRight size={20} />
             </Button>
+            {needsEmailVerification && (
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendingVerification || !formData.email.trim()}
+                className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-primary/40 px-5 py-3 text-sm font-bold text-primary transition-all hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {resendingVerification ? "Sending..." : "Resend verification"}
+                {!resendingVerification && <Send size={18} />}
+              </button>
+            )}
           </form>
 
           <p className="mt-8 text-center text-sm text-slate-500">

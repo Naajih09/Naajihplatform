@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
+import * as crypto from 'crypto';
 import { UsersService } from './users.service';
 
 describe('UsersService (email verification)', () => {
@@ -69,6 +70,8 @@ describe('UsersService (email verification)', () => {
   });
 
   it('verifies a valid token', async () => {
+    const token = 'valid';
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
     databaseService.user.findFirst.mockResolvedValue({
       id: 'user-1',
       emailVerificationExpires: new Date(Date.now() + 1000 * 60),
@@ -79,10 +82,54 @@ describe('UsersService (email verification)', () => {
     });
     const service = createService();
 
-    const result = await service.verifyEmailToken('valid');
+    const result = await service.verifyEmailToken(token);
     expect(result).toEqual({ status: 'ok', message: 'Email verified' });
+    expect(databaseService.user.findFirst).toHaveBeenCalledWith({
+      where: {
+        OR: [
+          { emailVerificationToken: tokenHash },
+          { emailVerificationToken: token },
+        ],
+      },
+    });
     expect(databaseService.user.update).toHaveBeenCalled();
     expect(cacheService.deleteByPrefix).toHaveBeenCalledWith('user:user-1:');
+  });
+
+  it('resends email verification publicly without storing a raw token', async () => {
+    databaseService.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      emailVerified: false,
+      isActive: true,
+    });
+    databaseService.user.update.mockResolvedValue({});
+    mailerService.sendMail.mockResolvedValue(true);
+    const service = createService();
+
+    const result =
+      await service.requestEmailVerificationByEmail(' USER@example.com ');
+    const updateCall = databaseService.user.update.mock.calls[0][0];
+    const emailHtml = mailerService.sendMail.mock.calls[0][2];
+    const verifyUrl = emailHtml.match(/http[^"]*verify-email\?token=([a-f0-9]+)/i);
+    const rawToken = verifyUrl?.[1] || '';
+
+    expect(databaseService.user.findUnique).toHaveBeenCalledWith({
+      where: { email: 'user@example.com' },
+      select: {
+        id: true,
+        email: true,
+        emailVerified: true,
+        isActive: true,
+      },
+    });
+    expect(rawToken).toHaveLength(64);
+    expect(updateCall.data.emailVerificationToken).toHaveLength(64);
+    expect(updateCall.data.emailVerificationToken).toBe(
+      crypto.createHash('sha256').update(rawToken).digest('hex'),
+    );
+    expect(updateCall.data.emailVerificationToken).not.toBe(rawToken);
+    expect(result).toMatchObject({ status: 'ok', emailed: true });
   });
 
   it('sends a password reset link for an active account', async () => {

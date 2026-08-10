@@ -52,6 +52,7 @@ const ForgotPassword = lazyWithReload(
 const ResetPassword = lazyWithReload(
   () => import("../pages/auth/ResetPassword"),
 );
+const VerifyEmail = lazyWithReload(() => import("../pages/auth/VerifyEmail"));
 const CertificateVerify = lazyWithReload(
   () => import("../pages/certificate/CertificateVerify"),
 );
@@ -133,6 +134,11 @@ const routes = [
   {
     path: "reset-password",
     element: <ResetPassword />,
+    layout: "blank",
+  },
+  {
+    path: "verify-email",
+    element: <VerifyEmail />,
     layout: "blank",
   },
   {

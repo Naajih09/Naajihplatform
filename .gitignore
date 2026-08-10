@@ -18,6 +18,7 @@ coverage
 # Turbo
 .turbo
 *.tsbuildinfo
+tsconfig.external-build.json
 
 # Vercel
 .vercel

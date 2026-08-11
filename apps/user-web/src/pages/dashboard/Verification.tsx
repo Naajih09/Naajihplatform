@@ -243,6 +243,7 @@ const Verification = () => {
           message: "Documents submitted successfully. Pending review.",
           type: "success",
         });
+        window.dispatchEvent(new Event("naajih:onboarding-refresh"));
       }
     } catch (err: any) {
       setToast({
@@ -316,6 +317,7 @@ const Verification = () => {
           "Verification session created. We will update you when the provider returns a result.",
         type: "success",
       });
+      window.dispatchEvent(new Event("naajih:onboarding-refresh"));
     } catch (err: any) {
       setToast({
         show: true,

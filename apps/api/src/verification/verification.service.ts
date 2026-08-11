@@ -101,6 +101,96 @@ export class VerificationService {
     });
   }
 
+  private getVerificationSlaHours() {
+    const hours = Number(process.env.VERIFICATION_SLA_HOURS || 48);
+    return Number.isFinite(hours) && hours > 0 ? hours : 48;
+  }
+
+  private async preScreen(data: {
+    userId: string;
+    documentUrl?: string;
+    verificationType: VerificationType;
+  }) {
+    const riskFlags: string[] = [];
+    const metadata: Record<string, unknown> = {
+      preScreenedAt: new Date().toISOString(),
+    };
+
+    const user = await this.databaseService.user.findUnique({
+      where: { id: data.userId },
+      include: {
+        entrepreneurProfile: true,
+        investorProfile: true,
+      },
+    });
+
+    const profile =
+      user?.role === UserRole.INVESTOR
+        ? user?.investorProfile
+        : user?.entrepreneurProfile;
+
+    if (!user?.emailVerified) riskFlags.push('EMAIL_NOT_VERIFIED');
+    if (!profile?.firstName || !profile?.lastName) {
+      riskFlags.push('PROFILE_NAME_INCOMPLETE');
+    }
+    if (user?.role === UserRole.ENTREPRENEUR) {
+      if (!user.entrepreneurProfile?.businessName) {
+        riskFlags.push('BUSINESS_NAME_MISSING');
+      }
+      if (
+        data.verificationType === VerificationType.BUSINESS &&
+        !user.entrepreneurProfile?.cacNumber
+      ) {
+        riskFlags.push('CAC_NUMBER_MISSING');
+      }
+    }
+
+    const documentUrl = String(data.documentUrl || '');
+    const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'webp'];
+    const extension = documentUrl.split('?')[0].split('.').pop()?.toLowerCase();
+    metadata.documentExtension = extension || null;
+    if (!documentUrl) {
+      riskFlags.push('DOCUMENT_URL_MISSING');
+    } else if (!extension || !allowedExtensions.includes(extension)) {
+      riskFlags.push('UNSUPPORTED_DOCUMENT_TYPE');
+    }
+
+    const duplicateChecks: any[] = [];
+    if (user?.email) duplicateChecks.push({ email: user.email });
+    const businessName = user?.entrepreneurProfile?.businessName;
+    if (businessName) {
+      duplicateChecks.push({
+        entrepreneurProfile: {
+          businessName: { equals: businessName, mode: 'insensitive' },
+        },
+      });
+    }
+
+    const duplicateCount = await this.databaseService.user.count({
+      where: {
+        id: { not: data.userId },
+        OR: duplicateChecks.filter(Boolean),
+      },
+    });
+    metadata.duplicateAccountCandidates = duplicateCount;
+    if (duplicateCount > 0) riskFlags.push('POSSIBLE_DUPLICATE_ACCOUNT');
+
+    const severeFlags = new Set([
+      'DOCUMENT_URL_MISSING',
+      'UNSUPPORTED_DOCUMENT_TYPE',
+      'BUSINESS_NAME_MISSING',
+    ]);
+    const status = riskFlags.some((flag) => severeFlags.has(flag))
+      ? VerificationStatus.FLAGGED
+      : VerificationStatus.PENDING;
+
+    return {
+      status,
+      riskFlags,
+      metadata,
+    };
+  }
+
   // 1. SUBMIT REQUEST (User)
   async create(data: {
     userId: string;
@@ -116,6 +206,11 @@ export class VerificationService {
     const verificationType = this.normalizeVerificationType(
       data.verificationType,
     );
+    const screening = await this.preScreen({
+      userId: data.userId,
+      documentUrl: data.documentUrl,
+      verificationType,
+    });
 
     const existing = await this.databaseService.verificationRequest.findUnique({
       where: {
@@ -132,16 +227,20 @@ export class VerificationService {
         where: { id: existing.id },
         data: {
           documentUrl: data.documentUrl,
-          status: VerificationStatus.PENDING,
+          status: screening.status,
           provider: VerificationProvider.MANUAL,
-          providerStatus: 'manual_review_pending',
+          providerStatus:
+            screening.status === VerificationStatus.FLAGGED
+              ? 'manual_review_flagged'
+              : 'manual_review_pending',
           trustLevel: this.trustLevelFor(
             verificationType,
-            VerificationStatus.PENDING,
+            screening.status,
           ),
           consentedAt: data.consentAccepted ? new Date() : existing.consentedAt,
           verifiedAt: null,
-          riskFlags: [],
+          riskFlags: screening.riskFlags,
+          metadata: screening.metadata as Prisma.InputJsonValue,
           rejectionReason: null,
         },
       });
@@ -151,15 +250,17 @@ export class VerificationService {
       data: {
         userId: data.userId,
         documentUrl: data.documentUrl,
-        status: VerificationStatus.PENDING,
+        status: screening.status,
         verificationType,
         provider: VerificationProvider.MANUAL,
-        providerStatus: 'manual_review_pending',
-        trustLevel: this.trustLevelFor(
-          verificationType,
-          VerificationStatus.PENDING,
-        ),
+        providerStatus:
+          screening.status === VerificationStatus.FLAGGED
+            ? 'manual_review_flagged'
+            : 'manual_review_pending',
+        trustLevel: this.trustLevelFor(verificationType, screening.status),
         consentedAt: data.consentAccepted ? new Date() : null,
+        riskFlags: screening.riskFlags,
+        metadata: screening.metadata as Prisma.InputJsonValue,
       },
     });
   }
@@ -371,6 +472,73 @@ export class VerificationService {
         totalPages: Math.max(1, Math.ceil(total / pageSize)),
       },
     };
+  }
+
+  async getQueueMetrics() {
+    const slaHours = this.getVerificationSlaHours();
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const pendingWhere = {
+      status: { in: [VerificationStatus.PENDING, VerificationStatus.FLAGGED] },
+    };
+
+    const [backlogSize, flaggedSize, recentApproved] = await Promise.all([
+      this.databaseService.verificationRequest.count({ where: pendingWhere }),
+      this.databaseService.verificationRequest.count({
+        where: { status: VerificationStatus.FLAGGED },
+      }),
+      this.databaseService.verificationRequest.findMany({
+        where: {
+          status: VerificationStatus.APPROVED,
+          verifiedAt: { gte: since },
+        },
+        select: { createdAt: true, verifiedAt: true },
+      }),
+    ]);
+
+    const averageHours =
+      recentApproved.length === 0
+        ? null
+        : Math.round(
+            recentApproved.reduce((sum, request) => {
+              return (
+                sum +
+                (request.verifiedAt!.getTime() - request.createdAt.getTime()) /
+                  36e5
+              );
+            }, 0) / recentApproved.length,
+          );
+
+    return {
+      slaHours,
+      backlogSize,
+      flaggedSize,
+      averageTimeToVerifyHours: averageHours,
+      reviewedLast30Days: recentApproved.length,
+      slaCopy: `Target turnaround is ${slaHours} hours for complete submissions.`,
+    };
+  }
+
+  async bulkUpdateStatus(
+    ids: string[],
+    status: VerificationStatus,
+    rejectionReason?: string,
+    actorId?: string,
+  ) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new BadRequestException('At least one request id is required.');
+    }
+    if (status === VerificationStatus.REJECTED && !rejectionReason?.trim()) {
+      throw new BadRequestException('Rejection reason is required.');
+    }
+
+    const results = [];
+    for (const id of ids) {
+      results.push(
+        await this.updateStatus(id, status, rejectionReason, actorId),
+      );
+    }
+
+    return { updated: results.length, data: results };
   }
 
   // 4. ADMIN: APPROVE/REJECT

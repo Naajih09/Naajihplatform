@@ -14,6 +14,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../../components/Button";
 import EmptyState from "../../components/EmptyState";
+import NextStepBanner from "../../components/NextStepBanner";
 import { usePitchAccess } from "../../hooks/usePitchAccess";
 import { getApiBaseUrl } from "../../lib/api-base";
 import { formatNaira, formatPercent } from "../../lib/format-money";
@@ -34,6 +35,7 @@ const Opportunities = () => {
     message: "",
     type: "success",
   });
+  const [onboarding, setOnboarding] = useState<any>(null);
 
   // --- FILTER STATES ---
   const [searchTerm, setSearchTerm] = useState("");
@@ -72,6 +74,19 @@ const Opportunities = () => {
   };
   const isPitchApproved = (status?: string) =>
     ["APPROVED", "ACTIVE"].includes((status || "PENDING").toUpperCase());
+  const getProfileCompleteness = (profile: any) => {
+    const fields = [
+      profile?.firstName,
+      profile?.lastName,
+      profile?.businessName,
+      profile?.industry,
+      profile?.stage,
+      profile?.location,
+    ];
+    return Math.round(
+      (fields.filter(Boolean).length / Math.max(fields.length, 1)) * 100,
+    );
+  };
 
   // --- 1. FETCH PITCHES (With Search & Filter) ---
   const [filters, setFilters] = useState({
@@ -129,6 +144,11 @@ const Opportunities = () => {
 
   useEffect(() => {
     if (!user?.id || !authToken) return;
+
+    fetch(`${API_BASE}/users/me/onboarding`, { headers: authHeaders })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setOnboarding(data))
+      .catch(() => null);
 
     const fetchSentRequests = async () => {
       try {
@@ -359,37 +379,52 @@ const Opportunities = () => {
           Loading opportunities...
         </div>
       ) : pitches.length === 0 ? (
-        hasFilters ? (
-          <EmptyState
-            title="No opportunities match this view"
-            description="Try a broader search or remove your filters to see more founder pitches."
-            actionLabel="Clear filters"
-            onAction={() => {
-              setSearchTerm("");
-              setActiveCategory("All");
-              setFilters({
-                stage: "All",
-                minTicket: "",
-                maxTicket: "",
-              });
-            }}
-          />
-        ) : (
-          <EmptyState
-            title="No opportunities yet"
-            description="Founders will see published pitches here once someone creates the first opportunity."
-            actionLabel={
-              user.role === "ENTREPRENEUR"
-                ? "Create your first opportunity"
-                : "Explore community"
+        <div className="space-y-4">
+          <NextStepBanner
+            onboarding={onboarding}
+            fallbackTitle={
+              hasFilters ? "No matches in this view" : "No opportunities yet"
             }
-            actionTo={
-              user.role === "ENTREPRENEUR"
-                ? "/dashboard/create-pitch"
-                : "/dashboard/community"
+            fallbackBody={
+              hasFilters
+                ? "Broaden your filters to see more founder pitches."
+                : "Complete your profile and verification while Cohort 1 opportunities are curated."
             }
+            fallbackCta={hasFilters ? "Clear filters" : "Continue setup"}
+            fallbackTo="/dashboard/profile"
           />
-        )
+          {hasFilters ? (
+            <EmptyState
+              title="No opportunities match this view"
+              description="Try a broader search or remove your filters to see more founder pitches."
+              actionLabel="Clear filters"
+              onAction={() => {
+                setSearchTerm("");
+                setActiveCategory("All");
+                setFilters({
+                  stage: "All",
+                  minTicket: "",
+                  maxTicket: "",
+                });
+              }}
+            />
+          ) : (
+            <EmptyState
+              title="No opportunities yet"
+              description="Founders will see published pitches here once someone creates the first opportunity."
+              actionLabel={
+                user.role === "ENTREPRENEUR"
+                  ? "Create your first opportunity"
+                  : "Explore community"
+              }
+              actionTo={
+                user.role === "ENTREPRENEUR"
+                  ? "/dashboard/create-pitch"
+                  : "/dashboard/community"
+              }
+            />
+          )}
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
           {pitches.map((pitch) => {
@@ -407,6 +442,12 @@ const Opportunities = () => {
                   : isConnected
                     ? "Message founder"
                     : "Connect with this founder";
+            const founderProfile = pitch.user?.entrepreneurProfile || {};
+            const profilePercent = getProfileCompleteness(founderProfile);
+            const academyCount = pitch.user?._count?.lessonProgress || 0;
+            const lastActive = pitch.user?.updatedAt
+              ? new Date(pitch.user.updatedAt).toLocaleDateString()
+              : "Recently";
 
             return (
               <div
@@ -462,6 +503,21 @@ const Opportunities = () => {
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 line-clamp-2">
                   {pitch.tagline}
                 </p>
+
+                <div className="mb-4 grid grid-cols-2 gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <span className="rounded-lg border border-slate-200 px-2 py-1 dark:border-white/10">
+                    {pitch.user?.isVerified ? "Verified founder" : "Reviewing"}
+                  </span>
+                  <span className="rounded-lg border border-slate-200 px-2 py-1 dark:border-white/10">
+                    Profile {profilePercent}%
+                  </span>
+                  <span className="rounded-lg border border-slate-200 px-2 py-1 dark:border-white/10">
+                    Academy {academyCount > 0 ? "active" : "not started"}
+                  </span>
+                  <span className="rounded-lg border border-slate-200 px-2 py-1 dark:border-white/10">
+                    Active {lastActive}
+                  </span>
+                </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-slate-100 dark:bg-black/20 rounded-xl border border-slate-200 dark:border-transparent">
                   <div>

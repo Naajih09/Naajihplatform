@@ -3,7 +3,13 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { BillingInterval, User, UserRole } from '@prisma/client';
+import {
+  BillingInterval,
+  ConnectionStatus,
+  User,
+  UserRole,
+  VerificationStatus,
+} from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
 import { DatabaseService } from '../database/database.service';
@@ -36,6 +42,66 @@ const ADMIN_PERMISSIONS = [
 ] as const;
 
 export const FULL_ADMIN_PERMISSIONS = [...ADMIN_PERMISSIONS];
+
+const FOUNDER_ONBOARDING_STEPS = [
+  {
+    key: 'verify_email',
+    title: 'Verify your email',
+    ctaLabel: 'Open email verification',
+    ctaTo: '/verify-email',
+  },
+  {
+    key: 'complete_profile',
+    title: 'Complete founder profile',
+    ctaLabel: 'Complete profile',
+    ctaTo: '/dashboard/profile',
+  },
+  {
+    key: 'submit_verification',
+    title: 'Submit KYC/KYB documents',
+    ctaLabel: 'Start verification',
+    ctaTo: '/dashboard/verification',
+  },
+  {
+    key: 'complete_first_academy_module',
+    title: 'Complete your first academy lesson',
+    ctaLabel: 'Go to Academy',
+    ctaTo: '/dashboard/learning-center',
+  },
+  {
+    key: 'get_matched',
+    title: 'Get matched with investors',
+    ctaLabel: 'Browse matches',
+    ctaTo: '/dashboard/opportunities',
+  },
+] as const;
+
+const INVESTOR_ONBOARDING_STEPS = [
+  {
+    key: 'verify_email',
+    title: 'Verify your email',
+    ctaLabel: 'Open email verification',
+    ctaTo: '/verify-email',
+  },
+  {
+    key: 'complete_profile',
+    title: 'Complete investor profile',
+    ctaLabel: 'Complete profile',
+    ctaTo: '/dashboard/profile',
+  },
+  {
+    key: 'submit_verification',
+    title: 'Complete investor verification',
+    ctaLabel: 'Start verification',
+    ctaTo: '/dashboard/verification',
+  },
+  {
+    key: 'browse_matches',
+    title: 'Browse vetted founders',
+    ctaLabel: 'View opportunities',
+    ctaTo: '/dashboard/opportunities',
+  },
+] as const;
 
 @Injectable()
 export class UsersService {
@@ -85,6 +151,79 @@ export class UsersService {
   private getPasswordResetTtlMinutes() {
     const minutes = Number(process.env.PASSWORD_RESET_TTL_MINUTES || 30);
     return Number.isFinite(minutes) && minutes > 0 ? minutes : 30;
+  }
+
+  private profileCompleteness(user: any) {
+    if (!user) {
+      return {
+        percent: 0,
+        missing: ['profile'],
+        score: 0,
+      };
+    }
+
+    const profile =
+      user.role === UserRole.INVESTOR
+        ? user.investorProfile
+        : user.entrepreneurProfile;
+    const required =
+      user.role === UserRole.INVESTOR
+        ? [
+            ['firstName', profile?.firstName],
+            ['lastName', profile?.lastName],
+            ['organization', profile?.organization],
+            ['thesis', profile?.thesis],
+            ['checkSize', profile?.minTicketSize || profile?.maxTicketSize],
+            [
+              'sectors',
+              Array.isArray(profile?.focusIndustries) &&
+                profile.focusIndustries.length > 0,
+            ],
+          ]
+        : [
+            ['firstName', profile?.firstName],
+            ['lastName', profile?.lastName],
+            ['businessName', profile?.businessName],
+            ['industry', profile?.industry],
+            ['stage', profile?.stage],
+            ['location', profile?.location],
+          ];
+
+    const missing = required
+      .filter(([, value]) => {
+        if (Array.isArray(value)) return value.length === 0;
+        return !value;
+      })
+      .map(([key]) => String(key));
+    const percent = Math.round(
+      ((required.length - missing.length) / required.length) * 100,
+    );
+
+    return {
+      percent,
+      missing,
+      score: percent,
+    };
+  }
+
+  private verificationComplete(user: any) {
+    const requests = Array.isArray(user?.verificationRequests)
+      ? user.verificationRequests
+      : [];
+    const hasIdentity = requests.some(
+      (request) =>
+        request.verificationType === 'IDENTITY' &&
+        request.status === VerificationStatus.APPROVED,
+    );
+    const hasBusiness = requests.some(
+      (request) =>
+        request.verificationType === 'BUSINESS' &&
+        request.status === VerificationStatus.APPROVED,
+    );
+
+    return user?.role === UserRole.ENTREPRENEUR
+      ? hasIdentity && hasBusiness
+      : hasIdentity;
   }
 
   private hashToken(token: string) {
@@ -785,6 +924,119 @@ export class UsersService {
 
   async getEntitlements(userId: string) {
     return this.accessPolicy.getUserEntitlements(userId);
+  }
+
+  async getOnboarding(userId: string) {
+    const user = await this.databaseService.user.findUnique({
+      where: { id: userId },
+      include: {
+        entrepreneurProfile: true,
+        investorProfile: true,
+        verificationRequests: true,
+        onboardingProgress: true,
+        lessonProgress: { take: 1 },
+        sentConnections: {
+          where: { status: { in: [ConnectionStatus.PENDING, ConnectionStatus.ACCEPTED] } },
+          take: 1,
+        },
+        receivedConnections: {
+          where: { status: { in: [ConnectionStatus.PENDING, ConnectionStatus.ACCEPTED] } },
+          take: 1,
+        },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const manual = new Map(
+      user.onboardingProgress.map((progress) => [progress.stepKey, progress]),
+    );
+    const completeness = this.profileCompleteness(user);
+    const verificationDone = this.verificationComplete(user);
+    const hasAcademyProgress = user.lessonProgress.length > 0;
+    const hasConnection =
+      user.sentConnections.length > 0 || user.receivedConnections.length > 0;
+    const stepDefs =
+      user.role === UserRole.INVESTOR
+        ? INVESTOR_ONBOARDING_STEPS
+        : FOUNDER_ONBOARDING_STEPS;
+
+    const computed: Record<string, boolean> = {
+      verify_email: user.emailVerified,
+      complete_profile: completeness.percent >= 80,
+      submit_verification: verificationDone,
+      complete_first_academy_module: hasAcademyProgress,
+      get_matched: hasConnection,
+      browse_matches: hasConnection,
+    };
+
+    const steps = stepDefs.map((step) => {
+      const saved = manual.get(step.key);
+      const completedAt =
+        saved?.completedAt ||
+        (computed[step.key] ? user.updatedAt || new Date() : null);
+      return {
+        ...step,
+        completed: Boolean(completedAt),
+        completedAt,
+      };
+    });
+    const completedCount = steps.filter((step) => step.completed).length;
+    const percent = Math.round((completedCount / steps.length) * 100);
+    const nextStep = steps.find((step) => !step.completed) || null;
+    const dismissedAt =
+      manual.get('checklist_dismissed')?.dismissedAt ||
+      manual.get('checklist_dismissed')?.completedAt ||
+      null;
+
+    return {
+      role: user.role,
+      percent,
+      completedCount,
+      totalSteps: steps.length,
+      complete: percent === 100,
+      dismissed: Boolean(dismissedAt),
+      dismissedAt,
+      nextStep,
+      steps,
+      profileQuality: {
+        ...completeness,
+        stale:
+          new Date(user.updatedAt).getTime() <
+          Date.now() - 30 * 24 * 60 * 60 * 1000,
+      },
+    };
+  }
+
+  async markOnboardingStep(userId: string, stepKey: string, completed = true) {
+    const cleaned = String(stepKey || '').trim();
+    if (!cleaned) {
+      throw new BadRequestException('Step key is required');
+    }
+
+    return this.databaseService.onboardingProgress.upsert({
+      where: { userId_stepKey: { userId, stepKey: cleaned } },
+      update: { completedAt: completed ? new Date() : null },
+      create: {
+        userId,
+        stepKey: cleaned,
+        completedAt: completed ? new Date() : null,
+      },
+    });
+  }
+
+  async dismissOnboarding(userId: string) {
+    return this.databaseService.onboardingProgress.upsert({
+      where: { userId_stepKey: { userId, stepKey: 'checklist_dismissed' } },
+      update: { dismissedAt: new Date() },
+      create: {
+        userId,
+        stepKey: 'checklist_dismissed',
+        dismissedAt: new Date(),
+      },
+    });
   }
 
   // Admin stats (platform overview)

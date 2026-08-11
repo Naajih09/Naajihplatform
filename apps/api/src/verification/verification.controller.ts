@@ -11,7 +11,15 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+} from 'class-validator';
 import { UserRole, VerificationStatus, VerificationType } from '@prisma/client';
 import { VerificationService } from './verification.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -60,6 +68,11 @@ export class UpdateVerificationStatusDto {
   @IsString()
   @IsOptional()
   rejectionReason?: string;
+}
+
+export class BulkUpdateVerificationStatusDto extends UpdateVerificationStatusDto {
+  @IsArray()
+  ids: string[];
 }
 
 @Controller('verification')
@@ -124,6 +137,38 @@ export class VerificationController {
       status,
       search,
     });
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('admin/metrics')
+  @Roles(UserRole.ADMIN)
+  getVerificationMetrics() {
+    return this.verificationService.getQueueMetrics();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Patch('admin/bulk')
+  @Roles(UserRole.ADMIN)
+  bulkUpdateVerificationStatus(
+    @Body() body: BulkUpdateVerificationStatusDto,
+    @Request() req,
+  ) {
+    if (
+      body.status !== VerificationStatus.APPROVED &&
+      body.status !== VerificationStatus.REJECTED &&
+      body.status !== VerificationStatus.FLAGGED
+    ) {
+      throw new ForbiddenException(
+        'Status must be APPROVED, REJECTED, or FLAGGED.',
+      );
+    }
+
+    return this.verificationService.bulkUpdateStatus(
+      body.ids,
+      body.status,
+      body.rejectionReason,
+      req.user.id,
+    );
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

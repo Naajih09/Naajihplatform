@@ -208,7 +208,19 @@ export class PitchesService {
                   email: true,
                   role: true,
                   isVerified: true,
+                  updatedAt: true,
                   entrepreneurProfile: true,
+                  verificationRequests: {
+                    select: {
+                      verificationType: true,
+                      status: true,
+                    },
+                  },
+                  _count: {
+                    select: {
+                      lessonProgress: true,
+                    },
+                  },
                 },
               },
             },
@@ -259,6 +271,17 @@ export class PitchesService {
               investorProfile: true,
               createdAt: true,
               updatedAt: true,
+              verificationRequests: {
+                select: {
+                  verificationType: true,
+                  status: true,
+                },
+              },
+              _count: {
+                select: {
+                  lessonProgress: true,
+                },
+              },
             },
           },
         },
@@ -435,7 +458,19 @@ export class PitchesService {
               email: true,
               role: true,
               isVerified: true,
+              updatedAt: true,
               entrepreneurProfile: true,
+              verificationRequests: {
+                select: {
+                  verificationType: true,
+                  status: true,
+                },
+              },
+              _count: {
+                select: {
+                  lessonProgress: true,
+                },
+              },
             },
           },
         },

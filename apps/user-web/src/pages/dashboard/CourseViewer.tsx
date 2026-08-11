@@ -68,6 +68,7 @@ const CourseViewer = () => {
           ...authHeaders,
         },
       });
+      window.dispatchEvent(new Event("naajih:onboarding-refresh"));
       showToast("Lesson marked as complete.", "success");
       navigate(-1); // Go back to dashboard
     } catch (err) {

@@ -12,7 +12,13 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { ConnectionsService } from './connections.service';
-import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsEnum,
+  IsOptional,
+  IsNumber,
+} from 'class-validator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -36,6 +42,20 @@ export class CreateConnectionDto {
 export class RespondConnectionDto {
   @IsEnum(ConnectionStatus)
   status: 'ACCEPTED' | 'REJECTED'; // Only these two values
+}
+
+export class ConnectionFeedbackDto {
+  @IsOptional()
+  @IsNumber()
+  rating?: number;
+
+  @IsOptional()
+  @IsString()
+  flagReason?: string;
+
+  @IsOptional()
+  @IsString()
+  note?: string;
 }
 
 @UseGuards(JwtAuthGuard, RolesGuard) // Protect the entire controller
@@ -115,6 +135,20 @@ export class ConnectionsController {
       throw new ForbiddenException('You can only view your own sent requests.');
     }
     return this.connectionsService.getSentRequests(userId);
+  }
+
+  @Post(':id/feedback')
+  @Roles(
+    UserRole.ENTREPRENEUR,
+    UserRole.INVESTOR,
+    UserRole.ASPIRING_BUSINESS_OWNER,
+  )
+  async submitFeedback(
+    @Param('id') id: string,
+    @Body() body: ConnectionFeedbackDto,
+    @Request() req,
+  ) {
+    return this.connectionsService.submitFeedback(id, req.user.id, body);
   }
 
   // PATCH /api/connections/:id -> Accept/Reject a specific connection request

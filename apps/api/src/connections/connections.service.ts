@@ -195,6 +195,63 @@ export class ConnectionsService {
     return connection;
   }
 
+  async submitFeedback(
+    connectionId: string,
+    reviewerId: string,
+    data: { rating?: number; flagReason?: string; note?: string },
+  ) {
+    const connection = await this.databaseService.connection.findUnique({
+      where: { id: connectionId },
+    });
+
+    if (!connection || connection.status !== ConnectionStatus.ACCEPTED) {
+      throw new NotFoundException('Accepted connection not found');
+    }
+
+    if (
+      connection.senderId !== reviewerId &&
+      connection.receiverId !== reviewerId
+    ) {
+      throw new ForbiddenException(
+        'You can only review your own accepted connections.',
+      );
+    }
+
+    const rating =
+      typeof data.rating === 'number' && data.rating >= 1 && data.rating <= 5
+        ? Math.round(data.rating)
+        : null;
+    const flagReason = String(data.flagReason || '').trim() || null;
+    const note = String(data.note || '').trim() || null;
+
+    if (!rating && !flagReason && !note) {
+      throw new ForbiddenException('Add a rating, flag, or note.');
+    }
+
+    const revieweeId =
+      connection.senderId === reviewerId
+        ? connection.receiverId
+        : connection.senderId;
+
+    return this.databaseService.connectionFeedback.upsert({
+      where: {
+        connectionId_reviewerId: {
+          connectionId,
+          reviewerId,
+        },
+      },
+      update: { rating, flagReason, note },
+      create: {
+        connectionId,
+        reviewerId,
+        revieweeId,
+        rating,
+        flagReason,
+        note,
+      },
+    });
+  }
+
   // 5. REMOVE / CANCEL CONNECTION (NEW)
   async removeConnection(id: string, userId: string, isAdmin = false) {
     const connection = await this.databaseService.connection.findUnique({

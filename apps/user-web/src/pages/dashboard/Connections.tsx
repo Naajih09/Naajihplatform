@@ -85,6 +85,36 @@ const Connections = () => {
     }
   };
 
+  const submitFeedback = async (
+    id: string,
+    payload: { rating?: number; flagReason?: string },
+  ) => {
+    try {
+      const res = await fetch(`${API_BASE}/connections/${id}/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Unable to save feedback");
+      setToast({ show: true, message: "Feedback saved.", type: "success" });
+    } catch {
+      setToast({ show: true, message: "Feedback failed.", type: "error" });
+    }
+  };
+
+  const trustBadges = (person: any) => {
+    const profile = person?.entrepreneurProfile || person?.investorProfile || {};
+    const badges = [];
+    if (person?.isVerified) badges.push("Verified");
+    if (profile?.isFoundingInvestor) badges.push("Founding investor");
+    if (profile?.isFeatured) badges.push("Featured");
+    if (profile?.focusIndustries?.length) badges.push("Sector clear");
+    if (profile?.minTicketSize || profile?.maxTicketSize) {
+      badges.push("Check size clear");
+    }
+    return badges.length ? badges : ["Profile pending"];
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-8 font-sans pb-20">
       {toast.show && (
@@ -143,6 +173,18 @@ const Connections = () => {
                       <p className="text-xs text-primary font-bold uppercase">
                         {req.sender.role}
                       </p>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {trustBadges(req.sender)
+                          .slice(0, 3)
+                          .map((badge) => (
+                            <span
+                              key={badge}
+                              className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:bg-white/5 dark:text-gray-300"
+                            >
+                              {badge}
+                            </span>
+                          ))}
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -197,26 +239,58 @@ const Connections = () => {
                   return (
                     <div
                       key={conn.id}
-                      className="bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 p-4 rounded-xl flex items-center gap-3"
+                      className="bg-white dark:bg-[#151518] border border-slate-200 dark:border-gray-800 p-4 rounded-xl"
                     >
-                      <div className="size-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold overflow-hidden">
-                        {profile.avatarUrl ? (
-                          <img
-                            src={profile.avatarUrl}
-                            alt={profile.firstName || "User"}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          (profile.firstName || "U")[0]
-                        )}
+                      <div className="flex items-center gap-3">
+                        <div className="size-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold overflow-hidden">
+                          {profile.avatarUrl ? (
+                            <img
+                              src={profile.avatarUrl}
+                              alt={profile.firstName || "User"}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            (profile.firstName || "U")[0]
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-slate-900 dark:text-white text-sm">
+                            {profile.firstName}
+                          </h4>
+                          <p className="text-[10px] text-slate-500 uppercase">
+                            {other.role}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-bold text-slate-900 dark:text-white text-sm">
-                          {profile.firstName}
-                        </h4>
-                        <p className="text-[10px] text-slate-500 uppercase">
-                          {other.role}
-                        </p>
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        {trustBadges(other).map((badge) => (
+                          <span
+                            key={badge}
+                            className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:bg-white/5 dark:text-gray-300"
+                          >
+                            {badge}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => submitFeedback(conn.id, { rating: 5 })}
+                          className="rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary"
+                        >
+                          Good match
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            submitFeedback(conn.id, {
+                              flagReason: "LOW_QUALITY_INTERACTION",
+                            })
+                          }
+                          className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-500"
+                        >
+                          Flag
+                        </button>
                       </div>
                     </div>
                   );

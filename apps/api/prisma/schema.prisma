@@ -125,6 +125,7 @@ model User {
   investorProfile     InvestorProfile?
   verificationRequests VerificationRequest[]
   subscription        Subscription?
+  onboardingProgress OnboardingProgress[]
 
   // App Relations
   pitches Pitch[]
@@ -132,6 +133,8 @@ model User {
   // Networking Relations 
   sentConnections     Connection[] @relation("Sender")
   receivedConnections Connection[] @relation("Receiver")
+  connectionFeedbacksMade ConnectionFeedback[] @relation("ConnectionFeedbackReviewer")
+  connectionFeedbacksReceived ConnectionFeedback[] @relation("ConnectionFeedbackReviewee")
   sentMessages        Message[]    @relation("MessageSender")
   receivedMessages    Message[]    @relation("MessageReceiver")
   messageReportsMade  MessageReport[] @relation("MessageReporter")
@@ -188,6 +191,15 @@ model InvestorProfile {
   minTicketSize   Decimal?
   maxTicketSize   Decimal?
   focusIndustries String[] @default([])
+  thesis          String?
+  location        String?
+  isFeatured      Boolean @default(false)
+  isFoundingInvestor Boolean @default(false)
+  featuredNote    String?
+  updatedAt       DateTime @updatedAt
+
+  @@index([isFeatured])
+  @@index([isFoundingInvestor])
 }
 
 // --- 3. PITCHES ---
@@ -228,10 +240,44 @@ model Connection {
 
   status    ConnectionStatus @default(PENDING)
   createdAt DateTime         @default(now())
+  feedback  ConnectionFeedback[]
 
   @@unique([senderId, receiverId]) // Prevent duplicate requests
   @@index([receiverId, status])
   @@index([createdAt])
+}
+
+model ConnectionFeedback {
+  id           String     @id @default(uuid())
+  connectionId String
+  connection   Connection @relation(fields: [connectionId], references: [id])
+  reviewerId   String
+  reviewer     User       @relation("ConnectionFeedbackReviewer", fields: [reviewerId], references: [id])
+  revieweeId   String
+  reviewee     User       @relation("ConnectionFeedbackReviewee", fields: [revieweeId], references: [id])
+  rating       Int?
+  flagReason   String?
+  note         String?
+  createdAt    DateTime   @default(now())
+
+  @@unique([connectionId, reviewerId])
+  @@index([revieweeId, createdAt])
+  @@index([flagReason])
+}
+
+model OnboardingProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  stepKey     String
+  completedAt DateTime?
+  dismissedAt DateTime?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, stepKey])
+  @@index([userId, completedAt])
 }
 
 model Message {

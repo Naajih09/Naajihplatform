@@ -136,6 +136,7 @@ const Profile = () => {
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
       setIsEditing(false);
+      window.dispatchEvent(new Event("naajih:onboarding-refresh"));
       setToast({ show: true, message: "Profile updated.", type: "success" });
     } catch (err: any) {
       setToast({
@@ -260,6 +261,7 @@ const Profile = () => {
             localStorage.setItem("user", JSON.stringify(updatedUser));
             dispatch(setAuthUser(updatedUser));
             setUser(updatedUser);
+            window.dispatchEvent(new Event("naajih:onboarding-refresh"));
           }
         }
       } else {

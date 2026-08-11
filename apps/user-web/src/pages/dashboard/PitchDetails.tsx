@@ -200,6 +200,22 @@ const PitchDetails = () => {
   const founderProfile =
     pitch.user?.entrepreneurProfile || pitch.user?.investorProfile || {};
   const founderAvatar = founderProfile.avatarUrl || pitch.user?.avatarUrl || "";
+  const founderProfilePercent = Math.round(
+    ([
+      founderProfile?.firstName,
+      founderProfile?.lastName,
+      founderProfile?.businessName,
+      founderProfile?.industry,
+      founderProfile?.stage,
+      founderProfile?.location,
+    ].filter(Boolean).length /
+      6) *
+      100,
+  );
+  const academyCount = pitch.user?._count?.lessonProgress || 0;
+  const lastActive = pitch.user?.updatedAt
+    ? new Date(pitch.user.updatedAt).toLocaleDateString()
+    : "Recently";
   const inputStyle =
     "w-full p-2 bg-slate-100 dark:bg-[#151518] border border-slate-300 dark:border-gray-700 rounded text-slate-900 dark:text-white mb-2 focus:outline-none focus:border-primary";
   const fundingAskValue = Number(
@@ -362,6 +378,20 @@ const PitchDetails = () => {
               <MapPin size={10} /> Nigeria
             </p>
           </div>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 md:grid-cols-4">
+          <span className="rounded-lg border border-slate-200 px-2 py-1 dark:border-gray-800">
+            {pitch.user?.isVerified ? "Verified founder" : "Under review"}
+          </span>
+          <span className="rounded-lg border border-slate-200 px-2 py-1 dark:border-gray-800">
+            Profile {founderProfilePercent}%
+          </span>
+          <span className="rounded-lg border border-slate-200 px-2 py-1 dark:border-gray-800">
+            Academy {academyCount > 0 ? "active" : "not started"}
+          </span>
+          <span className="rounded-lg border border-slate-200 px-2 py-1 dark:border-gray-800">
+            Active {lastActive}
+          </span>
         </div>
       </div>
 

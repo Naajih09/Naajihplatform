@@ -50,6 +50,8 @@ const verificationStatusOptions: VerificationStatusFilter[] = [
 const Verification = () => {
   const [requests, setRequests] = useState<VerificationRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [metrics, setMetrics] = useState<any>(null);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -106,6 +108,7 @@ const Verification = () => {
       setRequests(list);
       setTotalItems(data.meta?.total ?? list.length);
       setTotalPages(data.meta?.totalPages ?? 1);
+      setSelectedIds([]);
     } catch {
       showToast("Failed to fetch requests", "error");
     } finally {
@@ -116,6 +119,13 @@ const Verification = () => {
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests]);
+
+  useEffect(() => {
+    api
+      .get("/verification/admin/metrics")
+      .then((res) => setMetrics(res.data))
+      .catch(() => null);
+  }, []);
 
   const handleApprove = async (id: string) => {
     if (!window.confirm(`Are you sure you want to APPROVE this user?`)) return;
@@ -146,6 +156,33 @@ const Verification = () => {
       fetchRequests();
     } catch {
       showToast("Action failed to save.", "error");
+    }
+  };
+
+  const executeBulkAction = async (status: "APPROVED" | "REJECTED" | "FLAGGED") => {
+    if (selectedIds.length === 0) {
+      showToast("Select at least one request.", "error");
+      return;
+    }
+    const reason =
+      status === "REJECTED"
+        ? window.prompt("Reason for rejecting selected requests")
+        : undefined;
+    if (status === "REJECTED" && !reason?.trim()) {
+      showToast("Rejection reason is required.", "error");
+      return;
+    }
+
+    try {
+      await api.patch("/verification/admin/bulk", {
+        ids: selectedIds,
+        status,
+        rejectionReason: reason,
+      });
+      showToast(`Bulk ${status.toLowerCase()} saved.`, "success");
+      fetchRequests();
+    } catch {
+      showToast("Bulk action failed.", "error");
     }
   };
 
@@ -205,6 +242,62 @@ const Verification = () => {
         </div>
       </div>
 
+      {metrics && (
+        <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-4">
+          {[
+            ["Backlog", metrics.backlogSize],
+            ["Flagged", metrics.flaggedSize],
+            [
+              "Avg. verify time",
+              metrics.averageTimeToVerifyHours == null
+                ? "N/A"
+                : `${metrics.averageTimeToVerifyHours}h`,
+            ],
+            ["SLA target", `${metrics.slaHours}h`],
+          ].map(([label, value]) => (
+            <div key={label} className="admin-surface p-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-gray-500">
+                {label}
+              </p>
+              <p className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
+                {value}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {selectedIds.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/10 p-3">
+          <span className="text-sm font-bold text-slate-900 dark:text-white">
+            {selectedIds.length} selected
+          </span>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => executeBulkAction("APPROVED")}
+              className="rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white"
+            >
+              Bulk approve
+            </button>
+            <button
+              type="button"
+              onClick={() => executeBulkAction("FLAGGED")}
+              className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-slate-900"
+            >
+              Bulk flag
+            </button>
+            <button
+              type="button"
+              onClick={() => executeBulkAction("REJECTED")}
+              className="rounded-lg bg-red-600 px-3 py-2 text-xs font-bold text-white"
+            >
+              Bulk reject
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Toast Notification */}
       {toast.show && (
         <div
@@ -253,6 +346,23 @@ const Verification = () => {
           <table className="w-full text-left flex-grow">
             <thead className="bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-gray-400 text-xs uppercase font-bold">
               <tr>
+                <th className="px-6 py-4">
+                  <input
+                    type="checkbox"
+                    checked={
+                      requests.length > 0 &&
+                      selectedIds.length === requests.length
+                    }
+                    onChange={(event) =>
+                      setSelectedIds(
+                        event.target.checked
+                          ? requests.map((request) => request.id)
+                          : [],
+                      )
+                    }
+                    aria-label="Select all verification requests"
+                  />
+                </th>
                 <th className="px-6 py-4">User</th>
                 <th className="px-6 py-4">Role</th>
                 <th className="px-6 py-4">Check</th>
@@ -276,6 +386,20 @@ const Verification = () => {
                     key={req.id}
                     className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                   >
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(req.id)}
+                        onChange={(event) =>
+                          setSelectedIds((current) =>
+                            event.target.checked
+                              ? [...current, req.id]
+                              : current.filter((id) => id !== req.id),
+                          )
+                        }
+                        aria-label={`Select verification request ${req.id}`}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="font-bold text-slate-900 dark:text-white">
                         {fullName}

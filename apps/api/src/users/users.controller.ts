@@ -34,11 +34,9 @@ export class UsersController {
     private readonly authService: AuthService,
   ) {}
 
-  // 1. SIGN UP (Public endpoint, no guards)
   @Throttle({ short: { limit: 5, ttl: 60000 } })
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
-    // Use DTO for validation
     if (createUserDto.role === UserRole.ADMIN) {
       throw new BadRequestException(
         'Admin accounts cannot be created via signup.',
@@ -47,11 +45,9 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  // 2. LOG IN (Public endpoint, no guards)
   @Throttle({ short: { limit: 5, ttl: 60000 } })
   @Post('login')
   async login(@Body() body: any) {
-    // Consider creating a LoginUserDto for email/password
     return this.authService.login(body.email, body.password);
   }
 
@@ -67,7 +63,6 @@ export class UsersController {
     return this.usersService.resetPassword(body.token, body.password);
   }
 
-  // 2b. ADMIN CREATE (Internal use only, protected by shared secret)
   @Throttle({ short: { limit: 2, ttl: 60000 } })
   @Post('admin/seed')
   async createAdmin(
@@ -96,7 +91,6 @@ export class UsersController {
     );
   }
 
-  // 3. GET DASHBOARD STATS (User can view their own, Admin can view any)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(
     UserRole.ADMIN,
@@ -112,7 +106,6 @@ export class UsersController {
     return this.usersService.getDashboardStats(id);
   }
 
-  // 3b. ADMIN PLATFORM STATS
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/dashboard')
@@ -127,7 +120,6 @@ export class UsersController {
     return this.usersService.getAdminStats();
   }
 
-  // 3c. ADMIN INSIGHTS (Time series)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/insights')
@@ -135,7 +127,6 @@ export class UsersController {
     return this.usersService.getAdminInsights();
   }
 
-  // 4. FIND ALL (Protected: Only ADMIN can view all users)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get()
@@ -177,7 +168,6 @@ export class UsersController {
     return this.usersService.updateAdminPassword(id, body?.password);
   }
 
-  // 5b. REQUEST EMAIL VERIFICATION (Authenticated)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(
     UserRole.ADMIN,
@@ -191,7 +181,6 @@ export class UsersController {
     return this.usersService.requestEmailVerification(req.user.id);
   }
 
-  // 5b. PUBLIC EMAIL VERIFICATION RESEND
   @Throttle({ short: { limit: 3, ttl: 60000 } })
   @Post('verify-email/resend')
   resendVerification(@Body() body: { email?: string }) {
@@ -225,7 +214,50 @@ export class UsersController {
     return this.usersService.getEntitlements(req.user.id);
   }
 
-  // 5c. VERIFY EMAIL TOKEN (Public)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.ENTREPRENEUR,
+    UserRole.INVESTOR,
+    UserRole.ASPIRING_BUSINESS_OWNER,
+  )
+  @Get('me/onboarding')
+  getOnboarding(@Request() req) {
+    return this.usersService.getOnboarding(req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.ENTREPRENEUR,
+    UserRole.INVESTOR,
+    UserRole.ASPIRING_BUSINESS_OWNER,
+  )
+  @Patch('me/onboarding/:stepKey')
+  updateOnboardingStep(
+    @Param('stepKey') stepKey: string,
+    @Body() body: { completed?: boolean },
+    @Request() req,
+  ) {
+    return this.usersService.markOnboardingStep(
+      req.user.id,
+      stepKey,
+      body?.completed !== false,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.ENTREPRENEUR,
+    UserRole.INVESTOR,
+    UserRole.ASPIRING_BUSINESS_OWNER,
+  )
+  @Post('me/onboarding/dismiss')
+  dismissOnboarding(@Request() req) {
+    return this.usersService.dismissOnboarding(req.user.id);
+  }
+
   @Throttle({ short: { limit: 10, ttl: 60000 } })
   @Get('verify-email')
   verifyEmail(@Query('token') token?: string) {
@@ -235,7 +267,6 @@ export class UsersController {
     return this.usersService.verifyEmailToken(token);
   }
 
-  // 5. FIND ONE (Protected: User can view their own, Admin can view any)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(
     UserRole.ADMIN,
@@ -251,7 +282,6 @@ export class UsersController {
     return this.usersService.findPublicByEmail(email);
   }
 
-  // 6. UPDATE PROFILE (Protected: User can update their own, Admin can update any)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(
     UserRole.ADMIN,
@@ -275,7 +305,6 @@ export class UsersController {
     return this.usersService.update(id, body);
   }
 
-  // 7. CHANGE PASSWORD (Protected: User can change their own)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(
     UserRole.ENTREPRENEUR,
@@ -291,7 +320,6 @@ export class UsersController {
     return this.usersService.changePassword(id, body.password);
   }
 
-  // 8. DELETE ACCOUNT (Protected: Only ADMIN can delete accounts)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete(':id')

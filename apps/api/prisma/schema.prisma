@@ -593,3 +593,19 @@ model CommunityReport {
 
   @@unique([reporterId, targetType, targetId])
 }
+
+// --- WAITLIST ---
+model Waitlist {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  role      UserRole
+  firstName String?
+  lastName  String?
+  location  String?
+  message   String?
+  isNotified Boolean  @default(false)
+  createdAt DateTime  @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}

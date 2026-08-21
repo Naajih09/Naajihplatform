@@ -10,6 +10,7 @@ const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Verification = lazy(() => import("../pages/Verification"));
 const PitchesList = lazy(() => import("../pages/PitchesLists"));
 const UsersList = lazy(() => import("../pages/UsersLists"));
+const Waitlist = lazy(() => import("../pages/Waitlist"));
 const AuditLogs = lazy(() => import("../pages/AuditLogs"));
 const Settings = lazy(() => import("../pages/Settings"));
 const AcademyPrograms = lazy(() => import("../pages/AcademyPrograms"));
@@ -54,6 +55,10 @@ export const routes = [
               {
                 path: "admin/users",
                 element: withSuspense(<UsersList />),
+              },
+              {
+                path: "admin/waitlist",
+                element: withSuspense(<Waitlist />),
               },
             ],
           },

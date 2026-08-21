@@ -77,33 +77,33 @@ const Signup = () => {
     };
 
     try {
-      const response = await fetch(`${API_BASE}/users`, {
+      // Submit to waitlist instead of creating a full user account
+      const response = await fetch(`${API_BASE}/waitlist`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formData.email,
-          password: formData.password,
           role: roleMapping[role],
           firstName: firstName,
           lastName: lastName,
+          location: formData.location,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to create account.");
+        throw new Error(errorData.message || "Failed to join waitlist.");
       }
 
       setToast({
         show: true,
-        message: "Account created successfully. Check your email to verify it.",
+        message:
+          "Thanks — you have been added to the waitlist. We'll email you when access is available.",
         type: "success",
       });
       setTimeout(() => {
         setToast({ show: false, message: "", type: "success" });
-        navigate(
-          `/verify-email?email=${encodeURIComponent(formData.email)}&sent=1`,
-        );
+        navigate(`/`);
       }, 1500);
     } catch (err: any) {
       setError(err.message);

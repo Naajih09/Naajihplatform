@@ -13,6 +13,7 @@ import { DatabaseModule } from './database/database.module';
 import { MessagesModule } from './messages/messages.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PaymentsModule } from './payments/payments.module';
+import { WaitlistModule } from './waitlist/waitlist.module';
 import { PitchesModule } from './pitches/pitches.module';
 import { UsersModule } from './users/users.module';
 import { VerificationModule } from './verification/verification.module';
@@ -51,6 +52,7 @@ import { KeepAliveService } from './keep-alive.service';
     AuditModule,
     AcademyModule,
     PaymentsModule,
+    WaitlistModule,
   ],
   controllers: [],
   providers: [

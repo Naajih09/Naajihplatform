@@ -36,7 +36,12 @@ export class AuthService {
     }
 
     // 3. Create the Token Payload
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      isConferenceWaitlist: Boolean(user.isConferenceWaitlist),
+    };
 
     // 4. SANITIZE: Remove password from the object we send back
     const {

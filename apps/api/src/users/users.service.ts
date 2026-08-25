@@ -16,6 +16,7 @@ import { DatabaseService } from '../database/database.service';
 import { MailerService } from '../mailer/mailer.service';
 import { AppCacheService } from '../cache/app-cache.service';
 import { AccessPolicyService } from '../policies/access-policy.service';
+import { isConferenceMode } from '../utils/conference-mode';
 import {
   passwordResetEmail,
   verificationEmail,
@@ -365,11 +366,14 @@ export class UsersService {
     }
 
     // Save to Database
+    const isWaitlistSignup = isConferenceMode() && role !== UserRole.ADMIN;
+
     const newUser = await this.databaseService.user.create({
       data: {
         email: normalizedEmail,
         password: hashedPassword, // Save the HASH
         role,
+        isConferenceWaitlist: isWaitlistSignup,
         ...profileData,
       },
       include: { entrepreneurProfile: true, investorProfile: true },
@@ -409,6 +413,41 @@ export class UsersService {
     const { password: _, ...result } = newUser;
     this.clearUserCache(newUser.id);
     return result;
+  }
+
+  async getConferenceWaitlistUsers() {
+    return this.databaseService.user.findMany({
+      where: { isConferenceWaitlist: true },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        conferenceNotifiedAt: true,
+        isConferenceWaitlist: true,
+      },
+    });
+  }
+
+  async markConferenceWaitlistNotified(userId: string) {
+    const user = await this.databaseService.user.findUnique({
+      where: { id: userId },
+      select: { id: true, isConferenceWaitlist: true },
+    });
+
+    if (!user || !user.isConferenceWaitlist) {
+      throw new BadRequestException(
+        'User is not part of the conference waitlist.',
+      );
+    }
+
+    const updatedUser = await this.databaseService.user.update({
+      where: { id: userId },
+      data: { conferenceNotifiedAt: new Date() },
+    });
+
+    return this.sanitizeUser(updatedUser);
   }
 
   async getAdminTeam() {

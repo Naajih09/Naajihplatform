@@ -69,6 +69,12 @@ const AdminLayout = () => {
       permission: "users",
     },
     {
+      label: "Conference Signups",
+      path: "/admin/conference-waitlist",
+      icon: UserCheck,
+      permission: "users",
+    },
+    {
       label: "Pitch Moderation",
       path: "/admin/pitches",
       icon: FileText,

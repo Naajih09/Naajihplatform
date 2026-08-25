@@ -26,6 +26,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { AdminCreateUserDto } from './dto/admin-create-user.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { isConferenceMode } from '../utils/conference-mode';
 
 @Controller('users')
 export class UsersController {
@@ -103,7 +104,36 @@ export class UsersController {
     if (req.user.role !== UserRole.ADMIN && req.user.id !== id) {
       throw new ForbiddenException('You can only view your own stats.');
     }
+
+    const shouldShowWaitlistView =
+      isConferenceMode() &&
+      Boolean(req.user?.isConferenceWaitlist) &&
+      req.user.role !== UserRole.ADMIN;
+
+    if (shouldShowWaitlistView) {
+      return {
+        welcome: true,
+        isConferenceWaitlist: true,
+        conferenceMode: true,
+        message: 'You are on the conference waitlist. We will email you when access is ready.',
+      };
+    }
+
     return this.usersService.getDashboardStats(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('admin/conference-waitlist')
+  getConferenceWaitlist() {
+    return this.usersService.getConferenceWaitlistUsers();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Patch('admin/conference-waitlist/:id/notify')
+  markConferenceWaitlistNotified(@Param('id') id: string) {
+    return this.usersService.markConferenceWaitlistNotified(id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

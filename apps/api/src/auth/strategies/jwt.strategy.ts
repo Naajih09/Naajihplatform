@@ -31,10 +31,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: JwtPayload): Promise<User> {
-    // FIX: Using a common UsersService method to find a user by ID.
-    // ASSUMPTION: Your UsersService has a method like `findById` or `findOne` that takes the ID string directly.
-    // You might need to adjust `this.usersService.findById(payload.sub)` to your actual method name.
-    const user = await this.usersService.findById(payload.sub); // <-- CHANGED: Assumed `findById` method
+    const user = await this.usersService.findById(payload.sub);
 
     if (!user) {
       throw new UnauthorizedException('User not found or invalid token.');
@@ -45,6 +42,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       email: user.email,
       role: user.role,
       adminPermissions: user.adminPermissions,
+      isConferenceWaitlist: Boolean(user.isConferenceWaitlist),
+      conferenceNotifiedAt: user.conferenceNotifiedAt ?? null,
     } as User;
   }
 }

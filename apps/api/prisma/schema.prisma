@@ -118,6 +118,8 @@ model User {
   emailVerificationExpires DateTime?
   passwordResetToken String?
   passwordResetExpires DateTime?
+  isConferenceWaitlist Boolean @default(false)
+  conferenceNotifiedAt DateTime?
   enrollments ProgramEnrollment[]
 
   // Profile Relations

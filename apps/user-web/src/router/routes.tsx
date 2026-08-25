@@ -161,6 +161,11 @@ const routes = [
     element: <Privacy />,
     layout: "blank",
   },
+  {
+    path: "conference-waitlist",
+    element: <ConferenceWaitlist />,
+    layout: "blank",
+  },
 
   // --- Authenticated Dashboard Routes ---
   {

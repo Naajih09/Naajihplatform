@@ -11,6 +11,9 @@ const Verification = lazy(() => import("../pages/Verification"));
 const PitchesList = lazy(() => import("../pages/PitchesLists"));
 const UsersList = lazy(() => import("../pages/UsersLists"));
 const Waitlist = lazy(() => import("../pages/Waitlist"));
+const ConferenceWaitlistPage = lazy(
+  () => import("../pages/ConferenceWaitlist"),
+);
 const AuditLogs = lazy(() => import("../pages/AuditLogs"));
 const Settings = lazy(() => import("../pages/Settings"));
 const AcademyPrograms = lazy(() => import("../pages/AcademyPrograms"));
@@ -59,6 +62,10 @@ export const routes = [
               {
                 path: "admin/waitlist",
                 element: withSuspense(<Waitlist />),
+              },
+              {
+                path: "admin/conference-waitlist",
+                element: withSuspense(<ConferenceWaitlistPage />),
               },
             ],
           },

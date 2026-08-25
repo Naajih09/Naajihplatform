@@ -61,4 +61,43 @@ export class WaitlistService {
       data: { isNotified: true },
     });
   }
+
+  async invite(ids: string[], message = '') {
+    if (!Array.isArray(ids) || ids.length === 0) return { processed: 0 };
+
+    const results: any[] = [];
+
+    for (const id of ids) {
+      try {
+        const entry = await this.databaseService.waitlist.findUnique({
+          where: { id },
+        });
+        if (!entry) continue;
+
+        // Mark as notified
+        const updated = await this.databaseService.waitlist.update({
+          where: { id },
+          data: { isNotified: true },
+        });
+
+        // Send invite email (best-effort)
+        try {
+          const html = `
+            <p>Hi ${entry.firstName || 'there'},</p>
+            <p>${message || 'Good news — access to Naajih is now available. Click the link below to sign in when invited.'}</p>
+            <p><a href="${process.env.FRONTEND_URL || 'https://app.naajihbiz.com'}/login">Open Naajih</a></p>
+          `;
+          await this.mailerService.sendMail(entry.email, 'You are invited to Naajih', html);
+        } catch (err) {
+          this.logger.warn(`Failed to send invite to ${entry.email}: ${String(err)}`);
+        }
+
+        results.push(updated);
+      } catch (err) {
+        this.logger.error(`Error processing waitlist id=${id}: ${String(err)}`);
+      }
+    }
+
+    return { processed: results.length, results };
+  }
 }

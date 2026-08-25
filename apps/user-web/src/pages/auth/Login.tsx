@@ -61,9 +61,16 @@ const Login = () => {
       dispatch(setUser(userToSave));
       dispatch(setAuth(true));
 
-      // Redirect to Dashboard
-      const returnUrl = searchParams.get("returnUrl");
-      navigate(returnUrl || "/dashboard", { replace: true });
+      const conferenceMode = import.meta.env.VITE_CONFERENCE_MODE === "true";
+      const shouldGoToWaitlist =
+        conferenceMode &&
+        Boolean(userToSave?.isConferenceWaitlist) &&
+        userToSave?.role !== "ADMIN";
+
+      navigate(
+        shouldGoToWaitlist ? "/conference-waitlist" : searchParams.get("returnUrl") || "/dashboard",
+        { replace: true },
+      );
     } catch (err: any) {
       console.error(err);
       const message = err.message || "Login failed. Check your email/password.";

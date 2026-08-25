@@ -84,6 +84,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const lastName = profile.lastName || user.lastName || "";
   const role = user.role || "Guest";
   const profileAvatar = profile.avatarUrl || user.avatarUrl || "";
+  const conferenceMode = import.meta.env.VITE_CONFERENCE_MODE === "true";
+  const isConferenceWaitlist =
+    conferenceMode &&
+    Boolean(user?.isConferenceWaitlist) &&
+    user?.role !== "ADMIN";
   const socket = useSocket(user.id || "");
   const welcomeKey =
     user.id || user.email
@@ -183,6 +188,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       socket.off("receive_message", handleIncomingMessage);
     };
   }, [fetchUnreadMessages, socket]);
+
+  if (isConferenceWaitlist) {
+    return <Navigate to="/conference-waitlist" replace />;
+  }
 
   const isAspirant = user.role === "ASPIRING_BUSINESS_OWNER";
   const isInvestor = user.role === "INVESTOR";

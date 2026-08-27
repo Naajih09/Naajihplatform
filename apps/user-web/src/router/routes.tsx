@@ -1,5 +1,6 @@
 import { lazy } from "react";
 import type { ComponentType } from "react";
+import ConferenceWaitlist from '../pages/conference/ConferenceWaitlist';
 
 const chunkReloadKey = "naajihbiz:chunk-reload-attempted";
 

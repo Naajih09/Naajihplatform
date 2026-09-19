@@ -17,7 +17,7 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md transition-colors duration-300">
+    <header className="sticky top-0 z-50 border-b border-white/5 bg-background-light dark:bg-background-dark transition-colors duration-300 md:bg-background-light/80 md:backdrop-blur-md md:dark:bg-background-dark/80">
       <div className="max-w-[1200px] mx-auto flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
         {/* LOGO */}
         <div className="flex items-center gap-2 cursor-pointer z-50">
@@ -76,7 +76,7 @@ const Navbar = () => {
 
       {/* MOBILE MENU */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-x-0 bottom-0 top-[57px] z-40 overflow-y-auto border-t border-slate-200 bg-background-light px-4 py-6 shadow-2xl animate-in slide-in-from-top duration-300 dark:border-white/10 dark:bg-background-dark sm:top-[65px]">
+        <div className="absolute left-0 right-0 top-full z-[70] min-h-[calc(100dvh-57px)] overflow-y-auto border-t border-slate-200 bg-background-light px-4 py-6 shadow-2xl animate-in slide-in-from-top duration-300 dark:border-white/10 dark:bg-background-dark sm:min-h-[calc(100dvh-65px)]">
           <nav className="mx-auto flex w-full max-w-sm flex-col gap-2 text-center">
             {navLinks.map((item) => (
               <a

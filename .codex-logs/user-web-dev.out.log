@@ -1,0 +1,9 @@
+
+> user-web@0.0.0 dev C:\Users\DELL\OneDrive\Desktop\naajih-platform\apps\user-web
+> vite --host "--" "--host" "127.0.0.1"
+
+
+  VITE v8.0.0  ready in 3178 ms
+
+  ➜  Local:   http://localhost:3001/
+  ➜  Network: http://192.168.204.138:3001/

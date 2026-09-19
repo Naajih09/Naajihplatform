@@ -48,30 +48,40 @@ const FOUNDER_ONBOARDING_STEPS = [
   {
     key: 'verify_email',
     title: 'Verify your email',
+    description:
+      'Confirm your account email so we can keep your access and alerts secure.',
     ctaLabel: 'Open email verification',
     ctaTo: '/verify-email',
   },
   {
     key: 'complete_profile',
     title: 'Complete founder profile',
+    description:
+      'Add your business details, contact information, and profile basics for better matching.',
     ctaLabel: 'Complete profile',
     ctaTo: '/dashboard/profile',
   },
   {
     key: 'submit_verification',
     title: 'Submit KYC/KYB documents',
+    description:
+      'Upload the required identity or business documents for trust review.',
     ctaLabel: 'Start verification',
     ctaTo: '/dashboard/verification',
   },
   {
     key: 'complete_first_academy_module',
     title: 'Complete your first academy lesson',
+    description:
+      'Finish one lesson to unlock a clearer path through the platform.',
     ctaLabel: 'Go to Academy',
     ctaTo: '/dashboard/learning-center',
   },
   {
     key: 'get_matched',
     title: 'Get matched with investors',
+    description:
+      'Explore opportunities and start building meaningful investor connections.',
     ctaLabel: 'Browse matches',
     ctaTo: '/dashboard/opportunities',
   },
@@ -81,24 +91,32 @@ const INVESTOR_ONBOARDING_STEPS = [
   {
     key: 'verify_email',
     title: 'Verify your email',
+    description:
+      'Confirm your account email so we can keep your access and alerts secure.',
     ctaLabel: 'Open email verification',
     ctaTo: '/verify-email',
   },
   {
     key: 'complete_profile',
     title: 'Complete investor profile',
+    description:
+      'Add your investment preferences and profile details for better founder discovery.',
     ctaLabel: 'Complete profile',
     ctaTo: '/dashboard/profile',
   },
   {
     key: 'submit_verification',
     title: 'Complete investor verification',
+    description:
+      'Submit verification details to help founders and admins trust your profile.',
     ctaLabel: 'Start verification',
     ctaTo: '/dashboard/verification',
   },
   {
     key: 'browse_matches',
     title: 'Browse vetted founders',
+    description:
+      'Review approved founder opportunities and connect when there is a fit.',
     ctaLabel: 'View opportunities',
     ctaTo: '/dashboard/opportunities',
   },
@@ -975,11 +993,19 @@ export class UsersService {
         onboardingProgress: true,
         lessonProgress: { take: 1 },
         sentConnections: {
-          where: { status: { in: [ConnectionStatus.PENDING, ConnectionStatus.ACCEPTED] } },
+          where: {
+            status: {
+              in: [ConnectionStatus.PENDING, ConnectionStatus.ACCEPTED],
+            },
+          },
           take: 1,
         },
         receivedConnections: {
-          where: { status: { in: [ConnectionStatus.PENDING, ConnectionStatus.ACCEPTED] } },
+          where: {
+            status: {
+              in: [ConnectionStatus.PENDING, ConnectionStatus.ACCEPTED],
+            },
+          },
           take: 1,
         },
       },
@@ -1254,10 +1280,7 @@ export class UsersService {
             page: 1,
             pageSize: 5,
             total: pendingVerificationsTotal,
-            totalPages: Math.max(
-              1,
-              Math.ceil(pendingVerificationsTotal / 5),
-            ),
+            totalPages: Math.max(1, Math.ceil(pendingVerificationsTotal / 5)),
           },
         },
         auditLogs: {

@@ -9,8 +9,11 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { getPublicEntryPath } from "@/lib/public-entry";
 
 const HeroSection = () => {
+  const entryPath = getPublicEntryPath();
+
   return (
     <section className="relative overflow-hidden bg-background-dark px-0 pb-16 pt-20 text-white sm:pt-28 md:pb-24">
       <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16">
@@ -32,13 +35,13 @@ const HeroSection = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
-              to="/signup"
+              to={entryPath}
               className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-bold text-background-dark transition-transform hover:scale-[1.02] sm:px-8 sm:py-4 sm:text-lg"
             >
               Get Funding <TrendingUp size={20} />
             </Link>
             <Link
-              to="/signup"
+              to={entryPath}
               className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/5 bg-deep-slate px-6 py-3 text-base font-bold text-white transition-colors hover:bg-slate-800 sm:px-8 sm:py-4 sm:text-lg"
             >
               Invest Now <Wallet size={20} />

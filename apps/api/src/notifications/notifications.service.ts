@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsGateway } from './notifications.gateway';
 import { MailerService } from '../mailer/mailer.service';
@@ -6,6 +6,8 @@ import { notificationEmail } from '../mailer/templates';
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly notificationsGateway: NotificationsGateway,
@@ -40,11 +42,19 @@ export class NotificationsService {
         select: { email: true, emailVerified: true },
       });
       if (user?.email && user.emailVerified) {
-        await this.mailerService.sendMail(
-          user.email,
-          'Naajih Notification',
-          notificationEmail(message),
-        );
+        try {
+          await this.mailerService.sendMail(
+            user.email,
+            'Naajih Notification',
+            notificationEmail(message),
+          );
+        } catch (error) {
+          this.logger.warn(
+            `Notification email failed for ${user.email}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
       }
     }
 

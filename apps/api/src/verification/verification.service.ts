@@ -233,10 +233,7 @@ export class VerificationService {
             screening.status === VerificationStatus.FLAGGED
               ? 'manual_review_flagged'
               : 'manual_review_pending',
-          trustLevel: this.trustLevelFor(
-            verificationType,
-            screening.status,
-          ),
+          trustLevel: this.trustLevelFor(verificationType, screening.status),
           consentedAt: data.consentAccepted ? new Date() : existing.consentedAt,
           verifiedAt: null,
           riskFlags: screening.riskFlags,
@@ -502,7 +499,7 @@ export class VerificationService {
             recentApproved.reduce((sum, request) => {
               return (
                 sum +
-                (request.verifiedAt!.getTime() - request.createdAt.getTime()) /
+                (request.verifiedAt.getTime() - request.createdAt.getTime()) /
                   36e5
               );
             }, 0) / recentApproved.length,

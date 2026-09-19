@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { getPublicEntryPath } from "../../lib/public-entry";
 
 const sections = [
   {
@@ -52,6 +53,8 @@ const sections = [
 ];
 
 const Privacy = () => {
+  const entryPath = getPublicEntryPath();
+
   return (
     <div className="min-h-screen bg-background-light text-slate-900 dark:bg-background-dark dark:text-white">
       <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col px-6 py-16 md:px-10">
@@ -79,7 +82,7 @@ const Privacy = () => {
 
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <Link
-            to="/signup"
+            to={entryPath}
             className="rounded-lg bg-primary px-5 py-3 font-bold text-background-dark transition hover:brightness-110"
           >
             Back to signup

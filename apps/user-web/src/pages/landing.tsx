@@ -5,8 +5,11 @@ import HeroSection from "../components/landing/HeroSection";
 import RoleSelection from "../components/landing/RoleSelection";
 import HowItWorks from "../components/landing/HowItWorks";
 import TrustSection from "../components/landing/TrustSection";
+import { getPublicEntryPath } from "../lib/public-entry";
 
 const Landing = () => {
+  const entryPath = getPublicEntryPath();
+
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-lunar-white">
       <Navbar />
@@ -50,7 +53,7 @@ const Landing = () => {
                 </a>
               </li>
               <li>
-                <Link to="/signup" className="hover:text-primary">
+                <Link to={entryPath} className="hover:text-primary">
                   Browse Opportunities
                 </Link>
               </li>

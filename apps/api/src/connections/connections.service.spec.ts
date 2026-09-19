@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DatabaseService } from '../database/database.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConnectionsService } from './connections.service';
-import { AccessPolicyService } from '../policies/access-policy.service'; 
+import { AccessPolicyService } from '../policies/access-policy.service';
 
 describe('ConnectionsService', () => {
   let service: ConnectionsService;

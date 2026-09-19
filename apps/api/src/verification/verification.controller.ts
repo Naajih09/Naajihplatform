@@ -82,10 +82,7 @@ export class VerificationController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('submit')
   @Roles(UserRole.ENTREPRENEUR, UserRole.INVESTOR)
-  submitVerification(
-    @Body() body: SubmitVerificationDto,
-    @Request() req,
-  ) {
+  submitVerification(@Body() body: SubmitVerificationDto, @Request() req) {
     return this.verificationService.create({
       userId: req.user.id,
       documentUrl: body.documentUrl,

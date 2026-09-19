@@ -6,6 +6,7 @@ import { getApiBaseUrl } from "../lib/api-base";
 type OnboardingStep = {
   key: string;
   title: string;
+  description?: string;
   ctaLabel: string;
   ctaTo: string;
   completed: boolean;
@@ -81,7 +82,7 @@ export default function OnboardingChecklist() {
   const nextStep = state.nextStep || state.steps.find((step) => !step.completed);
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#151518]">
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#151518]">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
@@ -122,44 +123,73 @@ export default function OnboardingChecklist() {
         />
       </div>
 
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold text-slate-500 dark:text-gray-400">
+        <span>
+          {state.completedCount} of {state.totalSteps} steps done
+        </span>
+        {!state.complete && nextStep && (
+          <span className="rounded-full bg-primary/10 px-2 py-1 text-primary">
+            Current: {nextStep.ctaLabel}
+          </span>
+        )}
+      </div>
+
       <div className="mt-4 grid grid-cols-1 gap-2 md:grid-cols-2">
-        {state.steps.map((step) => (
-          <Link
-            key={step.key}
-            to={step.ctaTo}
-            className={`flex items-start gap-3 rounded-2xl border px-4 py-3 transition ${
-              step.completed
-                ? "border-primary/30 bg-primary/5"
-                : "border-slate-200 hover:border-primary/50 hover:bg-slate-50 dark:border-gray-800 dark:hover:bg-white/5"
-            }`}
-          >
-            <span
-              className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border ${
+        {state.steps.map((step) => {
+          const isCurrent = !step.completed && nextStep?.key === step.key;
+
+          return (
+            <Link
+              key={step.key}
+              to={step.ctaTo}
+              className={`flex items-start gap-3 rounded-2xl border px-4 py-3 transition ${
                 step.completed
-                  ? "border-primary bg-primary text-black"
-                  : "border-slate-300 text-transparent dark:border-gray-700"
+                  ? "border-primary/30 bg-primary/5"
+                  : isCurrent
+                    ? "border-primary/60 bg-primary/10 shadow-sm"
+                    : "border-slate-200 hover:border-primary/50 hover:bg-slate-50 dark:border-gray-800 dark:hover:bg-white/5"
               }`}
             >
-              <Check size={12} strokeWidth={3} />
-            </span>
-            <span className="min-w-0 flex-1">
               <span
-                className={`block text-sm font-bold ${
+                className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border ${
                   step.completed
-                    ? "text-slate-500 line-through dark:text-gray-500"
-                    : "text-slate-900 dark:text-white"
+                    ? "border-primary bg-primary text-black"
+                    : "border-slate-300 text-transparent dark:border-gray-700"
                 }`}
               >
-                {step.title}
+                <Check size={12} strokeWidth={3} />
               </span>
-              {!step.completed && (
-                <span className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-primary">
-                  {step.ctaLabel} <ChevronRight size={12} />
+              <span className="min-w-0 flex-1">
+                <span className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`block text-sm font-bold ${
+                      step.completed
+                        ? "text-slate-500 line-through dark:text-gray-500"
+                        : "text-slate-900 dark:text-white"
+                    }`}
+                  >
+                    {step.title}
+                  </span>
+                  {isCurrent && (
+                    <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-black uppercase text-black">
+                      Next
+                    </span>
+                  )}
                 </span>
-              )}
-            </span>
-          </Link>
-        ))}
+                {step.description && (
+                  <span className="mt-1 block text-xs leading-relaxed text-slate-500 dark:text-gray-400">
+                    {step.description}
+                  </span>
+                )}
+                {!step.completed && (
+                  <span className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-primary">
+                    {step.ctaLabel} <ChevronRight size={12} />
+                  </span>
+                )}
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );

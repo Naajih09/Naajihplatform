@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Landmark, Menu, X } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
+import { getPublicEntryPath } from "@/lib/public-entry";
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const entryPath = getPublicEntryPath();
 
   const navLinks = [
     { name: "How it Works", href: "#how-it-works" },
@@ -50,7 +52,7 @@ const Navbar = () => {
             Log In
           </Link>
           <Link
-            to="/signup"
+            to={entryPath}
             className="bg-primary text-background-dark px-5 py-2.5 rounded-lg text-sm font-extrabold hover:brightness-110 transition-all shadow-lg shadow-primary/10"
           >
             Get Started
@@ -85,12 +87,14 @@ const Navbar = () => {
           <div className="mt-6 flex w-full max-w-sm flex-col gap-3">
             <Link
               to="/login"
+              onClick={() => setIsMobileMenuOpen(false)}
               className="w-full text-center py-4 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white font-bold"
             >
               Log In
             </Link>
             <Link
-              to="/signup"
+              to={entryPath}
+              onClick={() => setIsMobileMenuOpen(false)}
               className="w-full text-center py-4 bg-primary text-background-dark rounded-xl font-extrabold"
             >
               Get Started

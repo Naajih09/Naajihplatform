@@ -106,6 +106,16 @@ export class AcademyController {
     return this.academyService.getCertificate(req.user.id, programId);
   }
 
+  @Get('certificate/:programId/status')
+  @Roles(
+    UserRole.ASPIRING_BUSINESS_OWNER,
+    UserRole.ENTREPRENEUR,
+    UserRole.INVESTOR,
+  )
+  getCertificateStatus(@Param('programId') programId: string, @Request() req) {
+    return this.academyService.getCertificateStatus(req.user.id, programId);
+  }
+
   @Get('certificate/:programId/pdf')
   @Roles(
     UserRole.ASPIRING_BUSINESS_OWNER,

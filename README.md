@@ -59,6 +59,7 @@ Backend (apps/api/.env):
 - `SMTP_FROM`
 - `RESEND_API_KEY`
 - `RESEND_FROM`
+- `NOTIFICATION_EMAIL_ENABLED`
 - `PASSWORD_RESET_TTL_MINUTES`
 - `PASSWORD_RESET_EXPOSE_LINK`
 - `BETA_TEST_MODE`
@@ -80,6 +81,8 @@ Set `KEEP_ALIVE_URL` to the deployed API origin, for example `https://your-api.e
 For Gmail delivery, set `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_USER` to the Gmail address, and `SMTP_PASS` to a Gmail app password.
 
 For deployed transactional email, prefer Resend over Gmail SMTP because some hosts block or time out outbound SMTP ports. Set `RESEND_API_KEY` and `RESEND_FROM` in the deployed API environment. When `RESEND_API_KEY` is present, the API sends email through Resend over HTTPS and only falls back to SMTP if Resend fails.
+
+Set `NOTIFICATION_EMAIL_ENABLED=true` to also send email copies of in-app notifications to verified user email addresses. In-app notifications and realtime socket updates still work if email delivery is disabled or temporarily fails.
 
 For temporary beta testing without a verified email domain, set both `BETA_TEST_MODE=true` and `PASSWORD_RESET_EXPOSE_LINK=true` to return the reset link in the forgot-password response. Turn both off before production use.
 

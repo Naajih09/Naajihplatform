@@ -10,6 +10,7 @@ const Certificate = () => {
   const { programId } = useParams();
   const navigate = useNavigate();
   const [certificate, setCertificate] = useState<any>(null);
+  const [certificateStatus, setCertificateStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { entitlements } = useEntitlements();
 
@@ -33,6 +34,15 @@ const Certificate = () => {
         );
         if (res.status === 403) {
           setCertificate(null);
+          const statusRes = await fetch(
+            `${API_BASE}/academy/certificate/${programId}/status`,
+            {
+              headers: authHeaders,
+            },
+          );
+          if (statusRes.ok) {
+            setCertificateStatus(await statusRes.json());
+          }
           return;
         }
         if (!res.ok) {
@@ -40,8 +50,22 @@ const Certificate = () => {
         }
         const data = await res.json();
         setCertificate(data);
+        setCertificateStatus(null);
       } catch (err) {
         console.error(err);
+        try {
+          const statusRes = await fetch(
+            `${API_BASE}/academy/certificate/${programId}/status`,
+            {
+              headers: authHeaders,
+            },
+          );
+          if (statusRes.ok) {
+            setCertificateStatus(await statusRes.json());
+          }
+        } catch (statusError) {
+          console.error(statusError);
+        }
       } finally {
         setLoading(false);
       }
@@ -72,9 +96,56 @@ const Certificate = () => {
   }
 
   if (!certificate) {
+    const completedLessons = certificateStatus?.completedLessons || 0;
+    const totalLessons = certificateStatus?.totalLessons || 0;
+    const percent =
+      totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
     return (
-      <div className="max-w-3xl mx-auto py-20 text-center space-y-4">
-        <p className="text-red-500">Certificate not available.</p>
+      <div className="max-w-3xl mx-auto py-20 space-y-5 text-center">
+        <p className="text-red-500">Certificate not available yet.</p>
+        {certificateStatus && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm dark:border-gray-800 dark:bg-[#151518]">
+            <h2 className="text-lg font-black text-slate-900 dark:text-white">
+              Certification progress
+            </h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-gray-400">
+              {certificateStatus.nextStep}
+            </p>
+            <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
+              <div
+                className="h-full rounded-full bg-primary"
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+            <div className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
+              <div className="rounded-xl bg-slate-50 p-3 dark:bg-white/5">
+                <span className="block text-xs font-bold uppercase text-slate-500">
+                  Lessons
+                </span>
+                <span className="font-black text-slate-900 dark:text-white">
+                  {completedLessons}/{totalLessons}
+                </span>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-3 dark:bg-white/5">
+                <span className="block text-xs font-bold uppercase text-slate-500">
+                  Premium
+                </span>
+                <span className="font-black text-slate-900 dark:text-white">
+                  {certificateStatus.hasCertificateAccess ? "Active" : "Needed"}
+                </span>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-3 dark:bg-white/5">
+                <span className="block text-xs font-bold uppercase text-slate-500">
+                  Milestone
+                </span>
+                <span className="font-black text-slate-900 dark:text-white">
+                  {certificateStatus.milestoneAwarded ? "Awarded" : "Pending"}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
         {!entitlements.certificates && (
           <div className="space-y-3">
             <p className="text-slate-500">

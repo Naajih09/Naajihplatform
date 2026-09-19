@@ -3,6 +3,7 @@ import { AppCacheService } from '../cache/app-cache.service';
 import { DatabaseService } from '../database/database.service';
 import { MailerService } from '../mailer/mailer.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { AccessPolicyService } from '../policies/access-policy.service';
 import { AcademyService } from './academy.service';
 
 describe('AcademyService', () => {
@@ -16,6 +17,7 @@ describe('AcademyService', () => {
         { provide: NotificationsService, useValue: {} },
         { provide: MailerService, useValue: {} },
         { provide: AppCacheService, useValue: {} },
+        { provide: AccessPolicyService, useValue: {} },
       ],
     }).compile();
 

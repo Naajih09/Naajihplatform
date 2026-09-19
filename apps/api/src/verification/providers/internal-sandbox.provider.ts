@@ -8,13 +8,11 @@ import {
 import { normalizeWebhookPayload } from './provider-utils';
 
 @Injectable()
-export class InternalSandboxVerificationProvider
-  implements VerificationProviderAdapter
-{
+export class InternalSandboxVerificationProvider implements VerificationProviderAdapter {
   readonly provider = VerificationProvider.INTERNAL_SANDBOX;
 
-  async startSession(input: StartVerificationSessionInput) {
-    return {
+  startSession(input: StartVerificationSessionInput) {
+    return Promise.resolve({
       provider: this.provider,
       providerReference: input.providerReference,
       providerStatus: 'session_created',
@@ -27,8 +25,8 @@ export class InternalSandboxVerificationProvider
         cacNumber: input.cacNumber ?? null,
       },
       message:
-        'Verification session created. Connect a provider adapter to launch hosted KYC/KYB.',
-    };
+        'Sandbox verification session created. Configure a third-party provider URL to launch hosted KYC/KYB.',
+    });
   }
 
   normalizeWebhook(input: NormalizeWebhookInput) {

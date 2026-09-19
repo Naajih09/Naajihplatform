@@ -1,34 +1,27 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import { Link } from "react-router-dom";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank" rel="noopener noreferrer">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noopener noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
+    <main className="flex min-h-screen items-center justify-center bg-[#111113] px-6 text-white">
+      <section className="w-full max-w-md rounded-2xl border border-white/10 bg-[#1d1d20] p-8 text-center shadow-2xl">
+        <div className="mx-auto flex size-14 items-center justify-center rounded-xl bg-primary text-xl font-black text-black">
+          N
+        </div>
+        <h1 className="mt-5 text-2xl font-black tracking-tight">
+          NaajihBiz Admin
+        </h1>
+        <p className="mt-2 text-sm text-gray-400">
+          Manage users, verification, waitlists, academy programs, and platform
+          operations.
         </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+        <Link
+          to="/admin/dashboard"
+          className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-black transition hover:brightness-110"
+        >
+          Open Dashboard
+        </Link>
+      </section>
+    </main>
   );
 }
 

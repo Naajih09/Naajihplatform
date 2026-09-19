@@ -111,7 +111,9 @@ describe('UsersService (email verification)', () => {
       await service.requestEmailVerificationByEmail(' USER@example.com ');
     const updateCall = databaseService.user.update.mock.calls[0][0];
     const emailHtml = mailerService.sendMail.mock.calls[0][2];
-    const verifyUrl = emailHtml.match(/http[^"]*verify-email\?token=([a-f0-9]+)/i);
+    const verifyUrl = emailHtml.match(
+      /http[^"]*verify-email\?token=([a-f0-9]+)/i,
+    );
     const rawToken = verifyUrl?.[1] || '';
 
     expect(databaseService.user.findUnique).toHaveBeenCalledWith({

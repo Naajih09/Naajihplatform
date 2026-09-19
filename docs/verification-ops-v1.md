@@ -4,8 +4,16 @@
 
 - Final approval/rejection is still performed by an admin reviewer.
 - Manual document uploads are reviewed in the admin verification queue.
-- Provider sessions can create/refresh requests, but failed or mismatched results still route to human review.
+- Provider sessions can create/refresh requests, launch a configured hosted KYC/KYB provider URL, and route failed or mismatched results to human review.
 - Investor "featured" and "founding investor" labels are admin-curated through the investor profile fields.
+
+## Third-Party Provider Setup
+
+- Set `VERIFICATION_PROVIDER` to `DOJAH`, `SMILE_ID`, or `VERIFYME`.
+- Set either `<PROVIDER>_VERIFICATION_URL` or `VERIFICATION_PROVIDER_URL` to the provider's hosted verification start URL.
+- Optional: set `<PROVIDER>_VERIFICATION_CALLBACK_URL` / `VERIFICATION_PROVIDER_CALLBACK_URL` and `<PROVIDER>_VERIFICATION_WEBHOOK_URL` / `VERIFICATION_PROVIDER_WEBHOOK_URL`.
+- The app appends `reference`, `userId`, `email`, `verificationType`, `businessName`, `cacNumber`, `callbackUrl`, and `webhookUrl` as query parameters.
+- Provider webhooks should call `POST /api/verification/provider/webhook` with `providerReference`, `status`, and any risk metadata.
 
 ## Automated Before Human Review
 

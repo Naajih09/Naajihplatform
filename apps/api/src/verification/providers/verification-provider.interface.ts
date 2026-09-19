@@ -1,4 +1,8 @@
-import { VerificationProvider, VerificationStatus, VerificationType } from '@prisma/client';
+import {
+  VerificationProvider,
+  VerificationStatus,
+  VerificationType,
+} from '@prisma/client';
 
 export interface StartVerificationSessionInput {
   userId: string;

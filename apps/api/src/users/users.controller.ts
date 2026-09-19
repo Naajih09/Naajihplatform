@@ -115,7 +115,8 @@ export class UsersController {
         welcome: true,
         isConferenceWaitlist: true,
         conferenceMode: true,
-        message: 'You are on the conference waitlist. We will email you when access is ready.',
+        message:
+          'You are on the conference waitlist. We will email you when access is ready.',
       };
     }
 

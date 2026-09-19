@@ -87,9 +87,15 @@ export class WaitlistService {
             <p>${message || 'Good news — access to Naajih is now available. Click the link below to sign in when invited.'}</p>
             <p><a href="${process.env.FRONTEND_URL || 'https://app.naajihbiz.com'}/login">Open Naajih</a></p>
           `;
-          await this.mailerService.sendMail(entry.email, 'You are invited to Naajih', html);
+          await this.mailerService.sendMail(
+            entry.email,
+            'You are invited to Naajih',
+            html,
+          );
         } catch (err) {
-          this.logger.warn(`Failed to send invite to ${entry.email}: ${String(err)}`);
+          this.logger.warn(
+            `Failed to send invite to ${entry.email}: ${String(err)}`,
+          );
         }
 
         results.push(updated);

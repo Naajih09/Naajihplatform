@@ -123,7 +123,9 @@ export class PaymentsService {
   ) {}
 
   private normalizeBillingInterval(interval?: string): BillingInterval {
-    const normalized = String(interval || BillingInterval.MONTHLY).toUpperCase();
+    const normalized = String(
+      interval || BillingInterval.MONTHLY,
+    ).toUpperCase();
     return normalized === BillingInterval.YEARLY
       ? BillingInterval.YEARLY
       : BillingInterval.MONTHLY;

@@ -1103,6 +1103,63 @@ export class AcademyService {
     };
   }
 
+  async getCertificateStatus(userId: string, programId: string) {
+    const [program, entitlements] = await Promise.all([
+      this.databaseService.program.findUnique({
+        where: { id: programId },
+        select: { id: true, title: true, cohort: true },
+      }),
+      this.accessPolicy.getUserEntitlements(userId),
+    ]);
+
+    if (!program) return null;
+
+    const milestoneTitle = `Completed: ${program.title}`;
+    const [totalLessons, completedLessons, milestone] = await Promise.all([
+      this.databaseService.lesson.count({
+        where: { module: { programId } },
+      }),
+      this.databaseService.userLessonProgress.count({
+        where: {
+          userId,
+          isCompleted: true,
+          lesson: { module: { programId } },
+        },
+      }),
+      this.databaseService.milestone.findFirst({
+        where: { title: milestoneTitle },
+      }),
+    ]);
+
+    const achieved = milestone
+      ? await this.databaseService.userMilestone.findFirst({
+          where: { userId, milestoneId: milestone.id },
+          select: { achievedAt: true },
+        })
+      : null;
+    const lessonsComplete =
+      totalLessons > 0 && completedLessons >= totalLessons;
+
+    return {
+      program,
+      hasCertificateAccess: entitlements.certificates,
+      totalLessons,
+      completedLessons,
+      remainingLessons: Math.max(totalLessons - completedLessons, 0),
+      lessonsComplete,
+      milestoneAwarded: Boolean(achieved),
+      achievedAt: achieved?.achievedAt || null,
+      certificateAvailable: entitlements.certificates && Boolean(achieved),
+      nextStep: !entitlements.certificates
+        ? 'Upgrade to Premium to unlock certificates.'
+        : !lessonsComplete
+          ? 'Complete all lessons in this program.'
+          : !achieved
+            ? 'Open the final lesson again so completion can be recorded.'
+            : 'Download or verify your certificate.',
+    };
+  }
+
   async verifyCertificate(programId: string, userId: string) {
     const program = await this.databaseService.program.findUnique({
       where: { id: programId },

@@ -99,9 +99,14 @@ const Signup = () => {
         message: "Account created successfully. Check your email to verify it.",
         type: "success",
       });
+
+      // Determine where to send the user based on Conference Mode
+      const isConferenceMode = import.meta.env.VITE_CONFERENCE_MODE === 'true';
+      const redirectPath = isConferenceMode ? '/conference-waitlist' : '/login';
+
       setTimeout(() => {
         setToast({ show: false, message: "", type: "success" });
-        navigate(`/login`);
+        navigate(redirectPath);
       }, 1500);
     } catch (err: any) {
       setError(err.message);

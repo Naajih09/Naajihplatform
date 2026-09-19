@@ -63,8 +63,11 @@ const Navbar = () => {
         <div className="flex items-center gap-4 md:hidden z-50">
           <ThemeToggle />
           <button
+            type="button"
             onClick={toggleMenu}
-            className="text-slate-900 dark:text-white hover:text-primary transition-colors"
+            className="rounded-lg p-1 text-slate-900 transition-colors hover:text-primary dark:text-white"
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMobileMenuOpen}
           >
             {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
@@ -73,22 +76,24 @@ const Navbar = () => {
 
       {/* MOBILE MENU */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center space-y-7 bg-background-light px-6 text-center animate-in slide-in-from-top duration-300 dark:bg-background-dark">
-          {navLinks.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-2xl font-bold text-slate-900 hover:text-primary dark:text-white"
-            >
-              {item.name}
-            </a>
-          ))}
-          <div className="mt-6 flex w-full max-w-sm flex-col gap-3">
+        <div className="fixed inset-x-0 bottom-0 top-[57px] z-40 overflow-y-auto border-t border-slate-200 bg-background-light px-4 py-6 shadow-2xl animate-in slide-in-from-top duration-300 dark:border-white/10 dark:bg-background-dark sm:top-[65px]">
+          <nav className="mx-auto flex w-full max-w-sm flex-col gap-2 text-center">
+            {navLinks.map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="rounded-xl px-4 py-4 text-xl font-bold text-slate-900 transition-colors hover:bg-slate-100 hover:text-primary dark:text-white dark:hover:bg-white/5"
+              >
+                {item.name}
+              </a>
+            ))}
+          </nav>
+          <div className="mx-auto mt-5 flex w-full max-w-sm flex-col gap-3">
             <Link
               to="/login"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full text-center py-4 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white font-bold"
+              className="w-full rounded-xl border border-slate-300 py-4 text-center font-bold text-slate-900 transition-colors hover:border-primary hover:text-primary dark:border-white/15 dark:text-white"
             >
               Log In
             </Link>

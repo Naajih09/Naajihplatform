@@ -54,7 +54,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           hideProgressBar={false}
           newestOnTop
           closeOnClick
-          pauseOnFocusLoss
           draggable
           pauseOnHover
           theme="dark"

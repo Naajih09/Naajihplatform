@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { PitchStatus, UserRole } from '@prisma/client';
 import * as crypto from 'crypto';
 import { UsersService } from './users.service';
 
@@ -46,6 +46,57 @@ describe('UsersService (email verification)', () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+  });
+
+  it('returns public metrics from active accounts and approved pitches', async () => {
+    cacheService.getOrSet.mockImplementation(
+      (_key: string, _ttl: number, factory: () => unknown) =>
+        Promise.resolve(factory()),
+    );
+    databaseService.user.count
+      .mockResolvedValueOnce(12)
+      .mockResolvedValueOnce(7)
+      .mockResolvedValueOnce(5);
+    databaseService.pitch.count.mockResolvedValueOnce(4);
+
+    const service = createService();
+
+    await expect(service.getPublicLandingMetrics()).resolves.toEqual({
+      founderAccounts: 12,
+      investorAccounts: 7,
+      approvedOpportunities: 4,
+      verifiedUsers: 5,
+    });
+    expect(cacheService.getOrSet).toHaveBeenCalledWith(
+      'public:landing-metrics',
+      30,
+      expect.any(Function),
+    );
+    expect(databaseService.user.count).toHaveBeenNthCalledWith(1, {
+      where: {
+        role: UserRole.ENTREPRENEUR,
+        isActive: true,
+        isWaitlistUser: false,
+      },
+    });
+    expect(databaseService.user.count).toHaveBeenNthCalledWith(2, {
+      where: {
+        role: UserRole.INVESTOR,
+        isActive: true,
+        isWaitlistUser: false,
+      },
+    });
+    expect(databaseService.pitch.count).toHaveBeenCalledWith({
+      where: { status: PitchStatus.APPROVED },
+    });
+    expect(databaseService.user.count).toHaveBeenNthCalledWith(3, {
+      where: {
+        role: { in: [UserRole.ENTREPRENEUR, UserRole.INVESTOR] },
+        isActive: true,
+        isWaitlistUser: false,
+        isVerified: true,
+      },
+    });
   });
 
   it('throws on invalid token', async () => {

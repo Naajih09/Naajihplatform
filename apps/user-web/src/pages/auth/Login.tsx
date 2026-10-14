@@ -61,14 +61,14 @@ const Login = () => {
       dispatch(setUser(userToSave));
       dispatch(setAuth(true));
 
-      const conferenceMode = import.meta.env.VITE_CONFERENCE_MODE === "true";
+      const waitlistMode = import.meta.env.VITE_WAITLIST_MODE === "true";
       const shouldGoToWaitlist =
-        conferenceMode &&
-        Boolean(userToSave?.isConferenceWaitlist) &&
+        waitlistMode &&
+        Boolean(userToSave?.isWaitlistUser) &&
         userToSave?.role !== "ADMIN";
 
       navigate(
-        shouldGoToWaitlist ? "/conference-waitlist" : searchParams.get("returnUrl") || "/dashboard",
+        shouldGoToWaitlist ? "/early-access" : searchParams.get("returnUrl") || "/dashboard",
         { replace: true },
       );
     } catch (err: any) {

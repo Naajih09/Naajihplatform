@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import type { ComponentType } from "react";
-import ConferenceWaitlist from '../pages/conference/ConferenceWaitlist';
+import { Navigate } from "react-router-dom";
 
 const chunkReloadKey = "naajihbiz:chunk-reload-attempted";
 
@@ -59,6 +59,7 @@ const CertificateVerify = lazyWithReload(
 );
 const Terms = lazyWithReload(() => import("../pages/legal/Terms"));
 const Privacy = lazyWithReload(() => import("../pages/legal/Privacy"));
+const EarlyAccessPage = lazyWithReload(() => import("../pages/EarlyAccess"));
 
 // --- Dashboard Pages ---
 const DashboardHome = lazyWithReload(
@@ -163,11 +164,15 @@ const routes = [
     layout: "blank",
   },
   {
-    path: "conference-waitlist",
-    element: <ConferenceWaitlist />,
+    path: "waitlist",
+    element: <Navigate to="/signup" replace />,
     layout: "blank",
   },
-
+  {
+    path: "early-access",
+    element: <EarlyAccessPage />,
+    layout: "blank",
+  },
   // --- Authenticated Dashboard Routes ---
   {
     path: "dashboard",

@@ -6,6 +6,7 @@ import {
 import {
   BillingInterval,
   ConnectionStatus,
+  PitchStatus,
   User,
   UserRole,
   VerificationStatus,
@@ -16,7 +17,7 @@ import { DatabaseService } from '../database/database.service';
 import { MailerService } from '../mailer/mailer.service';
 import { AppCacheService } from '../cache/app-cache.service';
 import { AccessPolicyService } from '../policies/access-policy.service';
-import { isConferenceMode } from '../utils/conference-mode';
+import { isWaitlistMode } from '../utils/waitlist-mode';
 import {
   passwordResetEmail,
   verificationEmail,
@@ -384,14 +385,14 @@ export class UsersService {
     }
 
     // Save to Database
-    const isWaitlistSignup = isConferenceMode() && role !== UserRole.ADMIN;
+    const isWaitlistSignup = isWaitlistMode() && role !== UserRole.ADMIN;
 
     const newUser = await this.databaseService.user.create({
       data: {
         email: normalizedEmail,
         password: hashedPassword, // Save the HASH
         role,
-        isConferenceWaitlist: isWaitlistSignup,
+        isWaitlistUser: isWaitlistSignup,
         ...profileData,
       },
       include: { entrepreneurProfile: true, investorProfile: true },
@@ -433,36 +434,34 @@ export class UsersService {
     return result;
   }
 
-  async getConferenceWaitlistUsers() {
+  async getWaitlistUsers() {
     return this.databaseService.user.findMany({
-      where: { isConferenceWaitlist: true },
+      where: { isWaitlistUser: true },
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
         email: true,
         role: true,
         createdAt: true,
-        conferenceNotifiedAt: true,
-        isConferenceWaitlist: true,
+        waitlistNotifiedAt: true,
+        isWaitlistUser: true,
       },
     });
   }
 
-  async markConferenceWaitlistNotified(userId: string) {
+  async markWaitlistNotified(userId: string) {
     const user = await this.databaseService.user.findUnique({
       where: { id: userId },
-      select: { id: true, isConferenceWaitlist: true },
+      select: { id: true, isWaitlistUser: true },
     });
 
-    if (!user || !user.isConferenceWaitlist) {
-      throw new BadRequestException(
-        'User is not part of the conference waitlist.',
-      );
+    if (!user || !user.isWaitlistUser) {
+      throw new BadRequestException('User is not part of the waitlist.');
     }
 
     const updatedUser = await this.databaseService.user.update({
       where: { id: userId },
-      data: { conferenceNotifiedAt: new Date() },
+      data: { waitlistNotifiedAt: new Date() },
     });
 
     return this.sanitizeUser(updatedUser);
@@ -1140,6 +1139,46 @@ export class UsersService {
         roles,
         newUsersLast7Days,
         newConnectionsLast7Days,
+      };
+    });
+  }
+
+  async getPublicLandingMetrics() {
+    return this.cache.getOrSet('public:landing-metrics', 30, async () => {
+      const [founderAccounts, investorAccounts, approvedOpportunities, verifiedUsers] =
+        await Promise.all([
+          this.databaseService.user.count({
+            where: {
+              role: UserRole.ENTREPRENEUR,
+              isActive: true,
+              isWaitlistUser: false,
+            },
+          }),
+          this.databaseService.user.count({
+            where: {
+              role: UserRole.INVESTOR,
+              isActive: true,
+              isWaitlistUser: false,
+            },
+          }),
+          this.databaseService.pitch.count({
+            where: { status: PitchStatus.APPROVED },
+          }),
+          this.databaseService.user.count({
+            where: {
+              role: { in: [UserRole.ENTREPRENEUR, UserRole.INVESTOR] },
+              isActive: true,
+              isWaitlistUser: false,
+              isVerified: true,
+            },
+          }),
+        ]);
+
+      return {
+        founderAccounts,
+        investorAccounts,
+        approvedOpportunities,
+        verifiedUsers,
       };
     });
   }

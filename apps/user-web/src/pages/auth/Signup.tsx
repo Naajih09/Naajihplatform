@@ -100,9 +100,9 @@ const Signup = () => {
         type: "success",
       });
 
-      // Determine where to send the user based on Conference Mode
-      const isConferenceMode = import.meta.env.VITE_CONFERENCE_MODE === 'true';
-      const redirectPath = isConferenceMode ? '/conference-waitlist' : '/login';
+      // Determine where to send the user based on the current product flow
+      const isWaitlistMode = import.meta.env.VITE_WAITLIST_MODE === 'true';
+      const redirectPath = isWaitlistMode ? '/early-access' : '/login';
 
       setTimeout(() => {
         setToast({ show: false, message: "", type: "success" });

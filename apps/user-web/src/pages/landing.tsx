@@ -1,14 +1,56 @@
 import { Link } from "react-router-dom";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../components/landing/Navbar";
 import HeroSection from "../components/landing/HeroSection";
 import RoleSelection from "../components/landing/RoleSelection";
 import HowItWorks from "../components/landing/HowItWorks";
 import TrustSection from "../components/landing/TrustSection";
 import { getPublicEntryPath } from "../lib/public-entry";
+import { getApiBaseUrl } from "@/lib/api-base";
+
+interface PublicLandingMetrics {
+  founderAccounts: number;
+  investorAccounts: number;
+  approvedOpportunities: number;
+  verifiedUsers: number;
+}
 
 const Landing = () => {
   const entryPath = getPublicEntryPath();
+  const [metrics, setMetrics] = useState<PublicLandingMetrics | null>(null);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    const loadMetrics = async () => {
+      try {
+        const response = await fetch(`${getApiBaseUrl()}/users/public/metrics`);
+        if (!response.ok) return;
+
+        const data = (await response.json()) as PublicLandingMetrics;
+        const values = [
+          data.founderAccounts,
+          data.investorAccounts,
+          data.approvedOpportunities,
+          data.verifiedUsers,
+        ];
+
+        if (isCurrent && values.every(Number.isFinite)) {
+          setMetrics(data);
+        }
+      } catch {
+        // Keep metrics unavailable until the API can provide real values.
+      }
+    };
+
+    void loadMetrics();
+    const interval = window.setInterval(loadMetrics, 60_000);
+
+    return () => {
+      isCurrent = false;
+      window.clearInterval(interval);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-lunar-white">
@@ -17,6 +59,59 @@ const Landing = () => {
       <RoleSelection />
       <HowItWorks />
       <TrustSection />
+      <section className="bg-slate-100 py-14 dark:bg-[#0a0a0c] md:py-20">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-deep-slate sm:p-8 md:p-12">
+            <div className="mb-10 text-center md:mb-12">
+              <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-primary">
+                Why founders choose us
+              </p>
+              <h3 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-5xl">
+                Ready to grow responsibly?
+              </h3>
+            </div>
+
+            <div className="mb-10 grid grid-cols-1 gap-4 text-center sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { value: metrics?.founderAccounts, label: "Founder accounts" },
+                { value: metrics?.investorAccounts, label: "Investor accounts" },
+                {
+                  value: metrics?.approvedOpportunities,
+                  label: "Approved opportunities",
+                },
+                { value: metrics?.verifiedUsers, label: "Verified users" },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-white/5 dark:bg-background-dark/80"
+                >
+                  <div className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+                    {stat.value === undefined ? "—" : stat.value.toLocaleString()}
+                  </div>
+                  <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col items-center justify-center gap-4 text-center sm:flex-row">
+              <Link
+                to={entryPath}
+                className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-extrabold text-background-dark transition-transform hover:scale-[1.02]"
+              >
+                Get Started
+              </Link>
+              <Link
+                to="/login"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-6 py-3 text-sm font-bold text-slate-900 transition-colors hover:border-primary hover:text-primary dark:border-white/10 dark:text-white"
+              >
+                Explore Account
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
       <footer
         className="border-t border-slate-200 bg-white py-12 transition-colors duration-300 dark:border-white/5 dark:bg-background-dark md:py-16"
         id="about"

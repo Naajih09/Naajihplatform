@@ -40,7 +40,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
-      isConferenceWaitlist: Boolean(user.isConferenceWaitlist),
+      isWaitlistUser: Boolean(user.isWaitlistUser),
     };
 
     // 4. SANITIZE: Remove password from the object we send back

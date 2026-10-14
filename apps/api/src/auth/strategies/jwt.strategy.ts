@@ -42,8 +42,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       email: user.email,
       role: user.role,
       adminPermissions: user.adminPermissions,
-      isConferenceWaitlist: Boolean(user.isConferenceWaitlist),
-      conferenceNotifiedAt: user.conferenceNotifiedAt ?? null,
+      isWaitlistUser: Boolean(user.isWaitlistUser),
+      waitlistNotifiedAt: user.waitlistNotifiedAt ?? null,
     } as User;
   }
 }

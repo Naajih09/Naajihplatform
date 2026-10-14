@@ -24,6 +24,12 @@ import {
   storeAdminPermissions,
 } from "../utils/admin-access";
 
+      label: "Email Waitlist",
+      path: "/admin/waitlist",
+      icon: UserCheck,
+      permission: "users",
+    },
+    {
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -69,8 +75,8 @@ const AdminLayout = () => {
       permission: "users",
     },
     {
-      label: "Conference Signups",
-      path: "/admin/conference-waitlist",
+      label: "Waitlist",
+      path: "/admin/waitlist",
       icon: UserCheck,
       permission: "users",
     },

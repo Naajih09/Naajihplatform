@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import type { ComponentType } from "react";
-import ConferenceWaitlist from '../pages/conference/ConferenceWaitlist';
+import WaitlistPage from '../pages/Waitlist';
 
 const chunkReloadKey = "naajihbiz:chunk-reload-attempted";
 
@@ -163,11 +163,10 @@ const routes = [
     layout: "blank",
   },
   {
-    path: "conference-waitlist",
-    element: <ConferenceWaitlist />,
+    path: "waitlist",
+    element: <WaitlistPage />,
     layout: "blank",
   },
-
   // --- Authenticated Dashboard Routes ---
   {
     path: "dashboard",

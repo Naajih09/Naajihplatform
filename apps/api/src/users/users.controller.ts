@@ -26,7 +26,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { AdminCreateUserDto } from './dto/admin-create-user.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { isConferenceMode } from '../utils/conference-mode';
+import { isWaitlistMode } from '../utils/waitlist-mode';
 
 @Controller('users')
 export class UsersController {
@@ -106,17 +106,16 @@ export class UsersController {
     }
 
     const shouldShowWaitlistView =
-      isConferenceMode() &&
-      Boolean(req.user?.isConferenceWaitlist) &&
+      isWaitlistMode() &&
+      Boolean(req.user?.isWaitlistUser) &&
       req.user.role !== UserRole.ADMIN;
 
     if (shouldShowWaitlistView) {
       return {
         welcome: true,
-        isConferenceWaitlist: true,
-        conferenceMode: true,
-        message:
-          'You are on the conference waitlist. We will email you when access is ready.',
+        isWaitlistUser: true,
+        waitlistMode: true,
+        message: 'You are on the waitlist. We will email you when access is ready.',
       };
     }
 
@@ -125,16 +124,16 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  @Get('admin/conference-waitlist')
-  getConferenceWaitlist() {
-    return this.usersService.getConferenceWaitlistUsers();
+  @Get('admin/waitlist')
+  getWaitlist() {
+    return this.usersService.getWaitlistUsers();
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  @Patch('admin/conference-waitlist/:id/notify')
-  markConferenceWaitlistNotified(@Param('id') id: string) {
-    return this.usersService.markConferenceWaitlistNotified(id);
+  @Patch('admin/waitlist/:id/notify')
+  markWaitlistNotified(@Param('id') id: string) {
+    return this.usersService.markWaitlistNotified(id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

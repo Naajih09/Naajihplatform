@@ -47,4 +47,8 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   organization?: string;
+
+  @IsString()
+  @IsOptional()
+  location?: string;
 }

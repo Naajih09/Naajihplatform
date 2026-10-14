@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Bell, Check, Eye, EyeOff, Lock, Target, Trash2 } from "lucide-react";
+import { Bell, Check, Eye, EyeOff, Lock, Target } from "lucide-react";
 import Button from "../../components/Button";
 import { useNavigate } from "react-router-dom";
 import { getApiBaseUrl } from "../../lib/api-base";
@@ -168,24 +168,6 @@ const Settings = () => {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!confirm("Are you sure? This cannot be undone.")) return;
-    try {
-      await fetch(`${API_BASE}/users/${user.id}`, {
-        method: "DELETE",
-        headers: authHeaders,
-      });
-      setToast({ show: true, message: "Account deleted.", type: "success" });
-      handleLogout();
-    } catch (err) {
-      setToast({
-        show: true,
-        message: "Failed to delete account.",
-        type: "error",
-      });
-    }
-  };
-
   return (
     <div className="mx-auto max-w-4xl space-y-6 pb-20 font-sans md:space-y-8">
       {toast.show && (
@@ -217,13 +199,15 @@ const Settings = () => {
               {tab}
             </button>
           ))}
-          <div className="hidden pt-8 md:block">
-            <button
-              onClick={handleDeleteAccount}
-              className="w-full text-left px-4 py-3 rounded-xl font-bold text-xs text-red-500 hover:bg-red-500/10 flex items-center gap-2 transition-colors"
+          <div className="border-t border-slate-200 pt-5 text-xs leading-5 text-slate-500 dark:border-gray-800 dark:text-gray-400 md:mt-8">
+            To request account deletion, email{" "}
+            <a
+              href="mailto:support@naajihbiz.com?subject=Account%20deletion%20request"
+              className="font-semibold text-primary underline underline-offset-2"
             >
-              <Trash2 size={16} /> Delete Account
-            </button>
+              support@naajihbiz.com
+            </a>
+            .
           </div>
         </div>
 

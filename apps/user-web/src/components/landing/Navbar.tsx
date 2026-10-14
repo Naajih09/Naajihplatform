@@ -20,14 +20,18 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 border-b border-white/5 bg-background-light dark:bg-background-dark transition-colors duration-300 md:bg-background-light/80 md:backdrop-blur-md md:dark:bg-background-dark/80">
       <div className="max-w-[1200px] mx-auto flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
         {/* LOGO */}
-        <div className="flex items-center gap-2 cursor-pointer z-50">
+        <Link
+          to="/"
+          aria-label="NaajihBiz home"
+          className="flex items-center gap-2 cursor-pointer z-50"
+        >
           <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-background-dark">
             <Landmark size={20} strokeWidth={3} />
           </div>
           <h2 className="text-lg font-extrabold tracking-tighter uppercase text-slate-900 dark:text-white sm:text-xl">
             Naajih<span className="text-primary">Biz</span>
           </h2>
-        </div>
+        </Link>
 
         {/* DESKTOP NAV */}
         <nav className="hidden md:flex items-center gap-10 text-sm font-semibold text-slate-700 dark:text-slate-300">

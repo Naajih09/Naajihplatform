@@ -25,6 +25,10 @@ const CreatePitch = () => {
     type: "success",
   });
   const API_BASE = getApiBaseUrl();
+  const authToken =
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("access_token") ||
+    "";
   const isVerified = Boolean(user.isVerified);
   const verificationMessage = "Verify your account to unlock this feature";
 
@@ -58,8 +62,10 @@ const CreatePitch = () => {
     try {
       const res = await fetch(`${API_BASE}/upload`, {
         method: "POST",
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
         body: uploadData,
       });
+      if (!res.ok) throw new Error("Upload request failed.");
       const data = await res.json();
       const uploadUrl = data.secure_url || data.url;
       if (uploadUrl) {

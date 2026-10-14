@@ -170,7 +170,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* MetricCard and other components remain */}
         <MetricCard
-          label="Total Active Users"
+          label="Total Users"
           value={loading ? "..." : stats.users}
           trend="Live"
           icon={Users}

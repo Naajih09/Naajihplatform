@@ -8,6 +8,7 @@ describe('UsersService (email verification)', () => {
     user: {
       findUnique: jest.fn(),
       findFirst: jest.fn(),
+      findMany: jest.fn(),
       update: jest.fn(),
       count: jest.fn(),
       groupBy: jest.fn(),
@@ -97,6 +98,64 @@ describe('UsersService (email verification)', () => {
         isVerified: true,
       },
     });
+  });
+
+  it('sends launch invitations and marks only delivered accounts as notified', async () => {
+    const waitlistUser = {
+      id: 'user-1',
+      email: 'founder@example.com',
+      entrepreneurProfile: { firstName: '<Amina>' },
+      investorProfile: null,
+    };
+    databaseService.user.findMany.mockResolvedValue([waitlistUser]);
+    databaseService.user.update.mockResolvedValue({});
+    mailerService.sendMail.mockResolvedValue(true);
+
+    const service = createService();
+    const result = await service.inviteWaitlistUsers(
+      ['user-1'],
+      'We are open!\nCome join.',
+    );
+
+    expect(result).toEqual({
+      sent: 1,
+      failed: 0,
+      sentIds: ['user-1'],
+      failedIds: [],
+    });
+    expect(mailerService.sendMail).toHaveBeenCalledWith(
+      'founder@example.com',
+      'NaajihBiz is open: sign in to your account',
+      expect.stringContaining('Hi &lt;Amina&gt;'),
+    );
+    expect(mailerService.sendMail.mock.calls[0][2]).toContain('/login');
+    expect(databaseService.user.update).toHaveBeenCalledWith({
+      where: { id: 'user-1' },
+      data: { waitlistNotifiedAt: expect.any(Date) },
+    });
+  });
+
+  it('does not mark launch invitations notified when email delivery fails', async () => {
+    databaseService.user.findMany.mockResolvedValue([
+      {
+        id: 'user-2',
+        email: 'investor@example.com',
+        entrepreneurProfile: null,
+        investorProfile: { firstName: 'Sam' },
+      },
+    ]);
+    mailerService.sendMail.mockResolvedValue(false);
+
+    const service = createService();
+    const result = await service.inviteWaitlistUsers(['user-2']);
+
+    expect(result).toEqual({
+      sent: 0,
+      failed: 1,
+      sentIds: [],
+      failedIds: ['user-2'],
+    });
+    expect(databaseService.user.update).not.toHaveBeenCalled();
   });
 
   it('throws on invalid token', async () => {

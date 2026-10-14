@@ -218,6 +218,7 @@ const Profile = () => {
 
       const res = await fetch(`${API_BASE}/upload?folder=avatars`, {
         method: "POST",
+        headers: authHeaders,
         body: uploadData,
       });
       const data = await res.json().catch(() => null);

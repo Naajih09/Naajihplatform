@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  Trash2,
   Shield,
   ShieldAlert,
   Loader2,
@@ -81,23 +80,6 @@ const UsersList = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, roleFilter, sortBy, pageSize]);
-
-  const handleDelete = async (id: string) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to BAN and DELETE this user? This cannot be undone.",
-      )
-    )
-      return;
-
-    try {
-      await api.delete(`/users/${id}`);
-      showToast("User has been banned and removed.", "success");
-      setUsers(users.filter((u) => u.id !== id));
-    } catch (err) {
-      showToast("Network error occurred", "error");
-    }
-  };
 
   const handleStatusToggle = async (user: any) => {
     try {
@@ -357,13 +339,6 @@ const UsersList = () => {
                             title="View Profile"
                           >
                             <Eye size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(user.id)}
-                            className="p-2 bg-red-900/20 text-red-500 hover:bg-red-600 hover:text-white rounded transition-colors"
-                            title="Delete User"
-                          >
-                            <Trash2 size={16} />
                           </button>
                         </td>
                       </tr>

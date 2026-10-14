@@ -181,8 +181,10 @@ const Messages = () => {
     try {
       const res = await fetch(`${API_BASE}/upload`, {
         method: "POST",
+        headers: authHeaders,
         body: formData,
       });
+      if (!res.ok) throw new Error("Upload request failed.");
       const data = await res.json();
       return data.secure_url || data.url || null;
     } catch (err) {

@@ -24,15 +24,6 @@ const Waitlist = () => {
     void load();
   }, []);
 
-  const markNotified = async (id: string) => {
-    try {
-      await api.patch(`/waitlist/${id}/notify`);
-      setItems((s) => s.map((it) => (it.id === id ? { ...it, isNotified: true } : it)));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const toggleSelect = (id: string) => {
     setSelected((s) => ({ ...s, [id]: !s[id] }));
   };
@@ -48,7 +39,9 @@ const Waitlist = () => {
       setItems((s) => s.map((it) => (updatedIds.includes(it.id) ? { ...it, isNotified: true } : it)));
       setSelected({});
       setInviteMessage('');
-      alert(`Invitations sent to ${res.data.processed || 0} users.`);
+      alert(
+        `Invitations sent: ${res.data.processed || 0}. Failed: ${res.data.failed || 0}.`,
+      );
     } catch (err) {
       console.error(err);
       alert('Failed to send invitations');
@@ -107,7 +100,6 @@ const Waitlist = () => {
               <th className="px-3 py-2">Location</th>
               <th className="px-3 py-2">Notified</th>
               <th className="px-3 py-2">Joined</th>
-              <th className="px-3 py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -122,11 +114,6 @@ const Waitlist = () => {
                 <td className="px-3 py-2">{it.location}</td>
                 <td className="px-3 py-2">{it.isNotified ? "Yes" : "No"}</td>
                 <td className="px-3 py-2">{it.createdAt ? format(new Date(it.createdAt), "yyyy-MM-dd") : ""}</td>
-                <td className="px-3 py-2">
-                  {!it.isNotified && (
-                    <button onClick={() => markNotified(it.id)} className="px-3 py-1 admin-button-secondary">Mark Notified</button>
-                  )}
-                </td>
               </tr>
             ))}
           </tbody>

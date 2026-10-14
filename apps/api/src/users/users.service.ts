@@ -30,6 +30,7 @@ interface CreateUserDto {
   role: UserRole;
   firstName: string;
   lastName: string;
+  location?: string;
 }
 
 const ADMIN_PERMISSIONS = [
@@ -257,6 +258,19 @@ export class UsersService {
     );
   }
 
+  private escapeHtml(value: string) {
+    return value.replace(/[&<>"']/g, (character) => {
+      const entities: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      };
+      return entities[character];
+    });
+  }
+
   private shouldExposePasswordResetLink(emailDelivered?: boolean) {
     return (
       process.env.NODE_ENV !== 'production' ||
@@ -363,7 +377,8 @@ export class UsersService {
 
   // 1. SIGNUP (Create User + Profile + Hash Password)
   async create(createUserDto: CreateUserDto) {
-    const { email, password, role, firstName, lastName } = createUserDto;
+    const { email, password, role, firstName, lastName, location } =
+      createUserDto;
     const normalizedEmail = email.trim().toLowerCase();
 
     // 🔐 HASH THE PASSWORD
@@ -373,14 +388,16 @@ export class UsersService {
     let profileData = {};
     if (role === UserRole.ENTREPRENEUR) {
       profileData = {
-        entrepreneurProfile: { create: { firstName, lastName } },
+        entrepreneurProfile: { create: { firstName, lastName, location } },
       };
     } else if (role === UserRole.INVESTOR) {
-      profileData = { investorProfile: { create: { firstName, lastName } } };
+      profileData = {
+        investorProfile: { create: { firstName, lastName, location } },
+      };
     } else {
       // Default for Aspirant
       profileData = {
-        entrepreneurProfile: { create: { firstName, lastName } },
+        entrepreneurProfile: { create: { firstName, lastName, location } },
       };
     }
 
@@ -449,22 +466,63 @@ export class UsersService {
     });
   }
 
-  async markWaitlistNotified(userId: string) {
-    const user = await this.databaseService.user.findUnique({
-      where: { id: userId },
-      select: { id: true, isWaitlistUser: true },
+  async inviteWaitlistUsers(ids: string[], message?: string) {
+    const uniqueIds = [...new Set(ids)];
+    const users = await this.databaseService.user.findMany({
+      where: {
+        id: { in: uniqueIds },
+        role: { in: [UserRole.ENTREPRENEUR, UserRole.INVESTOR, UserRole.ASPIRING_BUSINESS_OWNER] },
+        isWaitlistUser: true,
+        waitlistNotifiedAt: null,
+      },
+      select: {
+        id: true,
+        email: true,
+        entrepreneurProfile: { select: { firstName: true } },
+        investorProfile: { select: { firstName: true } },
+      },
     });
 
-    if (!user || !user.isWaitlistUser) {
-      throw new BadRequestException('User is not part of the waitlist.');
+    const sentIds: string[] = [];
+    const failedIds: string[] = uniqueIds.filter(
+      (id) => !users.some((user) => user.id === id),
+    );
+    const customMessage = message?.trim();
+    const messageHtml = customMessage
+      ? `<p>${this.escapeHtml(customMessage).replace(/\r?\n/g, '<br>')}</p>`
+      : '<p>NaajihBiz is now open. Sign in with the email and password you used when you created your account to get started.</p>';
+    const loginUrl = `${this.getFrontendUrl()}/login`;
+
+    for (const user of users) {
+      const firstName =
+        user.entrepreneurProfile?.firstName ||
+        user.investorProfile?.firstName ||
+        'there';
+      const html = `<p>Hi ${this.escapeHtml(firstName)},</p>${messageHtml}<p><a href="${loginUrl}">Sign in to NaajihBiz</a></p>`;
+
+      try {
+        const delivered = await this.mailerService.sendMail(
+          user.email,
+          'NaajihBiz is open: sign in to your account',
+          html,
+        );
+
+        if (!delivered) {
+          failedIds.push(user.id);
+          continue;
+        }
+
+        await this.databaseService.user.update({
+          where: { id: user.id },
+          data: { waitlistNotifiedAt: new Date() },
+        });
+        sentIds.push(user.id);
+      } catch {
+        failedIds.push(user.id);
+      }
     }
 
-    const updatedUser = await this.databaseService.user.update({
-      where: { id: userId },
-      data: { waitlistNotifiedAt: new Date() },
-    });
-
-    return this.sanitizeUser(updatedUser);
+    return { sent: sentIds.length, failed: failedIds.length, sentIds, failedIds };
   }
 
   async getAdminTeam() {
@@ -1339,46 +1397,6 @@ export class UsersService {
     });
     this.clearUserCache(id);
     return this.sanitizeUser(user);
-  }
-
-  // 8. DELETE ACCOUNT (The Nuclear Option - Fixed)
-  async deleteUser(id: string) {
-    // 1. Delete related connections
-    await this.databaseService.connection.deleteMany({
-      where: { OR: [{ senderId: id }, { receiverId: id }] },
-    });
-
-    // 2. Delete related messages (New addition for safety)
-    await this.databaseService.messageReport.deleteMany({
-      where: { OR: [{ reporterId: id }, { reportedUserId: id }] },
-    });
-
-    await this.databaseService.message.deleteMany({
-      where: { OR: [{ senderId: id }, { receiverId: id }] },
-    });
-
-    // 3. Delete their pitches
-    await this.databaseService.pitch.deleteMany({
-      where: { userId: id },
-    });
-
-    // 4. Delete their profile (Entrepreneur/Investor)
-    try {
-      await this.databaseService.entrepreneurProfile.delete({
-        where: { userId: id },
-      });
-    } catch (e) {}
-
-    try {
-      await this.databaseService.investorProfile.delete({
-        where: { userId: id },
-      });
-    } catch (e) {}
-
-    // 5. Finally, Delete the User
-    const deleted = await this.databaseService.user.delete({ where: { id } });
-    this.clearUserCache(id);
-    return this.sanitizeUser(deleted);
   }
 
   // 9. UPGRADE TO PREMIUM

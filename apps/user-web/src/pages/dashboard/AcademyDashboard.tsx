@@ -130,15 +130,25 @@ const AcademyDashboard = () => {
     }
     setIsJoining(true);
     try {
-      await fetch(`${API_BASE}/academy/join/${program.id}`, {
+      const response = await fetch(`${API_BASE}/academy/join/${program.id}`, {
         method: "POST",
         headers: authHeaders,
       });
+      const enrollment = await response.json().catch(() => null);
+      if (!response.ok || !enrollment?.status) {
+        throw new Error(enrollment?.message || "Enrollment request failed.");
+      }
+
       setProgram((prev: any) => ({
         ...prev,
-        enrollments: [{ id: "local", enrolledAt: new Date().toISOString() }],
+        enrollments: [enrollment],
       }));
-      showToast("Enrollment submitted for approval.", "success");
+      showToast(
+        enrollment.status === "APPROVED"
+          ? "You are enrolled in this program."
+          : "Enrollment submitted for approval.",
+        "success",
+      );
     } catch (err) {
       console.error(err);
       showToast("Unable to submit enrollment.", "error");

@@ -6,7 +6,6 @@ import {
   Body,
   Param,
   Patch,
-  Delete,
   UseGuards,
   Request,
   BadRequestException,
@@ -26,6 +25,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { AdminCreateUserDto } from './dto/admin-create-user.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { InviteEarlyAccessDto } from './dto/invite-early-access.dto';
 import { isWaitlistMode } from '../utils/waitlist-mode';
 
 @Controller('users')
@@ -136,9 +136,9 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  @Patch('admin/waitlist/:id/notify')
-  markWaitlistNotified(@Param('id') id: string) {
-    return this.usersService.markWaitlistNotified(id);
+  @Post('admin/waitlist/invite')
+  inviteWaitlistUsers(@Body() body: InviteEarlyAccessDto) {
+    return this.usersService.inviteWaitlistUsers(body.ids, body.message);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -355,10 +355,4 @@ export class UsersController {
     return this.usersService.changePassword(id, body.password);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @Delete(':id')
-  deleteUser(@Param('id') id: string) {
-    return this.usersService.deleteUser(id);
-  }
 }

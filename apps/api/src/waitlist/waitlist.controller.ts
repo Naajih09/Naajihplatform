@@ -3,8 +3,6 @@ import {
   Controller,
   Post,
   Get,
-  Param,
-  Patch,
   UseGuards,
   Query,
 } from '@nestjs/common';
@@ -32,14 +30,6 @@ export class WaitlistController {
   list(@Query('limit') limit = '100') {
     const n = Number(limit) || 100;
     return this.waitlistService.list(n);
-  }
-
-  // Admin: mark an entry as notified
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @Patch(':id/notify')
-  async markNotified(@Param('id') id: string) {
-    return this.waitlistService.markNotified(id);
   }
 
   // Admin: invite multiple waitlist entries (mark notified + send invite email)

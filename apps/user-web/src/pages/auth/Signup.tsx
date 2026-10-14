@@ -86,6 +86,7 @@ const Signup = () => {
           role: roleMapping[role],
           firstName: firstName,
           lastName: lastName,
+          location: formData.location,
         }),
       });
 

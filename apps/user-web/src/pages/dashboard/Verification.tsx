@@ -192,8 +192,13 @@ const Verification = () => {
     try {
       const res = await fetch(`${API_BASE}/upload`, {
         method: "POST",
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
         body: formData,
       });
+      if (!res.ok) {
+        const uploadError = await res.json().catch(() => ({}));
+        throw new Error(uploadError?.message || "Document upload failed.");
+      }
       const data = await res.json();
 
       const uploadUrl = data.secure_url || data.url;

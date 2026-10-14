@@ -658,8 +658,10 @@ const CreatePitchModal = ({
     try {
       const res = await fetch(`${apiBase}/upload`, {
         method: "POST",
+        headers: authHeaders,
         body: uploadData,
       });
+      if (!res.ok) throw new Error("Upload request failed.");
       const data = await res.json();
       const uploadUrl = data.secure_url || data.url;
       if (uploadUrl) {

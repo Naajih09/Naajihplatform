@@ -55,17 +55,11 @@ export class WaitlistService {
     });
   }
 
-  async markNotified(id: string) {
-    return this.databaseService.waitlist.update({
-      where: { id },
-      data: { isNotified: true },
-    });
-  }
-
   async invite(ids: string[], message = '') {
     if (!Array.isArray(ids) || ids.length === 0) return { processed: 0 };
 
     const results: any[] = [];
+    const failed: string[] = [];
 
     for (const id of ids) {
       try {
@@ -74,36 +68,56 @@ export class WaitlistService {
         });
         if (!entry) continue;
 
-        // Mark as notified
+        const safeMessage = message
+          ? this.escapeHtml(message).replace(/\r?\n/g, '<br>')
+          : 'Good news — access to Naajih is now available. Click below to sign in.';
+        const html = `
+          <p>Hi ${this.escapeHtml(entry.firstName || 'there')},</p>
+          <p>${safeMessage}</p>
+          <p><a href="${this.getLoginUrl()}">Open Naajih</a></p>
+        `;
+        const delivered = await this.mailerService.sendMail(
+          entry.email,
+          'You are invited to Naajih',
+          html,
+        );
+
+        if (!delivered) {
+          failed.push(id);
+          continue;
+        }
+
         const updated = await this.databaseService.waitlist.update({
           where: { id },
           data: { isNotified: true },
         });
-
-        // Send invite email (best-effort)
-        try {
-          const html = `
-            <p>Hi ${entry.firstName || 'there'},</p>
-            <p>${message || 'Good news — access to Naajih is now available. Click the link below to sign in when invited.'}</p>
-            <p><a href="${process.env.FRONTEND_URL || 'https://app.naajihbiz.com'}/login">Open Naajih</a></p>
-          `;
-          await this.mailerService.sendMail(
-            entry.email,
-            'You are invited to Naajih',
-            html,
-          );
-        } catch (err) {
-          this.logger.warn(
-            `Failed to send invite to ${entry.email}: ${String(err)}`,
-          );
-        }
-
         results.push(updated);
       } catch (err) {
         this.logger.error(`Error processing waitlist id=${id}: ${String(err)}`);
+        failed.push(id);
       }
     }
 
-    return { processed: results.length, results };
+    return { processed: results.length, results, failed: failed.length, failedIds: failed };
+  }
+
+  private escapeHtml(value: string) {
+    return value.replace(/[&<>"']/g, (character) => {
+      const entities: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      };
+      return entities[character];
+    });
+  }
+
+  private getLoginUrl() {
+    const frontendUrl = (process.env.FRONTEND_URL || 'https://app.naajihbiz.com')
+      .trim()
+      .replace(/\/+$/, '');
+    return `${frontendUrl}/login`;
   }
 }

@@ -197,18 +197,21 @@ function DashboardHome() {
     }
     setJoiningId(programId);
     try {
-      await fetch(`${API_BASE}/academy/join/${programId}`, {
+      const response = await fetch(`${API_BASE}/academy/join/${programId}`, {
         method: 'POST',
         headers: authHeaders,
       });
+      const enrollment = await response.json().catch(() => null);
+      if (!response.ok || !enrollment?.status) {
+        throw new Error(enrollment?.message || 'Enrollment request failed.');
+      }
+
       setCourses((prev) =>
         prev.map((course) =>
           course.id === programId
             ? {
                 ...course,
-                enrollments: [
-                  { id: 'local', enrolledAt: new Date().toISOString() },
-                ],
+                enrollments: [enrollment],
               }
             : course,
         ),

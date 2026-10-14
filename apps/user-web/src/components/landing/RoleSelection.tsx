@@ -1,8 +1,10 @@
 import React from "react";
 import { Rocket, Wallet, CheckCircle, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getPublicEntryPath } from "@/lib/public-entry";
 
 const RoleSelection = () => {
+  const entryPath = getPublicEntryPath();
   return (
     <section
       className="bg-slate-100 py-14 dark:bg-[#0a0a0c] md:py-20"
@@ -36,7 +38,7 @@ const RoleSelection = () => {
             ))}
           </ul>
           <Link
-            to="/signup"
+            to={entryPath}
             className="inline-flex items-center gap-2 font-bold text-primary group-hover:underline"
           >
             Apply for Funding <ArrowRight size={16} />
@@ -70,7 +72,7 @@ const RoleSelection = () => {
             ))}
           </ul>
           <Link
-            to="/signup"
+            to={entryPath}
             className="inline-flex items-center gap-2 font-bold text-primary group-hover:underline"
           >
             Start Investing <ArrowRight size={16} />

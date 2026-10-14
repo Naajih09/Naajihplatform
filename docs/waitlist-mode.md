@@ -1,6 +1,6 @@
 # Product Waitlist
 
-The waitlist mode lets people create accounts before the NaajihBiz launch while keeping those accounts outside the product dashboard until access is ready.
+The waitlist mode lets people create normal NaajihBiz accounts before launch while keeping those accounts outside the product dashboard until access is ready. New signups are saved as user accounts, so they can use their existing credentials when the product opens.
 
 ## Configuration
 
@@ -10,9 +10,13 @@ The waitlist mode lets people create accounts before the NaajihBiz launch while 
 
 ## Admin Operations
 
-- The public email waitlist is managed at `/admin/waitlist`.
 - Accounts awaiting product access are managed at `/admin/early-access-users`.
+- The separate email-only list at `/admin/waitlist` is not the signup path used by the user app.
 - Mark an account notified after sending its launch/access email.
+
+## Opening Access
+
+After confirming launch email delivery, set `WAITLIST_MODE=false` on the API and `VITE_WAITLIST_MODE=false` on the user app, then deploy both. Existing accounts are retained; users can sign in with the email and password they created during signup and continue to the normal dashboard. No waitlist data deletion or account recreation is needed.
 
 ## Database Migration
 

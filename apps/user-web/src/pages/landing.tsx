@@ -1,14 +1,56 @@
 import { Link } from "react-router-dom";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../components/landing/Navbar";
 import HeroSection from "../components/landing/HeroSection";
 import RoleSelection from "../components/landing/RoleSelection";
 import HowItWorks from "../components/landing/HowItWorks";
 import TrustSection from "../components/landing/TrustSection";
 import { getPublicEntryPath } from "../lib/public-entry";
+import { getApiBaseUrl } from "@/lib/api-base";
+
+interface PublicLandingMetrics {
+  founderAccounts: number;
+  investorAccounts: number;
+  approvedOpportunities: number;
+  verifiedUsers: number;
+}
 
 const Landing = () => {
   const entryPath = getPublicEntryPath();
+  const [metrics, setMetrics] = useState<PublicLandingMetrics | null>(null);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    const loadMetrics = async () => {
+      try {
+        const response = await fetch(`${getApiBaseUrl()}/users/public/metrics`);
+        if (!response.ok) return;
+
+        const data = (await response.json()) as PublicLandingMetrics;
+        const values = [
+          data.founderAccounts,
+          data.investorAccounts,
+          data.approvedOpportunities,
+          data.verifiedUsers,
+        ];
+
+        if (isCurrent && values.every(Number.isFinite)) {
+          setMetrics(data);
+        }
+      } catch {
+        // Keep metrics unavailable until the API can provide real values.
+      }
+    };
+
+    void loadMetrics();
+    const interval = window.setInterval(loadMetrics, 60_000);
+
+    return () => {
+      isCurrent = false;
+      window.clearInterval(interval);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-lunar-white">
@@ -31,17 +73,20 @@ const Landing = () => {
 
             <div className="mb-10 grid grid-cols-1 gap-4 text-center sm:grid-cols-2 lg:grid-cols-4">
               {[
-                { value: "1.2k+", label: "Founders onboarded" },
-                { value: "92%", label: "Verified match rate" },
-                { value: "24-48h", label: "Review turnaround" },
-                { value: "100%", label: "Values-aligned screening" },
+                { value: metrics?.founderAccounts, label: "Founder accounts" },
+                { value: metrics?.investorAccounts, label: "Investor accounts" },
+                {
+                  value: metrics?.approvedOpportunities,
+                  label: "Approved opportunities",
+                },
+                { value: metrics?.verifiedUsers, label: "Verified users" },
               ].map((stat) => (
                 <div
                   key={stat.label}
                   className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-white/5 dark:bg-background-dark/80"
                 >
                   <div className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-                    {stat.value}
+                    {stat.value === undefined ? "—" : stat.value.toLocaleString()}
                   </div>
                   <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                     {stat.label}

@@ -102,7 +102,7 @@ const Signup = () => {
 
       // Determine where to send the user based on the current product flow
       const isWaitlistMode = import.meta.env.VITE_WAITLIST_MODE === 'true';
-      const redirectPath = isWaitlistMode ? '/waitlist' : '/login';
+      const redirectPath = isWaitlistMode ? '/early-access' : '/login';
 
       setTimeout(() => {
         setToast({ show: false, message: "", type: "success" });

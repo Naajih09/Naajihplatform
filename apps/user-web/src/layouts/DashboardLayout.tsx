@@ -190,7 +190,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   }, [fetchUnreadMessages, socket]);
 
   if (isWaitlistUser) {
-    return <Navigate to="/waitlist" replace />;
+    return <Navigate to="/early-access" replace />;
   }
 
   const isAspirant = user.role === "ASPIRING_BUSINESS_OWNER";

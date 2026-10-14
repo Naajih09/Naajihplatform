@@ -64,6 +64,11 @@ export class UsersController {
     return this.usersService.resetPassword(body.token, body.password);
   }
 
+  @Get('public/metrics')
+  getPublicLandingMetrics() {
+    return this.usersService.getPublicLandingMetrics();
+  }
+
   @Throttle({ short: { limit: 2, ttl: 60000 } })
   @Post('admin/seed')
   async createAdmin(

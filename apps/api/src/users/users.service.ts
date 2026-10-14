@@ -6,6 +6,7 @@ import {
 import {
   BillingInterval,
   ConnectionStatus,
+  PitchStatus,
   User,
   UserRole,
   VerificationStatus,
@@ -1138,6 +1139,46 @@ export class UsersService {
         roles,
         newUsersLast7Days,
         newConnectionsLast7Days,
+      };
+    });
+  }
+
+  async getPublicLandingMetrics() {
+    return this.cache.getOrSet('public:landing-metrics', 30, async () => {
+      const [founderAccounts, investorAccounts, approvedOpportunities, verifiedUsers] =
+        await Promise.all([
+          this.databaseService.user.count({
+            where: {
+              role: UserRole.ENTREPRENEUR,
+              isActive: true,
+              isWaitlistUser: false,
+            },
+          }),
+          this.databaseService.user.count({
+            where: {
+              role: UserRole.INVESTOR,
+              isActive: true,
+              isWaitlistUser: false,
+            },
+          }),
+          this.databaseService.pitch.count({
+            where: { status: PitchStatus.APPROVED },
+          }),
+          this.databaseService.user.count({
+            where: {
+              role: { in: [UserRole.ENTREPRENEUR, UserRole.INVESTOR] },
+              isActive: true,
+              isWaitlistUser: false,
+              isVerified: true,
+            },
+          }),
+        ]);
+
+      return {
+        founderAccounts,
+        investorAccounts,
+        approvedOpportunities,
+        verifiedUsers,
       };
     });
   }

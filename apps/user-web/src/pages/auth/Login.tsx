@@ -68,7 +68,7 @@ const Login = () => {
         userToSave?.role !== "ADMIN";
 
       navigate(
-        shouldGoToWaitlist ? "/waitlist" : searchParams.get("returnUrl") || "/dashboard",
+        shouldGoToWaitlist ? "/early-access" : searchParams.get("returnUrl") || "/dashboard",
         { replace: true },
       );
     } catch (err: any) {
